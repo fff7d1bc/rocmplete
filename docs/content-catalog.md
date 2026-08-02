@@ -1,0 +1,812 @@
+# Models, bundles, workflows, and benchmarks
+
+This guide covers content that is installed after an image is built. Read
+`catalog/README.md` first for the current catalog schema policy.
+
+## Find candidate content
+
+Start from canonical public sources:
+
+- the model author's or organization's official Hugging Face collection;
+- the application or model's official repository and documentation;
+- Comfy Org's official workflow template repository for ComfyUI graphs;
+- an acceleration project's canonical repository for LoRAs or distilled
+  weights.
+
+Treat third-party indexes only as leads for finding canonical sources. Do not
+copy their scripts, workflows, documentation, sample media, benchmark results,
+or inferred license claims.
+
+For every candidate answer these questions before editing the catalog:
+
+1. What exact user-facing capability does it add?
+2. Which application consumes it?
+3. Is it a direct ComfyUI file or a native repository tree?
+4. What is the canonical repository and full 40-character revision?
+5. Which files are strictly required for inference?
+6. What license applies to the exact hosted artifact or conversion?
+7. Are there separate model terms the user must accept?
+8. Does it duplicate an existing content-addressed file?
+9. Is there a licensed workflow source, or would a new graph have unclear
+   provenance?
+10. Can it be tested on all supported GPU classes?
+
+If provenance, compatibility, or value is unclear, leave it out until it can
+be answered.
+
+## Obtain immutable Hugging Face metadata
+
+`tools/huggingface_probe.py` queries Hugging Face's official API using only
+the Python standard library. Use a named ref for discovery:
+
+```bash
+tools/huggingface_probe.py repository REPOSITORY
+```
+
+Store the returned full revision, then repeat the query at that immutable
+revision. Inspect either its complete file inventory or one exact file:
+
+```bash
+tools/huggingface_probe.py revision REPOSITORY REVISION
+tools/huggingface_probe.py file REPOSITORY REVISION PATH
+```
+
+The stable JSON output distinguishes the Git blob ID from the Git LFS
+SHA-256. For an LFS file, `sha256` is the content digest. Never use `blob_id`
+as the catalog SHA-256. If `lfs` is false and `sha256` is null, download the
+exact file at the pinned revision and compute:
+
+```bash
+sha256sum DOWNLOADED_FILE
+stat --format '%s' DOWNLOADED_FILE
+```
+
+For gated or private repositories, export `HF_TOKEN` and ensure the account
+has accepted any upstream terms. The probe sends the token only as an
+authorization header and never prints it. Never write tokens into the catalog,
+image, command output, or documentation.
+
+Metadata is necessary but not sufficient. Read the model card, repository
+license file, upstream lineage, and conversion notes at the exact revision.
+
+## License and agreement decisions
+
+A verified license entry requires:
+
+```json
+{
+  "spdx": "Apache-2.0",
+  "status": "verified",
+  "url": "https://..."
+}
+```
+
+Use `verified` only when the selected repository/revision clearly declares a
+license covering the hosted files.
+
+If the hosted repack or conversion has no clear license, use:
+
+```json
+{
+  "spdx": "NOASSERTION",
+  "status": "unverified",
+  "url": "https://...",
+  "warning": "A specific factual warning.",
+  "upstream_repository": "Canonical/base repository",
+  "upstream_license": "The upstream license only",
+  "upstream_license_url": "https://..."
+}
+```
+
+Upstream lineage is context, not a license grant for the conversion. Do not
+promote an upstream license to the hosted artifact.
+
+Create an `agreements` entry when users must review non-permissive model terms.
+Attach its identifier to every affected artifact. Agreement
+acceptance and unverified-license acknowledgment are independent controls:
+
+- `--accept-license` confirms listed model terms;
+- `--acknowledge-license-risk` permits a download with unresolved artifact
+  licensing.
+
+When either approval is required and stdin is a terminal, omitting its flag
+must present a separate fail-closed confirmation question. Noninteractive
+callers should pass `--non-interactive` plus every applicable approval flag;
+missing approval must fail before any download. Keep this behavior identical
+for guided selectors, explicit selectors, local content packs, and benchmark
+commands.
+
+Update `THIRD_PARTY_NOTICES.md` and `catalog/README.md` whenever a new family,
+license, lineage, or risk class is introduced.
+
+## Add a direct artifact
+
+ComfyUI artifacts install below
+`content/comfyui/models/<destination>`. Add one object to
+`artifacts` in `catalog/catalog.json` containing:
+
+- a stable lowercase identifier;
+- a description;
+- repository, full revision, and safe relative source path;
+- a unique safe destination relative to `models/`;
+- exact positive byte size;
+- lowercase 64-character SHA-256;
+- license record;
+- agreement IDs when applicable.
+
+Choose the ComfyUI destination category intentionally, such as
+`diffusion_models/`, `text_encoders/`, `vae/`, `loras/`, or
+`latent_upscale_models/`. It must agree with loader nodes and
+`applications/comfyui/extra-model-paths.yaml`.
+
+If a new revision changes bytes while keeping the same destination, existing
+installations will report a size or hash mismatch and ROCmplete will refuse to
+overwrite them. Prefer a versioned upstream filename when practical. Otherwise
+document the explicit user migration: move the old file aside, run
+`content install TARGET`, and remove the backup only after validation.
+
+Runtime readiness also requires a current entry in
+`content/.rocmplete/verification.json`. The installer creates that receipt only
+after hashing the complete file. Its filesystem identity fields invalidate the
+receipt after replacement or mutation, including a same-size change. Existing
+same-sized content without a receipt is hashed in place by `content install`;
+dry runs report this as verification work without reading or writing the file.
+
+If the artifact filename appears in curated workflow metadata, update
+`_MODEL_SOURCES` and, if necessary, `_MODEL_ALIASES` in
+`src/rocmplete/workflows.py`.
+
+Managed GGUF files use `"target": "llama-models"` and a destination relative
+to `content/llama-cpp/models`. Add a bundle using application `llama-cpp` and
+groups `all` and `llama`, plus the intended public selection group, then
+connect it to a stable router identity:
+
+```json
+"llama_presets": {
+  "model-id": {
+    "bundle": "llama-bundle-id",
+    "artifact": "llama-artifact-id",
+    "default_context": 4096,
+    "mtp_draft_tokens": 4,
+    "draft_artifact": "optional-draft-artifact-id",
+    "jinja": true,
+    "opencode_agent": true,
+    "opencode_reasoning_budget": true,
+    "flash_attention": {
+      "strix-halo": "off",
+      "strix-point": "off"
+    }
+  }
+}
+```
+
+DwarfStar model files use `"target": "dwarfstar-models"`, application
+`dwarfstar`, and groups `all` and `dwarfstar`. They deliberately do not become
+llama.cpp presets or OpenCode router entries. The public DwarfStar recipe and
+runtime own the one reviewed model identity.
+
+`default_context` is ROCmplete's reviewed starting context for the preset. It
+may be the model's native context for agent-focused models or a smaller
+operational default for models aimed at constrained hardware or bounded tasks.
+A user can override it for one launch with `--context`; the preset keeps the
+repeatable, tested starting point.
+
+The referenced artifact must belong to that bundle and end in `.gguf`.
+`mtp_draft_tokens` is optional and constrained to zero through eight. A
+positive value enables only llama.cpp's `draft-mtp` speculative decoder. An
+optional `draft_artifact` must be a different `.gguf` artifact in the same
+bundle and is valid only with a positive token count. Omit it for a target
+GGUF with embedded MTP tensors. These fields intentionally do not accept
+arbitrary llama.cpp arguments.
+
+`jinja` is an optional boolean that enables llama.cpp's Jinja chat-template
+engine for a preset. `chat_template` selects one project-owned template from
+the loader's small allowlist. Add the template to the llama.cpp image, the
+Containerfile context, the entrypoint validation, and router rendering
+together. A managed template enables Jinja itself, so do not also set
+`jinja`. `flash_attention` is an optional object whose keys are
+the concrete hardware profiles `rdna4`, `strix-halo`, or `strix-point` and
+whose values are `on`, `off`, or `auto`. The container resolves `auto`
+hardware detection before applying this policy. These narrow fields must be
+rendered for both single-model and router startup; do not replace them with a
+generic arguments list.
+
+`opencode_agent` is an optional, explicit compatibility decision. Set it only
+when the model, pinned GGUF template, and llama.cpp policy are maintained for
+ROCmplete's reviewed OpenCode function-tool contract. It requires
+`jinja: true` and a `default_context` of at least 16384. Do not use it as an
+installation selector or a statement about general model quality. After
+changing preset IDs, contexts, templates, or this flag, regenerate the
+OpenCode configuration and accept a complete function-tool round trip on
+target hardware.
+
+`opencode_reasoning_budget` is an optional, narrower compatibility decision
+and requires `opencode_agent`. Set it only for presets whose reviewed template
+uses llama.cpp's thinking-token budget. ROCmplete's pinned server patch maps
+OpenCode instant to no thinking and low, medium, and high to 1024, 4096, and
+8192 tokens. These labels are budget choices, not model-native effort modes.
+Keep the catalog descriptions, patch values, generated model metadata, and
+target-hardware Chat Completions tests in sync.
+
+For a split GGUF, put every shard in the same bundle and reference the first
+`00001-of-N` shard from the preset. Preset inspection validates the complete
+bundle before llama.cpp starts, while llama.cpp discovers the remaining
+same-directory shards.
+Choose the context that matches the preset's maintained workload. Native
+long-context defaults are appropriate for models explicitly aimed at
+high-memory agent work; bounded-task and constrained-hardware presets may use
+less. Document useful smaller overrides because llama.cpp allocates the cache
+at startup. Preset identifiers become public OpenAI API model names, so keep
+them stable and descriptive. Router startup includes
+installed presets, ignores wholly missing presets, and refuses partial
+managed installs.
+
+The public llama.cpp recipes are the paired `qwen3.6` selection, the explicitly
+experimental `laguna-s-2.1`, and the focused `translation-hy` and
+`translation-gemma` choices. The Qwen recipe deliberately installs the dense
+27B MTP and sparse 35B-A3B MTP choices together. Their non-MTP controls,
+smoke-test model, and other deliberately large models remain exact bundles and
+presets rather than multiplying beginner choices.
+The mandatory internal `all` and `llama` tags still support the literal global
+aggregate and application ownership.
+
+Keep model role, quantization, and hardware profile separate. A content model
+may be useful on more than one GPU class, so do not create a hardware-named
+selector merely because one machine has enough memory for it.
+
+## Add a bundle
+
+A bundle connects content to a user-visible capability:
+
+```json
+{
+  "description": "...",
+  "application": "comfyui",
+  "artifacts": ["..."],
+  "groups": ["all", "comfyui", "family-name"],
+  "workflow": "optional-workflow-id"
+}
+```
+
+Rules enforced by the loader include:
+
+- at least one artifact;
+- no duplicate references;
+- only known selector groups;
+- mandatory membership in `all`;
+- all referenced content and workflows must exist;
+- a workflow-bearing bundle must have a benchmark entry.
+
+Bundle variants should say what changes in the identifier and description:
+family, model version, task, precision, and base/accelerated behavior. Reuse
+shared artifact IDs rather than duplicating entries.
+
+## Local content packs
+
+A content pack extends the built-in catalog for one installation without
+committing machine-specific or non-public metadata:
+
+```bash
+./rocmplete content install \
+  --from-file local-content/base-models.json \
+  --from-file local-content/loras.json \
+  --dry-run
+```
+
+The repository-root `local-content/` directory is ignored by Git and is the
+recommended location for packs and their companion manifests.
+
+`content import URL` generates one of these packs for a single supported
+Civitai or Hugging Face file. The resolver lives in
+`src/rocmplete/remote_import.py`; it is an authoring convenience, not a second
+catalog or downloader. It must continue to emit schema-valid definitions and
+then use the normal `content install --from-file` orchestration.
+
+Remote import maintenance boundaries are intentionally strict:
+
+- provider hosts are allowlisted to `civitai.com`, `civitai.red`, and
+  `huggingface.co`;
+- Hugging Face named revisions resolve to a full commit, and imported files
+  require exact Git LFS size and SHA-256 metadata;
+- Civitai sources require an exact model-version and a supported file with
+  exact size, SHA-256, and a same-provider version download URL;
+- ambiguous versions, files, and ComfyUI categories are selected explicitly;
+- an inferred destination remains overridable in guided terminal use;
+- generated licenses remain `NOASSERTION` and unverified;
+- metadata tokens use non-forwarded authorization headers;
+- dry run validates the generated pack and destination path without saving
+  it or invoking a download.
+
+The actual pack write is passed into the shared installer as its
+`before_mutation` callback. This keeps the complete content plan and
+license-risk acknowledgment ahead of the write while preserving the pack for
+retry once a user accepts and downloading begins. Do not move that callback
+earlier than approval or later than the first download mutation.
+
+Keep `IMPORT_KINDS` aligned with `Artifact.target`, `artifact_path`, ComfyUI's
+extra model paths, and the workflow destination policy. Adding an archive,
+multi-file application recipe, custom node, or llama preset is a
+catalog/integration feature rather than another import-kind entry.
+
+`--from-file` is repeatable and cannot be combined with a positional target or
+`--interactive`. Every bundle declared by the supplied packs is selected.
+Multiple packs are composed before validation, so a bundle may reference a
+built-in artifact or a definition from another supplied pack.
+
+Content-pack schema version 2 is deliberately smaller than the built-in
+catalog schema:
+
+```json
+{
+  "schema_version": 2,
+  "agreements": {},
+  "artifacts": {},
+  "bundles": {
+    "local-bootstrap": {
+      "description": "Local bootstrap content",
+      "application": "comfyui",
+      "artifacts": ["qwen-image-vae"],
+      "groups": ["all", "comfyui"]
+    }
+  }
+}
+```
+
+Only `agreements`, `artifacts`, and `bundles` are supported; the first two may
+be omitted when empty. Every pack must declare at least
+one bundle. Artifact and bundle objects use the same fields and validation as
+their built-in equivalents.
+
+Artifacts default to the Hugging Face source shape documented above. A
+Civitai artifact instead pins an exact model and version:
+
+```json
+{
+  "description": "Pinned Civitai model",
+  "source": {
+    "provider": "civitai",
+    "host": "civitai.red",
+    "model_id": 123456,
+    "model_version_id": 234567,
+    "filename": "model.safetensors",
+    "download_url": "https://civitai.red/api/download/models/234567?type=Model&format=SafeTensor",
+    "requires_auth": true
+  },
+  "destination": "diffusion_models/model.safetensors",
+  "size": 123456789,
+  "sha256": "replace-with-64-lowercase-hex-digits",
+  "license": {
+    "spdx": "NOASSERTION",
+    "status": "unverified",
+    "url": "https://civitai.com/models/123456?modelVersionId=234567",
+    "warning": "No SPDX license for the hosted bytes was verified.",
+    "upstream_repository": "Civitai model 123456, version 234567",
+    "upstream_license": "Civitai model-page permissions",
+    "upstream_license_url": "https://civitai.com/models/123456?modelVersionId=234567"
+  }
+}
+```
+
+Keep Civitai artifacts in user-owned local content packs, not ROCmplete's
+built-in catalog. A Civitai model-version ID identifies a listing version, but
+does not make its hosted file immutable: a creator can replace that file while
+the version ID and download URL stay unchanged. Exact size and SHA-256 checks
+still prevent silent substitution, but a later install of an older pack will
+then fail closed because the pinned bytes are no longer available. A built-in
+catalog entry would turn that provider behavior into a broken complete
+install for every new user.
+
+`host` is optional and defaults to `civitai.com`; only the two allowlisted
+Civitai hosts are accepted. `download_url` is also optional and defaults to
+that host's model-version endpoint. When a version has several files, record
+the exact provider-returned URL, including its format-selection query. The
+loader requires the same host and exact `/api/download/models/VERSION` path;
+the catalog hash remains the final identity check.
+
+Set `requires_auth` when anonymous download returns an authorization error.
+ROCmplete reads `CIVITAI_TOKEN` from the host environment, passes only the
+environment-variable name through the Podman command, and never writes the
+token into the pack, process arguments, or persistent data. Authentication is
+sent only to Civitai's initial download endpoint; it is not forwarded to the
+signed object-storage redirect. The downloader resumes exact direct files
+with an HTTP Range request and safely restarts when the server does not honor
+Range.
+
+When a Civitai workflow is distributed only inside a ZIP, treat the ZIP as a
+bounded transport and pin the member:
+
+```json
+"source": {
+  "provider": "civitai",
+  "model_id": 123456,
+  "model_version_id": 234567,
+  "filename": "workflow.zip",
+  "requires_auth": true,
+  "archive": {
+    "member": "folder/workflow.json",
+    "max_size": 33554432
+  }
+},
+"size": 12345,
+"sha256": "extracted-member-sha256"
+```
+
+Civitai can replace a ZIP behind an unchanged model-version ID. ROCmplete
+therefore does not use the outer ZIP hash as the content identity. It starts
+these small archive downloads from byte zero, stops at `max_size`, requires
+exactly one regular member with the selected path, and verifies the member's
+exact size and SHA-256 before atomic installation. A harmless ZIP repack keeps
+working. A changed workflow still fails closed with an error that identifies
+the member and keeps the archive for review. This transport support is for
+reviewed user-owned packs; it does not make mutable ZIP members suitable for
+the built-in catalog.
+
+After downloading a candidate ZIP to a temporary location, inspect it without
+extracting:
+
+```bash
+tools/archive_probe.py ARCHIVE.zip
+tools/archive_probe.py ARCHIVE.zip --member "folder/workflow.json"
+```
+
+The stable JSON contains archive and member sizes and SHA-256 hashes, member
+types, unsafe-path flags, and duplicate names. Use it to choose a conservative
+archive `max_size` and to pin the selected member. A selected member must occur
+exactly once. Symlinks and non-regular entries are identified and are never
+followed. The archive hash is useful research evidence, but it is not a
+durable identity for an extracted workflow.
+
+When several required files are members of the same archive, declare an
+`archive_collections` entry instead of repeating its source and archive
+metadata in `artifacts`. The collection owns one `source`, `archive`,
+`license`, optional `agreements`, default `target`, and a `members` object.
+Each member still declares its own description, archive path, destination,
+size, and SHA-256. The loader expands these into ordinary artifacts, so all
+normal path, license, collision, and bundle validation remains authoritative.
+The staging key is derived from the provider, version, and filename, so one
+download can serve every selected member. Staging is pruned only after all
+selected members are installed.
+
+For repeatable metadata research, `tools/civitai_probe.py` queries a model,
+model version, file hash, or search term and prints stable JSON:
+
+```bash
+tools/civitai_probe.py model MODEL_ID
+tools/civitai_probe.py version MODEL_VERSION_ID
+tools/civitai_probe.py search "MODEL NAME"
+tools/civitai_probe.py hash SHA256
+```
+
+It reads `CIVITAI_TOKEN` from the environment, sends it only as a bearer
+header, and never prints it.
+
+A downloaded ComfyUI workflow can use the same artifact schema with:
+
+```json
+{
+  "target": "workflows",
+  "destination": "family/workflow.json"
+}
+```
+
+Workflow targets must end in `.json` and install below
+`apps/comfyui/user/default/workflows/imported/`, separate from the curated,
+rendered workflows under `workflows/curated/`. This installs exact bytes only:
+ROCmplete does not execute
+the JSON, install its custom nodes or extra model dependencies, validate its
+graph, create a benchmark, or claim that it is runnable.
+
+Inspect downloaded UI-format or API-format graphs before deciding what can be
+supported:
+
+```bash
+tools/workflow_probe.py WORKFLOW.json
+tools/workflow_probe.py WORKFLOW-A.json WORKFLOW-B.json
+```
+
+For UI workflows, the output inventories registry and repository package
+declarations, recorded versions or commits, active/bypassed node counts,
+recognized model-like asset references, core-declared node types, and
+unattributed node types. “Unattributed” is intentionally not classified as
+core or custom. The helper performs no network access and does not install or
+resolve dependencies.
+
+Composition is additive and fail-closed:
+
+- a pack cannot override any built-in or earlier pack identifier;
+- artifact destinations, hashes, sizes, references,
+  licenses, agreements, applications, selector groups, and paths are checked
+  across the complete composed catalog;
+- workflow-pack definitions, benchmarks, renderer names, commands, and
+  executable code are not accepted from content packs; exact workflow JSON
+  may only use the constrained workflow artifact target described above;
+- files are read in place and are not copied into the data directory,
+  application image, or persistent container state;
+- normal dry-run, agreement acceptance, unverified-license acknowledgment,
+  disk-space, resumable staging, and SHA-256 verification behavior applies.
+
+Private Hugging Face and authenticated Civitai downloads use environment
+tokens:
+
+```bash
+HF_TOKEN=... CIVITAI_TOKEN=... ./rocmplete content install \
+  --from-file local-content/models.json \
+  --accept-license \
+  --acknowledge-license-risk
+```
+
+Never store an access token in a content pack. Protect the file itself when
+repository names, filenames, or license details are sensitive. A pack is
+configuration, not a source of model bytes; supported sources remain pinned
+Hugging Face repository paths at full commit revisions and pinned Civitai
+model-version IDs.
+
+## Reuse an existing local model library
+
+`content install` can reuse exact bytes from an old ROCmplete directory or
+another local model collection before falling back to the configured remote
+source:
+
+```bash
+./rocmplete content install all \
+  --local-mirror /mnt/old-rocmplete \
+  --accept-license --acknowledge-license-risk
+```
+
+The mirror search is layout-independent: it recursively indexes regular files,
+shortlists catalog hash names and model basenames, checks the expected size,
+then computes SHA-256. A same-name file with different content is ignored.
+Directory and file symlinks are ignored. Normal agreement and
+unverified-license gates still apply.
+
+The default copies matches. `--local-mirror-move` moves each verified source
+into resumable staging instead. A same-filesystem move needs no second
+full-sized copy, which is useful on ext4:
+
+```bash
+./rocmplete content install all \
+  --local-mirror /mnt/old-rocmplete \
+  --local-mirror-move \
+  --accept-license --acknowledge-license-risk
+```
+
+Move mode is intentionally destructive to the old library. The active data
+directory and mirror may not contain one another. An interrupted install
+retains the new `staging/<application>/...`
+file for resume; already moved files are not restored to the old tree.
+
+Dry run validates that the mirror exists and is separate from the destination,
+but does not hash it. Reported download size is therefore the network
+worst-case. This keeps planning fast even for several hundred GiB.
+
+## Add a content recipe
+
+Public installation is application-first. Small runnable recipes live in
+`src/rocmplete/recipes.py` and resolve directly to exact catalog bundle IDs.
+The same definitions drive guided `content install`, `content list`, and the
+application guides, so those interfaces cannot silently select different
+content.
+
+To expose a new recipe:
+
+- add one `ContentRecipe` below the consuming application in
+  `APPLICATION_RECIPES`;
+- select the smallest exact bundle set that produces one useful outcome;
+- describe its launch through one typed `RecipeLaunch`; ROCmplete derives the
+  copyable next command printed after installation;
+- update content help, the user README, the relevant application guide, and
+  focused recipe-resolution tests.
+
+Do not use a recipe as a model-family inventory. Quantization alternatives,
+optional add-ons, imported workflow libraries, speculative-decoding
+mechanisms, smoke-test roles, and size classes remain exact bundles. A recipe
+that grows from one practical result into hundreds of GiB of choices has
+stopped serving its purpose.
+
+Catalog groups remain internal tags for ownership, the literal `all`
+aggregate, and the deliberately explicit model-family selectors. Add a group
+to `SELECTOR_GROUPS` and a `CONTENT_FAMILIES` entry only when users need one
+named family across several bundles.
+`content install APPLICATION all` derives its selection from each bundle's
+application ownership instead of adding a recipe or selector group.
+Application aggregates, families, and the literal global aggregate remain
+absent from the guided installer.
+
+The guided exact-bundle browser is categorized separately from recipes.
+`_exact_bundle_category()` in `src/rocmplete/cli.py` maps every bundle to
+exactly one presentation category using its owning application and existing
+family groups. When adding a new application or ComfyUI family, update that
+mapping and its exhaustive coverage test. Category-local display names may
+remove redundant application prefixes, but catalog identifiers remain stable
+and globally unique.
+
+## Add or update a curated workflow
+
+ROCmplete does not store editable UI-format workflows as hand-authored source.
+It extracts an official workflow resource from the pinned package in the
+ComfyUI image and transforms it deterministically.
+
+### 1. Pin the source
+
+Add a `workflows` entry containing:
+
+- source package and installed package version;
+- full upstream source revision;
+- resource path within the Python package;
+- source SHA-256;
+- deterministic renderer name;
+- destination;
+- rendered SHA-256;
+- license and pinned license URL.
+
+For a new entry, a temporary 64-zero hash may be used only while calculating
+the real value; never commit the placeholder.
+
+To calculate the packaged source hash after the catalog entry loads:
+
+```bash
+PYTHONPATH=src python3 - <<'PY'
+import hashlib
+import subprocess
+
+from rocmplete.catalog import load_catalog
+from rocmplete.config import APPLICATIONS
+from rocmplete.workflows import source_command
+
+workflow_id = "WORKFLOW_ID"
+pack = load_catalog().workflow(workflow_id)
+source = subprocess.check_output(
+    source_command(APPLICATIONS["comfyui"].image, pack)
+)
+print(hashlib.sha256(source).hexdigest())
+PY
+```
+
+The extraction container has no network or data mount and checks the installed
+package version.
+
+### 2. Implement the renderer
+
+Add a narrowly scoped `_configure_*` function and dispatch name in
+`render_workflow()`:
+
+- assert expected node types and counts;
+- change exact model filenames and sampler values;
+- remove unneeded LoRAs by safely rewiring graph links;
+- clear sample image/video references;
+- enable or disable stages explicitly;
+- reject unexpected custom nodes;
+- retain automatic provenance injection.
+
+Update `_MODEL_SOURCES` for every model filename left in workflow metadata.
+Write unit tests around a minimal representative graph and the properties that
+matter: model selection, steps, CFG, LoRAs, input clearing, and graph links.
+
+Do not make the transform tolerant of arbitrary upstream graph changes. A
+shape mismatch should request maintainer review.
+
+### 3. Calculate the rendered hash
+
+After setting the real source hash:
+
+```bash
+PYTHONPATH=src python3 - <<'PY'
+import hashlib
+
+from rocmplete.catalog import load_catalog
+from rocmplete.config import APPLICATIONS
+from rocmplete.workflows import fetch_source, render_workflow
+
+workflow_id = "WORKFLOW_ID"
+pack = load_catalog().workflow(workflow_id)
+rendered = render_workflow(
+    pack,
+    fetch_source(pack, APPLICATIONS["comfyui"].image),
+)
+print(hashlib.sha256(rendered).hexdigest())
+PY
+```
+
+Put that value in `rendered_sha256`, rerun the calculation, and require an
+exact match. Install into a disposable data directory and visually inspect the
+workflow before creating a benchmark.
+
+## Add or update a benchmark graph
+
+Every ComfyUI bundle with a workflow needs one API-format prompt under
+`catalog/benchmarks/`.
+
+1. Build the exact pinned ComfyUI image.
+2. Install the bundle and curated workflow.
+3. Start ComfyUI on loopback.
+4. Open the curated installed workflow.
+5. Export its API-format graph using the pinned frontend.
+6. Save it as `catalog/benchmarks/<bundle-id>.json`.
+7. Inspect every node and path; remove no nodes by hand unless the change is
+   deliberately reflected in the curated workflow and renderer.
+8. Confirm there is no sample media or external custom-node dependency.
+9. Compute `sha256sum` and add the resource/hash to `benchmarks` in the
+   catalog.
+
+When one reviewed upstream graph is the exact structural basis for multiple
+model variants, a benchmark entry may name a small allowlisted renderer and a
+`rendered_sha256`. The source hash still pins the exported upstream graph; the
+rendered hash pins the deterministic task/resolution/model transformation.
+Add renderer names in `catalog.py`, implement them fail-closed in
+`benchmark.py`, and test all changed node values. Do not use a renderer to
+paper over a substantially different workflow.
+
+`prepare_prompt()` supplies deterministic seeds, a generated 768×768 input
+for `LoadImage`, and a unique output prefix. It rejects `LoadVideo`.
+
+Run:
+
+```bash
+./rocmplete benchmark run BUNDLE --dry-run
+```
+
+Then run both persistent-cache and isolated-cache benchmarks on supported
+hardware after installing the bundle. The first request always uses a fresh
+ComfyUI process; `--cache-mode isolated` additionally starts with empty
+generated compiler caches. Benchmark outputs and result JSON are local test
+evidence, not catalog source material.
+
+llama.cpp presets need no catalog benchmark graph. Run the pinned native
+binary directly:
+
+```bash
+./rocmplete benchmark llama-cpp --preset PRESET --dry-run
+./rocmplete benchmark llama-cpp --preset PRESET
+```
+
+Keep prompt tokens, generation tokens, repetitions, profile, render-node set,
+image, and model preset identical when comparing results. Catalog preset
+results retain the artifact revision, size, and SHA-256. Local-model results
+cannot make that immutable claim and should not be used as release evidence
+unless the exact file identity is recorded separately.
+
+For family-wide validation:
+
+```bash
+./rocmplete benchmark suite --family FAMILY --dry-run
+./rocmplete benchmark suite --family FAMILY --accept-license
+```
+
+The real suite requires every selected bundle to be installed and never
+downloads content. Preserve its JSON file to resume the exact same selection
+and runtime policy with `--resume`; start a new suite after changing a catalog
+hash, image build, profile, seed, run count, or memory/kernel policy. The suite
+records the image's immutable ID rather than trusting a mutable local tag.
+Cache mode is also part of the suite signature.
+
+## Validate a catalog change
+
+Run the cheap validation first:
+
+```bash
+python3 -m json.tool catalog/catalog.json >/dev/null
+PYTHONPATH=src python3 -m unittest discover -s tests
+./rocmplete content list
+./rocmplete content install NEW_BUNDLE --dry-run
+```
+
+For a selector:
+
+```bash
+./rocmplete content install SELECTOR --dry-run
+./rocmplete content install all --dry-run
+```
+
+Then perform an actual download into a test data directory, followed by:
+
+```bash
+./rocmplete content status NEW_BUNDLE --verify \
+  --data-dir /absolute/test/data
+```
+
+`--verify` reads every installed byte and can be expensive. It is a read-only
+audit and does not refresh the durable receipt. The normal install command
+records successful verification for later runtime gates.
+
+For workflow bundles, also install, open, queue, and benchmark the workflow.
+Test on all supported hardware profiles before calling the content supported.

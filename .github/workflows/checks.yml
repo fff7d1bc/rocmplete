@@ -1,0 +1,70 @@
+name: checks
+
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tier-1:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.12"
+          - "3.14"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Compile Python
+        run: >-
+          python -m compileall -q
+          applications
+          containers
+          src/rocmplete
+          tests
+          tools
+
+      - name: Check shell syntax
+        run: |
+          bash -n \
+            applications/comfyui/entrypoint.sh \
+            applications/llama-cpp/entrypoint.sh \
+            applications/dwarfstar/entrypoint.sh
+
+      - name: Validate JSON
+        run: |
+          find catalog -type f -name '*.json' -print0 |
+            xargs -0 -n1 python -m json.tool >/dev/null
+
+      - name: Run unit tests
+        run: PYTHONPATH=src python -m unittest discover -s tests
+
+      - name: Exercise dependency-free CLI
+        run: |
+          ./rocmplete --version
+          ./rocmplete content list
+          ./rocmplete content install comfyui image \
+            --dry-run \
+            --non-interactive \
+            --accept-license \
+            --acknowledge-license-risk
+          ./rocmplete content install all \
+            --dry-run \
+            --non-interactive \
+            --accept-license \
+            --acknowledge-license-risk

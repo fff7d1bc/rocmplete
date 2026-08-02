@@ -1,0 +1,516 @@
+# Testing, release checks, and housekeeping
+
+Validation is layered so ordinary development on a host without suitable
+target GPU capacity remains useful without pretending it replaces
+target-hardware acceptance.
+
+## Validation tiers
+
+### Tier 1: static and unit checks
+
+Run for every change:
+
+```bash
+python3 -m compileall -q applications containers src/rocmplete tests tools
+bash -n applications/comfyui/entrypoint.sh \
+  applications/llama-cpp/entrypoint.sh \
+  applications/dwarfstar/entrypoint.sh
+python3 -m json.tool catalog/catalog.json >/dev/null
+git diff --check
+PYTHONPATH=src python3 -m unittest discover -s tests
+```
+
+If a shell entrypoint or JSON manifest is added, include it explicitly.
+
+Unit tests cover catalog invariants, download command confinement, native-tree
+behavior, workflow rendering, research probes, benchmark preparation, CLI
+resolution, profile detection, Podman command construction, and local Markdown
+links and section anchors. Add tests for behavior, not merely new lines or
+parser choices.
+
+`.github/workflows/checks.yml` runs this dependency-free surface on Python 3.12
+and Python 3.14. It also exercises representative CLI dry-runs without Podman.
+Hosted CI does not replace local image builds, CPU startup, provider-network
+checks, or target-hardware acceptance.
+
+### Tier 2: CLI and dry-run checks
+
+Exercise user-visible composition:
+
+```bash
+./rocmplete --help
+./rocmplete guide comfyui
+./rocmplete run --help
+./rocmplete images export all --output /tmp/rocmplete-images.tar --dry-run
+./rocmplete doctor --help
+./rocmplete content install all --dry-run
+./rocmplete run comfyui --profile cpu \
+  --listen 127.0.0.1 --dry-run
+./rocmplete run llama-cpp server --model /path/to/model.gguf \
+  --profile cpu --listen 127.0.0.1 --dry-run
+./rocmplete content install llama-cpp qwen3.6 --dry-run
+./rocmplete run llama-cpp server --router \
+  --profile cpu --listen 127.0.0.1 --dry-run
+./rocmplete run dwarfstar server --profile strix-halo --dry-run
+./rocmplete opencode --help
+./rocmplete opencode --no-sandbox -- --help
+./rocmplete benchmark llama-cpp \
+  --preset qwen3-0.6b-q8-0 --profile cpu --dry-run
+./rocmplete benchmark llama-cpp \
+  --preset qwen3-0.6b-q8-0 --compare-backends --dry-run
+./rocmplete acceptance run --dry-run
+```
+
+For remote-import changes, also exercise one exact Hugging Face LFS file and
+one exact Civitai version with `content import ... --dry-run`. Confirm that
+the plan shows a full Hugging Face commit or exact Civitai version/file,
+provider size and SHA-256, the intended destination, `NOASSERTION`, and the
+ignored local-pack path. The dry run must not create that pack or the selected
+data directory. Treat provider/network/authentication failure as an external
+acceptance limitation, not a unit-test replacement.
+
+Inspect resolved commands for:
+
+- correct image and container name;
+- a private network namespace and exactly one TCP publication on the selected
+  host IP for web applications;
+- read-only root;
+- dropped capabilities and `no-new-privileges`;
+- `--userns keep-id` and an explicit host-derived `--umask` for commands with
+  a persistent `/data` bind mount;
+- only intended bind mounts;
+- no GPU devices in CPU mode;
+- exactly `/dev/kfd` plus the complete selected render-node set in GPU mode;
+- offline/network-none behavior where promised.
+
+For OpenCode sandbox changes, run a real bubblewrap probe on Linux. Confirm
+that OpenCode starts and exits cleanly, its launch directory and private XDG
+state are writable, and the real home, SSH agent, inherited token variables,
+host OpenCode state, and GPU devices are absent. Confirm that the host
+loopback llama.cpp endpoint remains reachable. Repeat with a Linuxbrew
+OpenCode installation because its prefix lives below `/home`, which the
+sandbox otherwise hides.
+On Fedora-family hosts where `/home` links to `/var/home`, confirm that both
+absolute spellings resolve to the mounted project while sibling home content
+remains absent.
+
+For image-archive changes, additionally create a tiny disposable local image,
+save it as a Docker archive, inspect it through `image_archive.py`, remove and
+load it, compare the image config ID, and remove it again. Do not use a full
+ROCmplete export merely to exercise archive plumbing on every development
+pass.
+
+### Tier 3: image builds
+
+Build every affected target. During ordinary iteration, force the affected
+image instructions to run while retaining locally downloaded Python packages:
+
+```bash
+./rocmplete build comfyui --no-layer-cache
+```
+
+Before a release or after base/dependency changes, perform a genuinely cold
+build of all targets:
+
+```bash
+./rocmplete build all --no-cache
+```
+
+The output must show one `content` tools build, one minimal `runtime` build,
+one shared PyTorch `base` build, and all application builds. A cache-free
+aggregate build must not reinstall a prerequisite once per application.
+PyTorch application builds reference the newly tagged PyTorch base with
+`--pull=never`; native applications reference the lower runtime with
+`--pull=never` and must not reference the managed PyTorch base.
+
+`--no-cache` bypasses both Podman's image-layer cache and ROCmplete's host pip
+download cache. `--no-layer-cache` bypasses only the selected application's
+image layers; prerequisite targets still pass through their normal layer
+cache. It is suitable for repeated local build testing where downloading the
+same multi-gigabyte AMD wheels adds no coverage.
+
+Check installed dependency consistency:
+
+```bash
+for app_image in $(PYTHONPATH=src python3 -c \
+  'from rocmplete.config import APPLICATIONS; print(*(item.image for item in APPLICATIONS.values() if item.shared_pytorch_base))')
+do
+  podman run --rm --entrypoint /opt/venv/bin/python \
+    "$app_image" -m pip check
+done
+```
+
+For llama.cpp, inspect the exact labels and native runtime closure:
+
+```bash
+podman image inspect CURRENT_LLAMA_IMAGE
+podman run --rm --network none --read-only --cap-drop all \
+  --security-opt no-new-privileges \
+  --entrypoint /usr/local/bin/llama-cli CURRENT_LLAMA_IMAGE --version
+```
+
+The image must contain `llama-cli`, `llama-server`, and `llama-bench`, have no
+unresolved `ldd` entries, link both `libggml-hip` and `libggml-vulkan`, and
+retain rocBLAS/hipBLASLt payloads only for `gfx1150`, `gfx1151`, `gfx1200`,
+and `gfx1201`. CPU startup is not GPU inference acceptance.
+
+For DwarfStar, run `ds4`, `ds4-server`, and `ds4-bench` help with the
+entrypoint overridden, inspect all three with `ldd`, and confirm that the
+final image has no `ds4-agent`, `ds4-eval`, compiler, Git checkout, development
+wheel, or PyTorch package. Confirm the image label and HIP code cover the
+canonical four architectures. Then run `acceptance --application dwarfstar`
+on each memory-capable hardware class. Starting a source-built binary on the
+build host is not inference acceptance.
+
+Inspect image metadata and history when pins or licenses changed:
+
+```bash
+podman image inspect CURRENT_IMAGE
+podman history CURRENT_IMAGE
+```
+
+### Tier 4: CPU-only startup
+
+CPU mode is a startup and HTTP smoke test, not an inference test:
+
+```bash
+./rocmplete run comfyui --profile cpu \
+  --listen 127.0.0.1 --detach
+curl --fail http://127.0.0.1:8188/ >/dev/null
+./rocmplete logs comfyui
+./rocmplete stop comfyui
+
+./rocmplete run llama-cpp server --router --models-max 1 \
+  --profile cpu --listen 127.0.0.1 --detach
+curl --fail http://127.0.0.1:8080/health
+curl --fail http://127.0.0.1:8080/v1/models
+./rocmplete stop llama-cpp
+```
+
+Use different ports if they are occupied. Confirm startup banners show `cpu`
+and that containers disappear after stopping. Run this check from a shell with
+`umask 0077` as well: immutable profile/downloader helpers must remain readable
+to the keep-id process, `/tmp/comfy` must be writable, and persistent files
+must retain the private host mask.
+
+The llama.cpp router check requires `content install llama-cpp qwen3.6`,
+but does not load the model. Confirm `qwen3.6-27b-mtp-q8-0` is present and
+unloaded.
+The pinned upstream router may also advertise its reserved empty `default`
+preset; that is not managed content and should not be selected during the
+smoke test.
+
+For DwarfStar/OpenCode integration, start the managed 128K DwarfStar server,
+select `dwarfstar/deepseek-v4-flash`, and complete one read plus function-tool
+round trip in Investigate or Plan. Confirm that `instant` disables thinking,
+`thinking` enables normal thinking, and the generated provider follows
+`--dwarfstar-port`. Do not claim agent compatibility from `/v1/models` or a
+plain text response alone.
+
+MTP catalog changes additionally require one single-model dry run and router
+INI inspection for an embedded-draft preset and a separate-draft preset.
+Confirm the target and draft are both hash-verified before startup, the draft
+path is mounted through the existing read-only model partition, and no
+speculative arguments appear for non-MTP presets. CPU startup validates
+argument shape only; it is not an MTP correctness or performance result.
+
+### Tier 5: GPU diagnostics
+
+On each target host, use the finite
+[target-hardware acceptance matrix](hardware-acceptance.md):
+
+```bash
+./rocmplete doctor --render-node /dev/dri/renderD128
+./rocmplete run comfyui --profile EXPECTED_PROFILE \
+  --render-node /dev/dri/renderD128 --listen 127.0.0.1
+```
+
+Verify:
+
+- RX 9060 family cards report `gfx1200` and resolve `rdna4`;
+- Radeon AI PRO R9700 and RX 9070 family cards report `gfx1201` and resolve
+  `rdna4`;
+- Strix Halo reports `gfx1151` and resolves `strix-halo`;
+- Strix Point reports `gfx1150` and resolves `strix-point`;
+- forcing either other profile fails;
+- `auto` succeeds;
+- multiple render nodes require an explicit complete selection;
+- Doctor performs a tensor operation on every explicitly selected GPU and
+  rejects a mixed-architecture set;
+- one llama.cpp server selected on two matching cards reports managed layer
+  splitting and runs a model that exercises both cards;
+- one ComfyUI process selected on two matching cards completes a graph using
+  built-in component-placement or multi-GPU nodes;
+- device permissions work without changing host groups or broadening
+  container privileges.
+- enforcing SELinux hosts report `container_use_devices`, fail clearly while
+  it is off, and pass a real GPU tensor operation after it is enabled without
+  disabling container labels;
+- hosts exposing AppArmor's unprivileged-user-namespace sysctl report whether
+  it is active; a nonzero value prints the persistent opt-out, apply command,
+  bubblewrap impact, and system-wide security scope without changing the host;
+- Strix Halo and Strix Point diagnostics report system RAM, the active TTM
+  module and ceiling, and effective GTT; undersized GTT prints the expected
+  RAM-aware host recipe without changing the host. The additional KFD kernel
+  warning remains specific to Strix Halo.
+- an OSTree boot with rpm-ostree available receives a transactional
+  `rpm-ostree kargs` TTM recipe; a conventional GRUB host receives an owned
+  `/etc/default/grub.d` drop-in and `update-grub`; a conventional Fedora host
+  with `grubby` receives an all-kernel boot-entry update; other conventional
+  hosts retain the active-module `modprobe.d` and detected initramfs-tool
+  fallback.
+
+### Tier 6: representative inference
+
+Run this only on suitable target hardware. For changes affecting a family,
+test at least:
+
+Begin with the bounded checkpointed smoke:
+
+```bash
+./rocmplete acceptance run
+```
+
+Keep its JSON and Markdown result. A `BLOCKED` result means generated media
+still needs human review; resume the same result rather than rerunning passed
+cases. Then exercise the additional matrix rows coupled to the change.
+
+- each changed llama.cpp MTP preset against its non-MTP counterpart, recording
+  prompt processing, generation speed, peak memory, acceptance behavior, and
+  output sanity on `gfx1150`, `gfx1151`, `gfx1200`, and `gfx1201` where the
+  preset is practical;
+
+- one base and one accelerated bundle;
+- every affected precision;
+- T2V and I2V/edit paths when both exist;
+- native application and ComfyUI paths if both consume related content;
+- balanced memory policy;
+- conservative policy on either RDNA 3.5 APU or another constrained-memory
+  case.
+
+Record the image tag, Git commit, profile, render-node set, model bundle,
+policy, and result. Managed benchmark JSON records much of this for ComfyUI.
+
+For llama.cpp, run the same catalog preset and explicit pp/tg/repetition
+tuple with both ROCm and Vulkan on all target hardware classes. Preserve the
+native result JSON below `apps/llama-cpp/benchmarks`; it records the selected
+backend. Do not compare a catalog-pinned result with an unhashed local-model
+result.
+
+Do not treat one successful tiny workflow as acceptance of every model family.
+
+## Release checklist
+
+ROCmplete does not currently publish prebuilt images, so “release” means a
+source state from which users build locally.
+
+### Source and documentation
+
+- [ ] Working tree contains only intended changes.
+- [ ] All new upstreams use full commits or image digests.
+- [ ] Default image tags match the pins.
+- [ ] No stale version or old command remains in docs or tests.
+- [ ] `THIRD_PARTY_NOTICES.md` matches built and downloaded components.
+- [ ] `catalog/README.md` describes new content/license classes.
+- [ ] User README quick-start and focused `guide/` examples are current.
+- [ ] Maintainer docs still point to real files and commands.
+- [ ] Local Markdown links and section anchors pass the unit-test check.
+
+Useful searches:
+
+```bash
+rg -n 'TODO|FIXME|WIP|latest|main' \
+  Containerfile applications catalog src/rocmplete docs guide README.md
+rg -n 'localhost/rocmplete:|_COMMIT|_VERSION' .
+```
+
+`latest` or `main` may appear in explanatory prose, but must not be a stored
+source revision or image base.
+
+### Catalog and provenance
+
+- [ ] Catalog and every tree manifest parse as JSON.
+- [ ] All model revisions are full 40-character commits.
+- [ ] Sizes and SHA-256 values come from pinned metadata or verified bytes.
+- [ ] License URLs point to the exact relevant source/revision where possible.
+- [ ] `NOASSERTION` is used for unresolved repacks/conversions.
+- [ ] Required agreements are attached.
+- [ ] Every bundle is in `all` and intended selector groups.
+- [ ] Every workflow bundle has a pinned benchmark.
+- [ ] `content install all --dry-run` counts and disk totals look intentional.
+
+### Automated and container checks
+
+- [ ] Static checks and full unit suite pass.
+- [ ] All images build from cache.
+- [ ] All images build without cache after base/dependency changes.
+- [ ] `pip check` passes in each image.
+- [ ] CPU HTTP smoke passes for web applications.
+- [ ] Batch dry-runs are confined and reference installed paths.
+- [ ] No managed test container remains:
+
+  ```bash
+  podman ps -a --filter name=rocmplete
+  ```
+
+### Hardware acceptance
+
+- [ ] The finite [target-hardware acceptance matrix](hardware-acceptance.md)
+      records current results or explicit `N/P` reasons.
+- [ ] `acceptance run` passes, or its checkpointed result records reviewed
+      failures and explicit profile-level `N/P` cases.
+- [ ] RX 9060 family diagnostics and forced/auto profile tests pass.
+- [ ] R9700 or RX 9070 family diagnostics and forced/auto profile tests pass.
+- [ ] Strix Halo diagnostics and forced/auto profile tests pass.
+- [ ] Strix Point diagnostics and forced/auto profile tests pass.
+- [ ] Representative inference passes for affected applications/families.
+- [ ] Memory and experimental kernel policies are tested if changed.
+- [ ] Relevant managed benchmark completes and records expected metadata.
+- [ ] A relevant `benchmark suite --dry-run` resolves the intended ordered
+      bundle set without starting a container.
+- [ ] Suite resume skips intact completed entries and rejects changed
+      catalog/runtime inputs, rebuilt image IDs, and mismatched result files.
+
+## Routine housekeeping
+
+### Before working
+
+```bash
+git status --short
+PYTHONPATH=src python3 -m unittest discover -s tests
+podman ps -a --filter name=rocmplete
+```
+
+This distinguishes pre-existing local changes and containers from work created
+in the current session.
+
+### Periodically
+
+- Review upstream releases and security notices for Ubuntu, ROCm/PyTorch,
+  ComfyUI, ComfyUI-GGUF, rgthree-comfy, and llama.cpp.
+- Review model cards and licenses at pinned revisions for later changes or
+  takedowns.
+- Check whether gated-model access behavior changed.
+- Build without cache to expose transitive dependency drift.
+- Run `pip check` in all final images.
+- Run `content install all --dry-run` and compare counts/size with user
+  documentation.
+- Verify a rotating sample of installed bundles by full SHA-256.
+- Inspect disk use:
+
+  ```bash
+  podman system df
+  du -sh "${XDG_DATA_HOME:-$HOME/.local/share}/rocmplete" 2>/dev/null
+  ```
+
+- Back up user-owned persistent subtrees.
+
+Do not automate dependency or model upgrades directly into the main branch.
+Discovery may be automated; pin selection, license review, and compatibility
+acceptance require maintainer judgment.
+
+## Backup and recovery
+
+The [persistent-data](../guide/operations.md#persistent-data) and
+[scoped-cleanup](../guide/operations.md#scoped-cleanup) sections define what is
+irreplaceable and what each cleanup scope owns. Review those paths and back up
+user input, output, state, custom models, workflows, and benchmark results
+before any destructive release housekeeping. Catalog content and generated
+caches are reproducible, although replacing them may be expensive.
+
+For a safe rebuild:
+
+1. Stop applications.
+2. Back up user-owned data.
+3. Build new image tags.
+4. Start in CPU mode.
+5. Run GPU diagnostics.
+6. Test existing content without forcing workflow replacement.
+7. Only then remove obsolete images.
+
+## Failure guide
+
+### Build-time patch no longer matches
+
+The upstream source changed. Diff the old and new commits, understand the new
+behavior, and rewrite the strict patch. Do not weaken `replace_once` or skip
+the patch.
+
+### `pip check` fails
+
+The selected pins are not a consistent environment. Fix requirements or
+constraints; do not add `--no-deps` merely to complete the build.
+
+### Catalog refuses to load
+
+Read the exact loader error. Common causes are a short revision, invalid
+SHA-256, unsafe path, duplicate destination, unknown selector, missing
+agreement, or a workflow bundle without a benchmark.
+
+### Setup reports size or hash mismatch
+
+ROCmplete will not overwrite an installed file. Determine whether it is:
+
+- user content at a managed destination;
+- an old pinned model revision;
+- an incomplete manual download;
+- upstream content that changed unexpectedly despite the same revision.
+
+Move the file aside explicitly, verify provenance again, and rerun
+`content install TARGET`. A remote mutation at an immutable-looking revision
+is a security/provenance event and should not be normalized by updating the
+hash without investigation.
+
+An exact-size staging file that fails SHA-256 is different: ROCmplete preserves
+it beside the expected path with an `.invalid-*` suffix. Retrying can then
+download or reuse a verified replacement without deleting other resumable
+staging. Inspect the quarantined file if the mismatch may indicate remote or
+storage corruption.
+
+### Hugging Face returns 401 or 403
+
+Check repository visibility, gating, account acceptance, and `HF_TOKEN`.
+License acceptance in ROCmplete does not grant upstream account access, and an
+HF token does not replace `--accept-license`.
+
+### Workflow source hash mismatch
+
+The image's installed workflow-template package does not match the catalog.
+Check the package version, built image tag, source resource, and constraints.
+Do not update the hash until the actual source revision and license are
+understood.
+
+If the workflow-template package is reported missing, confirm the failing
+image reference in the error. Workflow extraction must use the managed ComfyUI
+image, not the content-tools image.
+
+### Rendered workflow hash mismatch
+
+The renderer, source graph, provenance fields, or JSON serialization changed.
+Inspect the rendered diff. Repin only after verifying the graph remains the
+intended workflow.
+
+### Container already exists
+
+Use:
+
+```bash
+./rocmplete logs APPLICATION
+./rocmplete stop APPLICATION
+```
+
+If normal stop cannot recover an abandoned managed container, inspect it with
+Podman before using `./rocmplete cleanup containers` and confirming its plan.
+The cleanup plan must include labelled transient benchmark, acceptance,
+diagnostic, shell, and downloader containers as well as application
+containers. It must never select an unlabelled container merely because its
+name begins with a broad project-like prefix; only exact known transient names
+and the generated downloader prefix are exceptions.
+Cleanup never removes persistent data unless the explicit `data` scope is
+selected and its plan is confirmed.
+
+### Profile mismatch or unsupported architecture
+
+Confirm the selected render-node set with `doctor`. A forced profile is
+an assertion, not a compatibility override. Do not map an untested
+architecture to the nearest known profile merely to let startup continue.

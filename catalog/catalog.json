@@ -1,0 +1,2399 @@
+{
+  "schema_version": 18,
+  "agreements": {
+    "ltx-2-community-license": {
+      "name": "LTX-2 Community License",
+      "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE",
+      "summary": "Includes an acceptable-use policy and commercial restrictions, including a revenue threshold. Review the complete license before use."
+    },
+    "gemma-terms": {
+      "name": "Gemma Terms of Use",
+      "url": "https://ai.google.dev/gemma/terms",
+      "summary": "Gemma-derived weights are subject to Google's Gemma terms and prohibited-use policy. Review and accept the complete terms before use."
+    },
+    "hunyuan-video-1.5-community-license": {
+      "name": "Tencent HunyuanVideo 1.5 Community License",
+      "url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE",
+      "summary": "The license defines a territory that excludes the EU, United Kingdom, and South Korea and imposes use restrictions. You are responsible for determining whether your use is permitted."
+    },
+    "krea-2-community-license": {
+      "name": "KREA 2 Community License Agreement",
+      "url": "https://huggingface.co/Comfy-Org/Krea-2/blob/952f49d49653cb42e7d6cf7cbfad74738073ec7d/LICENSE.pdf",
+      "summary": "Review the complete KREA 2 Community License Agreement before downloading or using these weights."
+    },
+    "openmdw-1.1": {
+      "name": "OpenMDW License Agreement 1.1",
+      "url": "https://huggingface.co/poolside/Laguna-S-2.1/blob/b0a9fd7c850eea9d68cf3ffc5bd5d3c5dced43c0/LICENSE.md",
+      "summary": "Review the complete OpenMDW-1.1 terms before downloading or using Laguna S 2.1."
+    },
+    "tencent-hy-community-license": {
+      "name": "Tencent HY Community License",
+      "url": "https://huggingface.co/tencent/HY-MT1.5-7B-GGUF/blob/126325496bc8e3575f1d8615b8ca951d8483f206/License.txt",
+      "summary": "The license excludes the EU, United Kingdom, and South Korea from its territory and says use outside that territory is unauthorized. Review the complete terms and determine whether your use is permitted."
+    }
+  },
+  "artifacts": {
+    "qwen-image-2512-fp8-model": {
+      "description": "Qwen Image 2512 FP8 diffusion model",
+      "source": {
+        "repository": "Comfy-Org/Qwen-Image_ComfyUI",
+        "revision": "46839d338df81ce625d5fae27d7e370314c0fbc9",
+        "path": "split_files/diffusion_models/qwen_image_2512_fp8_e4m3fn.safetensors"
+      },
+      "destination": "diffusion_models/qwen_image_2512_fp8_e4m3fn.safetensors",
+      "size": 20430679144,
+      "sha256": "5dc80554d5d83390046a2f4a94ece06afb7700bf7b0aaf8bde9769793875876b",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/tree/46839d338df81ce625d5fae27d7e370314c0fbc9"
+      }
+    },
+    "qwen-2.5-vl-7b-fp8-text-encoder": {
+      "description": "Qwen 2.5 VL 7B FP8 text encoder",
+      "source": {
+        "repository": "Comfy-Org/Qwen-Image_ComfyUI",
+        "revision": "46839d338df81ce625d5fae27d7e370314c0fbc9",
+        "path": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
+      },
+      "destination": "text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "size": 9384670680,
+      "sha256": "cb5636d852a0ea6a9075ab1bef496c0db7aef13c02350571e388aea959c5c0b4",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/tree/46839d338df81ce625d5fae27d7e370314c0fbc9"
+      }
+    },
+    "qwen-image-vae": {
+      "description": "Qwen Image VAE",
+      "source": {
+        "repository": "Comfy-Org/Qwen-Image_ComfyUI",
+        "revision": "46839d338df81ce625d5fae27d7e370314c0fbc9",
+        "path": "split_files/vae/qwen_image_vae.safetensors"
+      },
+      "destination": "vae/qwen_image_vae.safetensors",
+      "size": 253806246,
+      "sha256": "a70580f0213e67967ee9c95f05bb400e8fb08307e017a924bf3441223e023d1f",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/tree/46839d338df81ce625d5fae27d7e370314c0fbc9"
+      }
+    },
+    "krea-2-turbo-fp8-model": {
+      "description": "Krea 2 Turbo FP8 diffusion model",
+      "source": {
+        "repository": "Comfy-Org/Krea-2",
+        "revision": "952f49d49653cb42e7d6cf7cbfad74738073ec7d",
+        "path": "diffusion_models/krea2_turbo_fp8_scaled.safetensors"
+      },
+      "destination": "diffusion_models/Krea 2/krea2_turbo_fp8_scaled.safetensors",
+      "size": 13141730784,
+      "sha256": "eb4dd8c612cfd10f64f25b057e6e6bbcb5737c94a7372177e456dbf7579502f1",
+      "license": {
+        "spdx": "LicenseRef-Krea-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Comfy-Org/Krea-2/blob/952f49d49653cb42e7d6cf7cbfad74738073ec7d/LICENSE.pdf"
+      },
+      "agreements": [
+        "krea-2-community-license"
+      ]
+    },
+    "krea-2-qwen3-vl-4b-fp8-text-encoder": {
+      "description": "Krea 2 Qwen3-VL 4B FP8 text encoder",
+      "source": {
+        "repository": "Comfy-Org/Krea-2",
+        "revision": "952f49d49653cb42e7d6cf7cbfad74738073ec7d",
+        "path": "text_encoders/qwen3vl_4b_fp8_scaled.safetensors"
+      },
+      "destination": "text_encoders/qwen3vl_4b_fp8_scaled.safetensors",
+      "size": 5242467968,
+      "sha256": "54bd5144df0bbc25dd6ccadfcb826b521445a1b06ae5a42570bdd2974ca87094",
+      "license": {
+        "spdx": "LicenseRef-Krea-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Comfy-Org/Krea-2/blob/952f49d49653cb42e7d6cf7cbfad74738073ec7d/LICENSE.pdf"
+      },
+      "agreements": [
+        "krea-2-community-license"
+      ]
+    },
+    "qwen-image-2512-lightning-4step-bf16": {
+      "description": "Qwen Image 2512 Lightning 4-step BF16 LoRA",
+      "source": {
+        "repository": "lightx2v/Qwen-Image-2512-Lightning",
+        "revision": "a52649c9d0f6e1a248bff13f0df33bb8a2abdb52",
+        "path": "Qwen-Image-2512-Lightning-4steps-V1.0-bf16.safetensors"
+      },
+      "destination": "loras/Qwen-Image-2512-Lightning-4steps-V1.0-bf16.safetensors",
+      "size": 849608296,
+      "sha256": "de0d236e54ecf2c43b32447d13478c6eae0d361b1fed48c69675b084fa240d87",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/lightx2v/Qwen-Image-2512-Lightning/tree/a52649c9d0f6e1a248bff13f0df33bb8a2abdb52"
+      }
+    },
+    "qwen-image-edit-2511-fp8-model": {
+      "description": "Qwen Image Edit 2511 FP8-mixed diffusion model",
+      "source": {
+        "repository": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
+        "revision": "e9e85de74a8f48c1e3e2656617626348675a2f21",
+        "path": "split_files/diffusion_models/qwen_image_edit_2511_fp8mixed.safetensors"
+      },
+      "destination": "diffusion_models/qwen_image_edit_2511_fp8mixed.safetensors",
+      "size": 20533762817,
+      "sha256": "c9fdc158e46d3b61ef75f21ae866ca2fe808bf4a53643120d1c1e87c19280a4e",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI/tree/e9e85de74a8f48c1e3e2656617626348675a2f21"
+      }
+    },
+    "qwen-image-edit-2511-lightning-4step-bf16": {
+      "description": "Qwen Image Edit 2511 Lightning 4-step BF16 LoRA",
+      "source": {
+        "repository": "lightx2v/Qwen-Image-Edit-2511-Lightning",
+        "revision": "d74eba145674fd7e31b949324e148e21e7118abd",
+        "path": "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors"
+      },
+      "destination": "loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+      "size": 849608296,
+      "sha256": "22226e8d05d354bb356627d428809f5afd7819399b077238a2b70a82883a904f",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/tree/d74eba145674fd7e31b949324e148e21e7118abd"
+      }
+    },
+    "wan-umt5-xxl-fp8-text-encoder": {
+      "description": "Wan UMT5 XXL FP8 text encoder from the Comfy FP8 repack",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+      },
+      "destination": "text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "size": 6735906897,
+      "sha256": "c3355d30191f1f066b26d93fba017ae9809dce6c627dda5f6a66eaa651204f68",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "wan-2.1-vae": {
+      "description": "Wan 2.1 VAE from the Comfy FP8 repack",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/vae/wan_2.1_vae.safetensors"
+      },
+      "destination": "vae/wan_2.1_vae.safetensors",
+      "size": 253815318,
+      "sha256": "2fc39d31359a4b0a64f55876d8ff7fa8d780956ae2cb13463b0223e15148976b",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "wan-2.2-t2v-high-fp8": {
+      "description": "Wan 2.2 T2V 14B high-noise FP8 model",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors"
+      },
+      "destination": "diffusion_models/wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
+      "size": 14293923632,
+      "sha256": "cad711ae211c8b23455ec68cd6a190a33a3d874234a77eb57266d73f8f0e6c9f",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "wan-2.2-t2v-low-fp8": {
+      "description": "Wan 2.2 T2V 14B low-noise FP8 model",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors"
+      },
+      "destination": "diffusion_models/wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
+      "size": 14293923632,
+      "sha256": "e71b96d7c82e638694c5e7fb98fac4bfb0e4ddc5fbbb4b1df40da8f0f1278a97",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "wan-2.2-i2v-high-fp8": {
+      "description": "Wan 2.2 I2V 14B high-noise FP8 model",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors"
+      },
+      "destination": "diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
+      "size": 14294742832,
+      "sha256": "6122e79d55e0f235698d11d657f3b196c5273c830da00b2b013c5a048d5e6a42",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-I2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-I2V-A14B/tree/206a9ee1b7bfaaf8f7e4d81335650533490646a3"
+      }
+    },
+    "wan-2.2-i2v-low-fp8": {
+      "description": "Wan 2.2 I2V 14B low-noise FP8 model",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"
+      },
+      "destination": "diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
+      "size": 14294742832,
+      "sha256": "5471a457b6ac404202a5fbe6c11595a3d5641fc766b00f38763f72303fffc21e",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-I2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-I2V-A14B/tree/206a9ee1b7bfaaf8f7e4d81335650533490646a3"
+      }
+    },
+    "wan-2.2-t2v-lightning-high": {
+      "description": "Wan 2.2 T2V Lightning v1.1 high-noise LoRA",
+      "source": {
+        "repository": "lightx2v/Wan2.2-Lightning",
+        "revision": "18bccf8884ec0a078eed79785eb4ef13ea16ce1e",
+        "path": "Wan2.2-T2V-A14B-4steps-lora-rank64-Seko-V1.1/high_noise_model.safetensors"
+      },
+      "destination": "loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors",
+      "size": 1226977424,
+      "sha256": "698321cb86bd30c4af06c9b84e656a1048c8cb54e06d50694536fb5de37fde41",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/lightx2v/Wan2.2-Lightning/tree/18bccf8884ec0a078eed79785eb4ef13ea16ce1e"
+      }
+    },
+    "wan-2.2-t2v-lightning-low": {
+      "description": "Wan 2.2 T2V Lightning v1.1 low-noise LoRA",
+      "source": {
+        "repository": "lightx2v/Wan2.2-Lightning",
+        "revision": "18bccf8884ec0a078eed79785eb4ef13ea16ce1e",
+        "path": "Wan2.2-T2V-A14B-4steps-lora-rank64-Seko-V1.1/low_noise_model.safetensors"
+      },
+      "destination": "loras/wan2.2_t2v_lightx2v_4steps_lora_v1.1_low_noise.safetensors",
+      "size": 1226977424,
+      "sha256": "ec95216e614b3c132c11bfb387b11feedf62163150ccc9068bca8a189771e75a",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/lightx2v/Wan2.2-Lightning/tree/18bccf8884ec0a078eed79785eb4ef13ea16ce1e"
+      }
+    },
+    "wan-2.2-t2v-lightning-v2-high": {
+      "description": "Wan 2.2 T2V Lightning Seko v2.0 high-noise LoRA",
+      "source": {
+        "repository": "lightx2v/Wan2.2-Lightning",
+        "revision": "18bccf8884ec0a078eed79785eb4ef13ea16ce1e",
+        "path": "Wan2.2-T2V-A14B-4steps-lora-rank64-Seko-V2.0/high_noise_model.safetensors"
+      },
+      "destination": "loras/wan2.2_t2v_lightx2v_4steps_lora_v2_high_noise.safetensors",
+      "size": 1226977424,
+      "sha256": "78cc2c9b44aca9ded8f69c6619639edca7459308051161253c3aa04ac6169a58",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/lightx2v/Wan2.2-Lightning/tree/18bccf8884ec0a078eed79785eb4ef13ea16ce1e"
+      }
+    },
+    "wan-2.2-t2v-lightning-v2-low": {
+      "description": "Wan 2.2 T2V Lightning Seko v2.0 low-noise LoRA",
+      "source": {
+        "repository": "lightx2v/Wan2.2-Lightning",
+        "revision": "18bccf8884ec0a078eed79785eb4ef13ea16ce1e",
+        "path": "Wan2.2-T2V-A14B-4steps-lora-rank64-Seko-V2.0/low_noise_model.safetensors"
+      },
+      "destination": "loras/wan2.2_t2v_lightx2v_4steps_lora_v2_low_noise.safetensors",
+      "size": 1226977424,
+      "sha256": "6bb498f926e71217106c3642e75273580c1de2dec0a6902cbae8e83d2402d5cf",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/lightx2v/Wan2.2-Lightning/tree/18bccf8884ec0a078eed79785eb4ef13ea16ce1e"
+      }
+    },
+    "wan-2.2-i2v-lightning-high": {
+      "description": "Wan 2.2 I2V Lightning v1 high-noise LoRA",
+      "source": {
+        "repository": "lightx2v/Wan2.2-Lightning",
+        "revision": "18bccf8884ec0a078eed79785eb4ef13ea16ce1e",
+        "path": "Wan2.2-I2V-A14B-4steps-lora-rank64-Seko-V1/high_noise_model.safetensors"
+      },
+      "destination": "loras/wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
+      "size": 1226977424,
+      "sha256": "d176c808d6fc461999b68e321efcb7501b20b8c3797523ed0df14f7d1deff11e",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/lightx2v/Wan2.2-Lightning/tree/18bccf8884ec0a078eed79785eb4ef13ea16ce1e"
+      }
+    },
+    "wan-2.2-i2v-lightning-low": {
+      "description": "Wan 2.2 I2V Lightning v1 low-noise LoRA",
+      "source": {
+        "repository": "lightx2v/Wan2.2-Lightning",
+        "revision": "18bccf8884ec0a078eed79785eb4ef13ea16ce1e",
+        "path": "Wan2.2-I2V-A14B-4steps-lora-rank64-Seko-V1/low_noise_model.safetensors"
+      },
+      "destination": "loras/wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors",
+      "size": 1226977424,
+      "sha256": "024f21de095bc8fad9809ded3e9e49a2e170dcf27075da8145ba7d60d8aab7f9",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/lightx2v/Wan2.2-Lightning/tree/18bccf8884ec0a078eed79785eb4ef13ea16ce1e"
+      }
+    },
+    "ltx-2-19b-dev-fp8": {
+      "description": "LTX-2 19B development FP8 checkpoint",
+      "source": {
+        "repository": "Lightricks/LTX-2",
+        "revision": "47da56e2ad66ce4125a9922b4a8826bf407f9d0a",
+        "path": "ltx-2-19b-dev-fp8.safetensors"
+      },
+      "destination": "checkpoints/ltx-2-19b-dev-fp8.safetensors",
+      "size": 27078716018,
+      "sha256": "8a67e709b6d1adc061cb19921887a5c15754178199e45801a04310e9b522760d",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-19b-distilled-fp8": {
+      "description": "LTX-2 19B distilled FP8 checkpoint",
+      "source": {
+        "repository": "Lightricks/LTX-2",
+        "revision": "47da56e2ad66ce4125a9922b4a8826bf407f9d0a",
+        "path": "ltx-2-19b-distilled-fp8.safetensors"
+      },
+      "destination": "checkpoints/ltx-2-19b-distilled-fp8.safetensors",
+      "size": 27078716346,
+      "sha256": "8ae14327130c6ffdc87705b02c8e7654aa5c6d9a7f28a52d0acc1c30cb0d2932",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-19b-distilled-lora-384": {
+      "description": "LTX-2 19B distilled 384-frame LoRA",
+      "source": {
+        "repository": "Lightricks/LTX-2",
+        "revision": "47da56e2ad66ce4125a9922b4a8826bf407f9d0a",
+        "path": "ltx-2-19b-distilled-lora-384.safetensors"
+      },
+      "destination": "loras/ltx-2-19b-distilled-lora-384.safetensors",
+      "size": 7674558424,
+      "sha256": "2718f89582003cbb5b616635f18c091641917a3f3e5a2f2ad0fb3d5fdd153534",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-spatial-upscaler-x2": {
+      "description": "LTX-2 spatial x2 latent upscaler",
+      "source": {
+        "repository": "Lightricks/LTX-2",
+        "revision": "47da56e2ad66ce4125a9922b4a8826bf407f9d0a",
+        "path": "ltx-2-spatial-upscaler-x2-1.0.safetensors"
+      },
+      "destination": "latent_upscale_models/ltx-2-spatial-upscaler-x2-1.0.safetensors",
+      "size": 995765578,
+      "sha256": "3160fabf8edf0bc4dd8de40353a180813b111ce586b655ad54af9a7b8c6736de",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-gemma-3-12b-it-fp4-mixed": {
+      "description": "Gemma 3 12B IT FP4-mixed text encoder from the Comfy LTX-2 repack",
+      "source": {
+        "repository": "Comfy-Org/ltx-2",
+        "revision": "bd5f9c87fcb0360ae7112f9784562670894d9492",
+        "path": "split_files/text_encoders/gemma_3_12B_it_fp4_mixed.safetensors"
+      },
+      "destination": "text_encoders/gemma_3_12B_it_fp4_mixed.safetensors",
+      "size": 9447702218,
+      "sha256": "aaca463d11e6d8d2a4bdb0d6299214c15ef78a3f73e0ef8113d5a9d0219b3f6d",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/ltx-2/tree/bd5f9c87fcb0360ae7112f9784562670894d9492",
+        "warning": "The Comfy-Org LTX-2 text-encoder repack declares no license. The upstream Gemma model has separate terms, but ROCmplete cannot assert that those terms cover the converted file.",
+        "upstream_repository": "google/gemma-3-12b-it",
+        "upstream_license": "Gemma Terms of Use",
+        "upstream_license_url": "https://huggingface.co/google/gemma-3-12b-it"
+      },
+      "agreements": [
+        "gemma-terms"
+      ]
+    },
+    "hunyuan-video-1.5-byt5-fp16": {
+      "description": "HunyuanVideo 1.5 ByT5 glyph text encoder from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/text_encoders/byt5_small_glyphxl_fp16.safetensors"
+      },
+      "destination": "text_encoders/byt5_small_glyphxl_fp16.safetensors",
+      "size": 438643184,
+      "sha256": "516910bb4c9b225370290e40585d1b0e6c8cd3583690f7eec2f7fb593990fb48",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "hunyuan-video-1.5-vae-fp16": {
+      "description": "HunyuanVideo 1.5 FP16 VAE from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/vae/hunyuanvideo15_vae_fp16.safetensors"
+      },
+      "destination": "vae/hunyuanvideo15_vae_fp16.safetensors",
+      "size": 2521292758,
+      "sha256": "e7c3091949c27e2d55ae6d5df917b99dadfebbf308e5a50d0ade0d16c90297ae",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "hunyuan-video-1.5-t2v-720p-fp16-model": {
+      "description": "HunyuanVideo 1.5 720p T2V FP16 model from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/diffusion_models/hunyuanvideo1.5_720p_t2v_fp16.safetensors"
+      },
+      "destination": "diffusion_models/hunyuanvideo1.5_720p_t2v_fp16.safetensors",
+      "size": 16653368128,
+      "sha256": "4f05e2a31b51b7ddee3ef336d234e0932001cbdc85887da15451069fda3e1d05",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "hunyuan-video-1.5-i2v-720p-fp16-model": {
+      "description": "HunyuanVideo 1.5 720p I2V FP16 model from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/diffusion_models/hunyuanvideo1.5_720p_i2v_fp16.safetensors"
+      },
+      "destination": "diffusion_models/hunyuanvideo1.5_720p_i2v_fp16.safetensors",
+      "size": 16653368128,
+      "sha256": "96883b154e4231e6106515bdef53a091085d5821518c387eb28609fde77e4bf1",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "hunyuan-video-1.5-i2v-480p-step-distilled-fp16-model": {
+      "description": "HunyuanVideo 1.5 480p I2V step-distilled FP16 model from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/diffusion_models/hunyuanvideo1.5_480p_i2v_step_distilled_fp16.safetensors"
+      },
+      "destination": "diffusion_models/hunyuanvideo1.5_480p_i2v_step_distilled_fp16.safetensors",
+      "size": 16662813912,
+      "sha256": "ebe7c60253c8369e02a0e9a8adb49f11f3003dff01954c250b7650330551edc3",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "hunyuan-video-1.5-t2v-480p-cfg-distilled-fp16-model": {
+      "description": "HunyuanVideo 1.5 480p T2V CFG-distilled FP16 model from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/diffusion_models/hunyuanvideo1.5_480p_t2v_cfg_distilled_fp16.safetensors"
+      },
+      "destination": "diffusion_models/hunyuanvideo1.5_480p_t2v_cfg_distilled_fp16.safetensors",
+      "size": 16653368136,
+      "sha256": "e1dc03489de99a040f46adbe7655c956cbf6820c2cc1c6548e048e4287410710",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "hunyuan-video-1.5-1080p-sr-fp16": {
+      "description": "HunyuanVideo 1.5 1080p distilled super-resolution FP16 model from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/diffusion_models/hunyuanvideo1.5_1080p_sr_distilled_fp16.safetensors"
+      },
+      "destination": "diffusion_models/hunyuanvideo1.5_1080p_sr_distilled_fp16.safetensors",
+      "size": 16662949080,
+      "sha256": "e706673b109ea7d041fd2cff1fd2008f0ea960f386ced5aa024246ec2ce5ead1",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "hunyuan-video-1.5-latent-upscaler-1080p": {
+      "description": "HunyuanVideo 1.5 1080p latent upscaler from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/latent_upscale_models/hunyuanvideo15_latent_upsampler_1080p.safetensors"
+      },
+      "destination": "latent_upscale_models/hunyuanvideo15_latent_upsampler_1080p.safetensors",
+      "size": 201404760,
+      "sha256": "a3630a7e0ab21084aa69e5a649f59fba34a7110733c9ca3d4fee781323758198",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "hunyuan-video-1.5-sigclip-vision": {
+      "description": "HunyuanVideo 1.5 SigCLIP vision encoder from the Comfy repack",
+      "source": {
+        "repository": "Comfy-Org/HunyuanVideo_1.5_repackaged",
+        "revision": "2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "path": "split_files/clip_vision/sigclip_vision_patch14_384.safetensors"
+      },
+      "destination": "clip_vision/sigclip_vision_patch14_384.safetensors",
+      "size": 856505640,
+      "sha256": "1fee501deabac72f0ed17610307d7131e3e9d1e838d0363aa3c2b97a6e03fb33",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/tree/2fa8a1a2d48fe2837368eb64b400217e595ab117",
+        "warning": "The Comfy-Org HunyuanVideo 1.5 repack declares no license. ROCmplete cannot assert that Tencent's upstream terms cover the repackaged files.",
+        "upstream_repository": "tencent/HunyuanVideo-1.5",
+        "upstream_license": "Tencent HunyuanVideo 1.5 Community License",
+        "upstream_license_url": "https://huggingface.co/tencent/HunyuanVideo-1.5/blob/f11ffa68b27d6936fa79b5360bf0931247be687e/LICENSE"
+      },
+      "agreements": [
+        "hunyuan-video-1.5-community-license"
+      ]
+    },
+    "qwen-image-2512-bf16-model": {
+      "description": "Qwen Image 2512 BF16 diffusion model",
+      "source": {
+        "repository": "Comfy-Org/Qwen-Image_ComfyUI",
+        "revision": "46839d338df81ce625d5fae27d7e370314c0fbc9",
+        "path": "split_files/diffusion_models/qwen_image_2512_bf16.safetensors"
+      },
+      "destination": "diffusion_models/qwen_image_2512_bf16.safetensors",
+      "size": 40861031488,
+      "sha256": "cbf55390fff27dbc785046d7007b04e0c5dd7421e7ef128f2831eacb53a8e075",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/tree/46839d338df81ce625d5fae27d7e370314c0fbc9"
+      }
+    },
+    "qwen-image-edit-2511-bf16-model": {
+      "description": "Qwen Image Edit 2511 BF16 diffusion model",
+      "source": {
+        "repository": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
+        "revision": "e9e85de74a8f48c1e3e2656617626348675a2f21",
+        "path": "split_files/diffusion_models/qwen_image_edit_2511_bf16.safetensors"
+      },
+      "destination": "diffusion_models/qwen_image_edit_2511_bf16.safetensors",
+      "size": 40861031560,
+      "sha256": "ae42d927b5fac4f278b9a894554c727e619727a63622976f2d95625be4bce08c",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI/tree/e9e85de74a8f48c1e3e2656617626348675a2f21"
+      }
+    },
+    "wan-umt5-xxl-fp16-text-encoder": {
+      "description": "Wan UMT5 XXL FP16 text encoder",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/text_encoders/umt5_xxl_fp16.safetensors"
+      },
+      "destination": "text_encoders/umt5_xxl_fp16.safetensors",
+      "size": 11366399385,
+      "sha256": "7b8850f1961e1cf8a77cca4c964a358d303f490833c6c087d0cff4b2f99db2af",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "wan-2.2-t2v-high-fp16": {
+      "description": "Wan 2.2 T2V high-noise FP16 model",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/diffusion_models/wan2.2_t2v_high_noise_14B_fp16.safetensors"
+      },
+      "destination": "diffusion_models/wan2.2_t2v_high_noise_14B_fp16.safetensors",
+      "size": 28577095592,
+      "sha256": "c793e1515320fc8883ac8f97e2a45270c35edd8c4e334a6d42d3e95455bd8da2",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "wan-2.2-t2v-low-fp16": {
+      "description": "Wan 2.2 T2V low-noise FP16 model",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/diffusion_models/wan2.2_t2v_low_noise_14B_fp16.safetensors"
+      },
+      "destination": "diffusion_models/wan2.2_t2v_low_noise_14B_fp16.safetensors",
+      "size": 28577095592,
+      "sha256": "431d1613ffa809ae1f735b661a01788c6d74991f51efd01f45d5aee955ccd224",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "wan-2.2-i2v-high-fp16": {
+      "description": "Wan 2.2 I2V high-noise FP16 model",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp16.safetensors"
+      },
+      "destination": "diffusion_models/wan2.2_i2v_high_noise_14B_fp16.safetensors",
+      "size": 28577914792,
+      "sha256": "c21c21efa368d529a982a7d89dd11d86608b5937cae9a125d0ffe5491918a100",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "wan-2.2-i2v-low-fp16": {
+      "description": "Wan 2.2 I2V low-noise FP16 model",
+      "source": {
+        "repository": "Comfy-Org/Wan_2.2_ComfyUI_Repackaged",
+        "revision": "fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "path": "split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp16.safetensors"
+      },
+      "destination": "diffusion_models/wan2.2_i2v_low_noise_14B_fp16.safetensors",
+      "size": 28577914792,
+      "sha256": "edb89340c8a6fbf1a70e76a839ae01eaf7d289f05ea1ebd6b1a3fc6f533826e9",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/fb1388adc906ab39ffc26ee40e96b22886b56bc4",
+        "warning": "The Comfy-Org Wan 2.2 FP8 repack declares no license. Wan-AI's upstream model is Apache-2.0, but ROCmplete cannot assert that those terms cover the repackaged files.",
+        "upstream_repository": "Wan-AI/Wan2.2-T2V-A14B",
+        "upstream_license": "Apache-2.0",
+        "upstream_license_url": "https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B/tree/c8c270b13ee05bfa474194ac9fb07a5868a97cea"
+      }
+    },
+    "ltx-2-19b-dev-bf16": {
+      "description": "LTX-2 19B development BF16 checkpoint",
+      "source": {
+        "repository": "Lightricks/LTX-2",
+        "revision": "47da56e2ad66ce4125a9922b4a8826bf407f9d0a",
+        "path": "ltx-2-19b-dev.safetensors"
+      },
+      "destination": "checkpoints/ltx-2-19b-dev.safetensors",
+      "size": 43285058242,
+      "sha256": "4a51e70aad660e55648d6f0b8af15c8acaaffc06e2a4ae7c7cb01ede701981a8",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-camera-dolly-in": {
+      "description": "LTX-2 19B Dolly In camera-control LoRA",
+      "source": {
+        "repository": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Dolly-In",
+        "revision": "cc976355a158a07fc70ec45ca961fa30661e80f9",
+        "path": "ltx-2-19b-lora-camera-control-dolly-in.safetensors"
+      },
+      "destination": "loras/ltx-2-19b-lora-camera-control-dolly-in.safetensors",
+      "size": 327309208,
+      "sha256": "0da937d528ea619c95859ad0c5cab012c7213fe058b7cb289e2a513ec351f237",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-camera-dolly-out": {
+      "description": "LTX-2 19B Dolly Out camera-control LoRA",
+      "source": {
+        "repository": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Dolly-Out",
+        "revision": "8e3560fdc7004a6d7a2dd29559fe73200357fbcc",
+        "path": "ltx-2-19b-lora-camera-control-dolly-out.safetensors"
+      },
+      "destination": "loras/ltx-2-19b-lora-camera-control-dolly-out.safetensors",
+      "size": 327309208,
+      "sha256": "554c30e64fa57b6c98e059f1b3ccabc50ad85195aab0911aed317b714f8d644d",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-camera-dolly-left": {
+      "description": "LTX-2 19B Dolly Left camera-control LoRA",
+      "source": {
+        "repository": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Dolly-Left",
+        "revision": "75cdba2244db6e2934d06095dd8bb6efa33006f6",
+        "path": "ltx-2-19b-lora-camera-control-dolly-left.safetensors"
+      },
+      "destination": "loras/ltx-2-19b-lora-camera-control-dolly-left.safetensors",
+      "size": 327309208,
+      "sha256": "fdd28ee1a53e5413d74b90064c7ec0fe98b78457b5da06c0c9c4ea5810d1f5f6",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-camera-dolly-right": {
+      "description": "LTX-2 19B Dolly Right camera-control LoRA",
+      "source": {
+        "repository": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Dolly-Right",
+        "revision": "0c0a2f9fd886da63f5954b220de0d6f034f4056d",
+        "path": "ltx-2-19b-lora-camera-control-dolly-right.safetensors"
+      },
+      "destination": "loras/ltx-2-19b-lora-camera-control-dolly-right.safetensors",
+      "size": 327309208,
+      "sha256": "ee1a3a34dc21c6b61a4c5775756dd0fab8700e06dd35658c852c0127202aa5dd",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-camera-jib-down": {
+      "description": "LTX-2 19B Jib Down camera-control LoRA",
+      "source": {
+        "repository": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Jib-Down",
+        "revision": "e468d94d6f30c601e4d7784adfa4aa8685de84b3",
+        "path": "ltx-2-19b-lora-camera-control-jib-down.safetensors"
+      },
+      "destination": "loras/ltx-2-19b-lora-camera-control-jib-down.safetensors",
+      "size": 2214978664,
+      "sha256": "5a2f72b231841f998a46b949271fa0bcec21012d4238a53e7eb4762bc828bee3",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-camera-jib-up": {
+      "description": "LTX-2 19B Jib Up camera-control LoRA",
+      "source": {
+        "repository": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Jib-Up",
+        "revision": "19d8f5528b15d3e153d8774fe8d36889714a4b41",
+        "path": "ltx-2-19b-lora-camera-control-jib-up.safetensors"
+      },
+      "destination": "loras/ltx-2-19b-lora-camera-control-jib-up.safetensors",
+      "size": 2214978664,
+      "sha256": "c4e8bd628238caf20079515ba2bce5770fa1108e6ed8c1d403a3179a68dce77f",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "ltx-2-camera-static": {
+      "description": "LTX-2 19B Static camera-control LoRA",
+      "source": {
+        "repository": "Lightricks/LTX-2-19b-LoRA-Camera-Control-Static",
+        "revision": "ba623881aa5d59559a8b26c41beb4b28253b8cae",
+        "path": "ltx-2-19b-lora-camera-control-static.safetensors"
+      },
+      "destination": "loras/ltx-2-19b-lora-camera-control-static.safetensors",
+      "size": 2214978664,
+      "sha256": "6b79aad7ecdd60aef07f39177d1ac225a6608806086af94848436fec432e2d0d",
+      "license": {
+        "spdx": "LicenseRef-LTX-2-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/Lightricks/LTX-2/blob/47da56e2ad66ce4125a9922b4a8826bf407f9d0a/LICENSE"
+      },
+      "agreements": [
+        "ltx-2-community-license"
+      ]
+    },
+    "qwen3-0.6b-q8-gguf": {
+      "description": "Qwen3 0.6B Q8_0 GGUF for llama.cpp",
+      "source": {
+        "repository": "Qwen/Qwen3-0.6B-GGUF",
+        "revision": "23749fefcc72300e3a2ad315e1317431b06b590a",
+        "path": "Qwen3-0.6B-Q8_0.gguf"
+      },
+      "destination": "qwen3-0.6b/Qwen3-0.6B-Q8_0.gguf",
+      "target": "llama-models",
+      "size": 639446688,
+      "sha256": "9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/blob/23749fefcc72300e3a2ad315e1317431b06b590a/LICENSE"
+      }
+    },
+    "hy-mt1.5-7b-q8-gguf": {
+      "description": "Official Tencent HY-MT1.5 7B Q8_0 GGUF for llama.cpp",
+      "source": {
+        "repository": "tencent/HY-MT1.5-7B-GGUF",
+        "revision": "126325496bc8e3575f1d8615b8ca951d8483f206",
+        "path": "HY-MT1.5-7B-Q8_0.gguf"
+      },
+      "destination": "hy-mt1.5-7b/HY-MT1.5-7B-Q8_0.gguf",
+      "target": "llama-models",
+      "size": 7981929344,
+      "sha256": "d79ab0f3479abe17a716aef8b08edde2208feb3bf363ba3b4ec8e3e8d25bbd68",
+      "license": {
+        "spdx": "LicenseRef-Tencent-HY-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/tencent/HY-MT1.5-7B-GGUF/blob/126325496bc8e3575f1d8615b8ca951d8483f206/License.txt"
+      },
+      "agreements": [
+        "tencent-hy-community-license"
+      ]
+    },
+    "translategemma-27b-it-q8-gguf": {
+      "description": "TranslateGemma 27B instruction-tuned Q8_0 GGUF for llama.cpp",
+      "source": {
+        "repository": "mradermacher/translategemma-27b-it-GGUF",
+        "revision": "0f2c24b456631d519a919e20429119bbd524d86e",
+        "path": "translategemma-27b-it.Q8_0.gguf"
+      },
+      "destination": "translategemma-27b-it/translategemma-27b-it.Q8_0.gguf",
+      "target": "llama-models",
+      "size": 28707987936,
+      "sha256": "31e345b986af637c0dad8078da366bf33468b712e1742824a6f80e65b8fb25d3",
+      "license": {
+        "spdx": "LicenseRef-Gemma",
+        "status": "verified",
+        "url": "https://huggingface.co/mradermacher/translategemma-27b-it-GGUF/blob/0f2c24b456631d519a919e20429119bbd524d86e/README.md"
+      },
+      "agreements": [
+        "gemma-terms"
+      ]
+    },
+    "laguna-s-2.1-q4-k-m-gguf": {
+      "description": "Official Laguna S 2.1 Q4_K_M GGUF for llama.cpp",
+      "source": {
+        "repository": "poolside/Laguna-S-2.1-GGUF",
+        "revision": "edd093522473dc7313b0738d8b4116b7f8b9745f",
+        "path": "laguna-s-2.1-Q4_K_M.gguf"
+      },
+      "destination": "laguna-s-2.1/laguna-s-2.1-Q4_K_M.gguf",
+      "target": "llama-models",
+      "size": 68248760064,
+      "sha256": "a34c74e46688122bef83122f4133031bababbefcf57436dde97048c91e2cc6ff",
+      "license": {
+        "spdx": "NOASSERTION",
+        "status": "unverified",
+        "url": "https://huggingface.co/poolside/Laguna-S-2.1-GGUF/blob/edd093522473dc7313b0738d8b4116b7f8b9745f/README.md",
+        "warning": "The official GGUF repository points to the base model terms but does not declare license metadata for the converted artifact.",
+        "upstream_repository": "poolside/Laguna-S-2.1",
+        "upstream_license": "OpenMDW-1.1",
+        "upstream_license_url": "https://huggingface.co/poolside/Laguna-S-2.1/blob/b0a9fd7c850eea9d68cf3ffc5bd5d3c5dced43c0/LICENSE.md"
+      },
+      "agreements": [
+        "openmdw-1.1"
+      ]
+    },
+    "qwen3.6-35b-a3b-ud-q8-k-xl-gguf": {
+      "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
+      "source": {
+        "repository": "unsloth/Qwen3.6-35B-A3B-GGUF",
+        "revision": "a483e9e6cbd595906af30beda3187c2663a1118c",
+        "path": "Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf"
+      },
+      "destination": "qwen3.6-35b-a3b/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
+      "target": "llama-models",
+      "size": 38451182560,
+      "sha256": "b762215c5f507f4865df4ac3d1afa803828afa41e05ecac3fac431a67bbd88e8",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/blob/a483e9e6cbd595906af30beda3187c2663a1118c/README.md"
+      }
+    },
+    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf": {
+      "description": "Qwen3.6 35B-A3B MTP Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
+      "source": {
+        "repository": "unsloth/Qwen3.6-35B-A3B-MTP-GGUF",
+        "revision": "5bc3e238d916f48a861bac2f8a1990a0e9b7e98d",
+        "path": "Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf"
+      },
+      "destination": "qwen3.6-35b-a3b-mtp/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
+      "target": "llama-models",
+      "size": 39099447584,
+      "sha256": "6c6b816537abad90b250a0972b345466028d861ddfe316d5f0de31ca6440f781",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/blob/5bc3e238d916f48a861bac2f8a1990a0e9b7e98d/README.md"
+      }
+    },
+    "qwen3.6-27b-q8-0-gguf": {
+      "description": "Qwen3.6 27B Q8_0 GGUF for llama.cpp",
+      "source": {
+        "repository": "unsloth/Qwen3.6-27B-GGUF",
+        "revision": "82d411acf4a06cfb8d9b073a5211bf410bfc29bf",
+        "path": "Qwen3.6-27B-Q8_0.gguf"
+      },
+      "destination": "qwen3.6-27b/Qwen3.6-27B-Q8_0.gguf",
+      "target": "llama-models",
+      "size": 28595763424,
+      "sha256": "f93f517f38e696d35a1a7df2c0e3155a64f4c4dcd662107a146ae263f7fb14ce",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Qwen3.6-27B-GGUF/blob/82d411acf4a06cfb8d9b073a5211bf410bfc29bf/README.md"
+      }
+    },
+    "qwen3.6-27b-mtp-q8-0-gguf": {
+      "description": "Qwen3.6 27B MTP Q8_0 GGUF for llama.cpp",
+      "source": {
+        "repository": "unsloth/Qwen3.6-27B-MTP-GGUF",
+        "revision": "5cb35eb3dcbf52dbce5f87dbc64df6aaffadcace",
+        "path": "Qwen3.6-27B-Q8_0.gguf"
+      },
+      "destination": "qwen3.6-27b-mtp/Qwen3.6-27B-Q8_0.gguf",
+      "target": "llama-models",
+      "size": 29047084160,
+      "sha256": "9408dcb356cc061a05c139e5647cbde0698ff980c6a69f7fc214e9989f86cfa8",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Qwen3.6-27B-MTP-GGUF/blob/5cb35eb3dcbf52dbce5f87dbc64df6aaffadcace/README.md"
+      }
+    },
+    "gemma4-31b-it-q8-gguf": {
+      "description": "Gemma 4 31B instruction-tuned Q8_0 GGUF from the llama.cpp project",
+      "source": {
+        "repository": "ggml-org/gemma-4-31B-it-GGUF",
+        "revision": "4fa4fdf38bee237b5c9e8a5b4e72cf39404c9dcc",
+        "path": "gemma-4-31B-it-Q8_0.gguf"
+      },
+      "destination": "gemma4-31b-it-q8-mtp/gemma-4-31B-it-Q8_0.gguf",
+      "target": "llama-models",
+      "size": 32635676896,
+      "sha256": "fcd52cebacb165a98df5abe6fb70dbf076835f4a06e064ffb33dd739b8835c9c",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/ggml-org/gemma-4-31B-it-GGUF/blob/4fa4fdf38bee237b5c9e8a5b4e72cf39404c9dcc/README.md"
+      }
+    },
+    "gemma4-31b-it-mtp-q8-gguf": {
+      "description": "Gemma 4 31B instruction-tuned Q8_0 MTP draft GGUF for llama.cpp",
+      "source": {
+        "repository": "ggml-org/gemma-4-31B-it-GGUF",
+        "revision": "4fa4fdf38bee237b5c9e8a5b4e72cf39404c9dcc",
+        "path": "mtp-gemma-4-31B-it-Q8_0.gguf"
+      },
+      "destination": "gemma4-31b-it-q8-mtp/mtp-gemma-4-31B-it-Q8_0.gguf",
+      "target": "llama-models",
+      "size": 514687104,
+      "sha256": "6b52ab20af503aee320dc09e93f886133b18d89ffc9075c7d9dcaf681e20b375",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/ggml-org/gemma-4-31B-it-GGUF/blob/4fa4fdf38bee237b5c9e8a5b4e72cf39404c9dcc/README.md"
+      }
+    },
+    "deepseek-v4-flash-0731-iq2xxs-gguf": {
+      "description": "DeepSeek V4 Flash 0731 IQ2XXS/Q2_K/Q8 imatrix GGUF for DwarfStar",
+      "source": {
+        "repository": "antirez/deepseek-v4-gguf",
+        "revision": "1cd7b564460821938add0475a60b942c409295e0",
+        "path": "DeepSeek-V4-Flash-IQ2XXS-w2Q2K-AProjQ8-SExpQ8-OutQ8-chat-v2-imatrix-0731.gguf"
+      },
+      "destination": "deepseek-v4-flash-0731/DeepSeek-V4-Flash-IQ2XXS-w2Q2K-AProjQ8-SExpQ8-OutQ8-chat-v2-imatrix-0731.gguf",
+      "target": "dwarfstar-models",
+      "size": 86720111488,
+      "sha256": "ca22ae2f838e14077c22bc1c1417b71b45b5e5a3687bd96c2ac6e17fdb6261c0",
+      "license": {
+        "spdx": "MIT",
+        "status": "verified",
+        "url": "https://huggingface.co/antirez/deepseek-v4-gguf/tree/1cd7b564460821938add0475a60b942c409295e0"
+      }
+    }
+  },
+  "archive_collections": {},
+  "bundles": {
+    "qwen-image-2512-fp8-base": {
+      "description": "Qwen Image 2512 FP8 text-to-image, 20-step base",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-image-2512-fp8-model",
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "qwen-image-vae"
+      ],
+      "workflow": "qwen-image-2512-fp8-base",
+      "groups": [
+        "all",
+        "comfyui",
+        "qwen"
+      ]
+    },
+    "qwen-image-2512-fp8-lightning": {
+      "description": "Qwen Image 2512 FP8 text-to-image, 4-step Lightning",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-image-2512-fp8-model",
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "qwen-image-vae",
+        "qwen-image-2512-lightning-4step-bf16"
+      ],
+      "workflow": "qwen-image-2512-fp8-lightning",
+      "groups": [
+        "all",
+        "comfyui",
+        "qwen"
+      ]
+    },
+    "qwen-image-edit-2511-fp8-base": {
+      "description": "Qwen Image Edit 2511 FP8 image editing, 20-step base",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-image-edit-2511-fp8-model",
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "qwen-image-vae"
+      ],
+      "workflow": "qwen-image-edit-2511-fp8-base",
+      "groups": [
+        "all",
+        "comfyui",
+        "qwen"
+      ]
+    },
+    "qwen-image-edit-2511-fp8-lightning": {
+      "description": "Qwen Image Edit 2511 FP8 image editing, 4-step Lightning",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-image-edit-2511-fp8-model",
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "qwen-image-vae",
+        "qwen-image-edit-2511-lightning-4step-bf16"
+      ],
+      "workflow": "qwen-image-edit-2511-fp8-lightning",
+      "groups": [
+        "all",
+        "comfyui",
+        "qwen"
+      ]
+    },
+    "wan-2.2-t2v-14b-fp8-base": {
+      "description": "Wan 2.2 14B FP8 text-to-video, 20-step base",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp8-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-t2v-high-fp8",
+        "wan-2.2-t2v-low-fp8"
+      ],
+      "workflow": "wan-2.2-t2v-14b-fp8-base",
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ]
+    },
+    "wan-2.2-t2v-14b-fp8-lightning": {
+      "description": "Wan 2.2 14B FP8 text-to-video, 4-step Lightning",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp8-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-t2v-high-fp8",
+        "wan-2.2-t2v-low-fp8",
+        "wan-2.2-t2v-lightning-high",
+        "wan-2.2-t2v-lightning-low"
+      ],
+      "workflow": "wan-2.2-t2v-14b-fp8-lightning",
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ]
+    },
+    "wan-2.2-t2v-14b-fp8-lightning-v2": {
+      "description": "Wan 2.2 14B FP8 text-to-video, 4-step Lightning Seko V2.0",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp8-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-t2v-high-fp8",
+        "wan-2.2-t2v-low-fp8",
+        "wan-2.2-t2v-lightning-v2-high",
+        "wan-2.2-t2v-lightning-v2-low"
+      ],
+      "workflow": "wan-2.2-t2v-14b-fp8-lightning-v2",
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ]
+    },
+    "wan-2.2-i2v-14b-fp8-base": {
+      "description": "Wan 2.2 14B FP8 image-to-video, 20-step base",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp8-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-i2v-high-fp8",
+        "wan-2.2-i2v-low-fp8"
+      ],
+      "workflow": "wan-2.2-i2v-14b-fp8-base",
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ]
+    },
+    "wan-2.2-i2v-14b-fp8-lightning": {
+      "description": "Wan 2.2 14B FP8 image-to-video, 4-step Lightning",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp8-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-i2v-high-fp8",
+        "wan-2.2-i2v-low-fp8",
+        "wan-2.2-i2v-lightning-high",
+        "wan-2.2-i2v-lightning-low"
+      ],
+      "workflow": "wan-2.2-i2v-14b-fp8-lightning",
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ]
+    },
+    "ltx-2-t2v-19b-fp8-full": {
+      "description": "LTX-2 19B FP8 text-to-video with distilled LoRA and x2 upscaling",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-19b-dev-fp8",
+        "ltx-gemma-3-12b-it-fp4-mixed",
+        "ltx-2-19b-distilled-lora-384",
+        "ltx-2-spatial-upscaler-x2"
+      ],
+      "workflow": "ltx-2-t2v-19b-fp8-full",
+      "groups": [
+        "all",
+        "comfyui",
+        "ltx"
+      ]
+    },
+    "ltx-2-i2v-19b-fp8-full": {
+      "description": "LTX-2 19B FP8 image-to-video with distilled LoRA and x2 upscaling",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-19b-dev-fp8",
+        "ltx-gemma-3-12b-it-fp4-mixed",
+        "ltx-2-19b-distilled-lora-384",
+        "ltx-2-spatial-upscaler-x2"
+      ],
+      "workflow": "ltx-2-i2v-19b-fp8-full",
+      "groups": [
+        "all",
+        "comfyui",
+        "ltx"
+      ]
+    },
+    "ltx-2-t2v-19b-fp8-distilled": {
+      "description": "LTX-2 19B distilled FP8 text-to-video with x2 upscaling",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-19b-distilled-fp8",
+        "ltx-gemma-3-12b-it-fp4-mixed",
+        "ltx-2-spatial-upscaler-x2"
+      ],
+      "workflow": "ltx-2-t2v-19b-fp8-distilled",
+      "groups": [
+        "all",
+        "comfyui",
+        "ltx"
+      ]
+    },
+    "ltx-2-i2v-19b-fp8-distilled": {
+      "description": "LTX-2 19B distilled FP8 image-to-video with x2 upscaling",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-19b-distilled-fp8",
+        "ltx-gemma-3-12b-it-fp4-mixed",
+        "ltx-2-spatial-upscaler-x2"
+      ],
+      "workflow": "ltx-2-i2v-19b-fp8-distilled",
+      "groups": [
+        "all",
+        "comfyui",
+        "ltx"
+      ]
+    },
+    "hunyuan-video-1.5-t2v-720p-fp16": {
+      "description": "HunyuanVideo 1.5 FP16 720p text-to-video with 1080p super-resolution",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "hunyuan-video-1.5-byt5-fp16",
+        "hunyuan-video-1.5-vae-fp16",
+        "hunyuan-video-1.5-t2v-720p-fp16-model",
+        "hunyuan-video-1.5-1080p-sr-fp16",
+        "hunyuan-video-1.5-latent-upscaler-1080p"
+      ],
+      "workflow": "hunyuan-video-1.5-t2v-720p-fp16",
+      "groups": [
+        "all",
+        "comfyui",
+        "hunyuan"
+      ]
+    },
+    "hunyuan-video-1.5-i2v-720p-fp16": {
+      "description": "HunyuanVideo 1.5 FP16 720p image-to-video with 1080p super-resolution",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "hunyuan-video-1.5-byt5-fp16",
+        "hunyuan-video-1.5-vae-fp16",
+        "hunyuan-video-1.5-i2v-720p-fp16-model",
+        "hunyuan-video-1.5-1080p-sr-fp16",
+        "hunyuan-video-1.5-latent-upscaler-1080p",
+        "hunyuan-video-1.5-sigclip-vision"
+      ],
+      "workflow": "hunyuan-video-1.5-i2v-720p-fp16",
+      "groups": [
+        "all",
+        "comfyui",
+        "hunyuan"
+      ]
+    },
+    "hunyuan-video-1.5-i2v-480p-step-distilled": {
+      "description": "HunyuanVideo 1.5 FP16 480p image-to-video, 12-step distilled",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "hunyuan-video-1.5-byt5-fp16",
+        "hunyuan-video-1.5-vae-fp16",
+        "hunyuan-video-1.5-i2v-480p-step-distilled-fp16-model",
+        "hunyuan-video-1.5-sigclip-vision"
+      ],
+      "workflow": "hunyuan-video-1.5-i2v-480p-step-distilled",
+      "groups": [
+        "all",
+        "comfyui",
+        "hunyuan"
+      ]
+    },
+    "hunyuan-video-1.5-t2v-480p-cfg-distilled": {
+      "description": "HunyuanVideo 1.5 FP16 480p text-to-video, CFG-distilled 50-step",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "hunyuan-video-1.5-byt5-fp16",
+        "hunyuan-video-1.5-vae-fp16",
+        "hunyuan-video-1.5-t2v-480p-cfg-distilled-fp16-model"
+      ],
+      "workflow": "hunyuan-video-1.5-t2v-480p-cfg-distilled",
+      "groups": [
+        "all",
+        "comfyui",
+        "hunyuan"
+      ]
+    },
+    "qwen-image-2512-bf16-base": {
+      "description": "Qwen Image 2512 BF16 text-to-image, 20-step base",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-image-2512-bf16-model",
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "qwen-image-vae"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "qwen"
+      ],
+      "workflow": "qwen-image-2512-bf16-base"
+    },
+    "qwen-image-2512-bf16-lightning": {
+      "description": "Qwen Image 2512 BF16 text-to-image, 4-step Lightning",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-image-2512-bf16-model",
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "qwen-image-vae",
+        "qwen-image-2512-lightning-4step-bf16"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "qwen"
+      ],
+      "workflow": "qwen-image-2512-bf16-lightning"
+    },
+    "qwen-image-edit-2511-bf16-base": {
+      "description": "Qwen Image Edit 2511 BF16, 20-step base",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-image-edit-2511-bf16-model",
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "qwen-image-vae"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "qwen"
+      ],
+      "workflow": "qwen-image-edit-2511-bf16-base"
+    },
+    "qwen-image-edit-2511-bf16-lightning": {
+      "description": "Qwen Image Edit 2511 BF16, 4-step Lightning",
+      "application": "comfyui",
+      "artifacts": [
+        "qwen-image-edit-2511-bf16-model",
+        "qwen-2.5-vl-7b-fp8-text-encoder",
+        "qwen-image-vae",
+        "qwen-image-edit-2511-lightning-4step-bf16"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "qwen"
+      ],
+      "workflow": "qwen-image-edit-2511-bf16-lightning"
+    },
+    "wan-2.2-t2v-14b-fp16-base": {
+      "description": "Wan 2.2 14B FP16 T2V, 20-step base",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp16-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-t2v-high-fp16",
+        "wan-2.2-t2v-low-fp16"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ],
+      "workflow": "wan-2.2-t2v-14b-fp16-base"
+    },
+    "wan-2.2-t2v-14b-fp16-lightning": {
+      "description": "Wan 2.2 14B FP16 T2V, 4-step Lightning",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp16-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-t2v-high-fp16",
+        "wan-2.2-t2v-low-fp16",
+        "wan-2.2-t2v-lightning-high",
+        "wan-2.2-t2v-lightning-low"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ],
+      "workflow": "wan-2.2-t2v-14b-fp16-lightning"
+    },
+    "wan-2.2-t2v-14b-fp16-lightning-v2": {
+      "description": "Wan 2.2 14B FP16 T2V, 4-step Lightning Seko V2.0",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp16-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-t2v-high-fp16",
+        "wan-2.2-t2v-low-fp16",
+        "wan-2.2-t2v-lightning-v2-high",
+        "wan-2.2-t2v-lightning-v2-low"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ],
+      "workflow": "wan-2.2-t2v-14b-fp16-lightning-v2"
+    },
+    "wan-2.2-i2v-14b-fp16-base": {
+      "description": "Wan 2.2 14B FP16 I2V, 20-step base",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp16-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-i2v-high-fp16",
+        "wan-2.2-i2v-low-fp16"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ],
+      "workflow": "wan-2.2-i2v-14b-fp16-base"
+    },
+    "wan-2.2-i2v-14b-fp16-lightning": {
+      "description": "Wan 2.2 14B FP16 I2V, 4-step Lightning",
+      "application": "comfyui",
+      "artifacts": [
+        "wan-umt5-xxl-fp16-text-encoder",
+        "wan-2.1-vae",
+        "wan-2.2-i2v-high-fp16",
+        "wan-2.2-i2v-low-fp16",
+        "wan-2.2-i2v-lightning-high",
+        "wan-2.2-i2v-lightning-low"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "wan"
+      ],
+      "workflow": "wan-2.2-i2v-14b-fp16-lightning"
+    },
+    "ltx-2-t2v-19b-bf16-full": {
+      "description": "LTX-2 19B BF16 full T2V",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-19b-dev-bf16",
+        "ltx-gemma-3-12b-it-fp4-mixed",
+        "ltx-2-19b-distilled-lora-384",
+        "ltx-2-spatial-upscaler-x2"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "ltx"
+      ],
+      "workflow": "ltx-2-t2v-19b-bf16-full"
+    },
+    "ltx-2-i2v-19b-bf16-full": {
+      "description": "LTX-2 19B BF16 full I2V",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-19b-dev-bf16",
+        "ltx-gemma-3-12b-it-fp4-mixed",
+        "ltx-2-19b-distilled-lora-384",
+        "ltx-2-spatial-upscaler-x2"
+      ],
+      "groups": [
+        "all",
+        "comfyui",
+        "ltx"
+      ],
+      "workflow": "ltx-2-i2v-19b-bf16-full"
+    },
+    "ltx-2-camera-dolly-in": {
+      "description": "Optional LTX-2 19B Dolly In camera-control LoRA",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-camera-dolly-in"
+      ],
+      "groups": [
+        "all",
+        "ltx-camera"
+      ]
+    },
+    "ltx-2-camera-dolly-out": {
+      "description": "Optional LTX-2 19B Dolly Out camera-control LoRA",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-camera-dolly-out"
+      ],
+      "groups": [
+        "all",
+        "ltx-camera"
+      ]
+    },
+    "ltx-2-camera-dolly-left": {
+      "description": "Optional LTX-2 19B Dolly Left camera-control LoRA",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-camera-dolly-left"
+      ],
+      "groups": [
+        "all",
+        "ltx-camera"
+      ]
+    },
+    "ltx-2-camera-dolly-right": {
+      "description": "Optional LTX-2 19B Dolly Right camera-control LoRA",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-camera-dolly-right"
+      ],
+      "groups": [
+        "all",
+        "ltx-camera"
+      ]
+    },
+    "ltx-2-camera-jib-down": {
+      "description": "Optional LTX-2 19B Jib Down camera-control LoRA",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-camera-jib-down"
+      ],
+      "groups": [
+        "all",
+        "ltx-camera"
+      ]
+    },
+    "ltx-2-camera-jib-up": {
+      "description": "Optional LTX-2 19B Jib Up camera-control LoRA",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-camera-jib-up"
+      ],
+      "groups": [
+        "all",
+        "ltx-camera"
+      ]
+    },
+    "ltx-2-camera-static": {
+      "description": "Optional LTX-2 19B Static camera-control LoRA",
+      "application": "comfyui",
+      "artifacts": [
+        "ltx-2-camera-static"
+      ],
+      "groups": [
+        "all",
+        "ltx-camera"
+      ]
+    },
+    "krea-2-turbo-fp8-base": {
+      "description": "Official Krea 2 Turbo FP8 base model stack; custom-node workflow dependencies are not bundled",
+      "application": "comfyui",
+      "artifacts": [
+        "krea-2-turbo-fp8-model",
+        "krea-2-qwen3-vl-4b-fp8-text-encoder",
+        "qwen-image-vae"
+      ],
+      "groups": [
+        "all",
+        "krea"
+      ]
+    },
+    "llama-qwen3-0.6b-q8-0": {
+      "description": "Qwen3 0.6B Q8_0 llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3-0.6b-q8-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-qwen3.6-35b-a3b-ud-q8-k-xl": {
+      "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3.6-35b-a3b-ud-q8-k-xl-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl": {
+      "description": "Qwen3.6 35B-A3B MTP Unsloth Dynamic Q8_K_XL llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-qwen3.6-27b-q8-0": {
+      "description": "Qwen3.6 27B Q8_0 llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3.6-27b-q8-0-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-qwen3.6-27b-mtp-q8-0": {
+      "description": "Qwen3.6 27B MTP Q8_0 llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3.6-27b-mtp-q8-0-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-gemma4-31b-it-q8-0-mtp": {
+      "description": "Gemma 4 31B IT Q8_0 llama.cpp model with Q8_0 MTP draft",
+      "application": "llama-cpp",
+      "artifacts": [
+        "gemma4-31b-it-q8-gguf",
+        "gemma4-31b-it-mtp-q8-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-laguna-s-2.1-q4-k-m": {
+      "description": "Laguna S 2.1 official Q4_K_M llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "laguna-s-2.1-q4-k-m-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-hy-mt1.5-7b-q8-0": {
+      "description": "Tencent HY-MT1.5 7B Q8_0 llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "hy-mt1.5-7b-q8-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-translategemma-27b-it-q8-0": {
+      "description": "TranslateGemma 27B IT Q8_0 llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "translategemma-27b-it-q8-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "dwarfstar-deepseek-v4-flash-0731-iq2xxs": {
+      "description": "DeepSeek V4 Flash 0731 resident IQ2XXS model for high-memory DwarfStar hosts",
+      "application": "dwarfstar",
+      "artifacts": [
+        "deepseek-v4-flash-0731-iq2xxs-gguf"
+      ],
+      "groups": [
+        "all",
+        "dwarfstar"
+      ]
+    }
+  },
+  "workflows": {
+    "qwen-image-2512-fp8-base": {
+      "description": "Core-node Qwen Image 2512 FP8 base workflow",
+      "destination": "qwen-image-2512-fp8-base.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "8ed70a6be7628171e48575c906082a57ff71b8f2",
+      "source_resource": "templates/image_qwen_Image_2512.json",
+      "source_sha256": "5b75df7e9af4757eeaa22008dc2ee897af3f5a75b8b45bfd15c4cc6a72ac3a57",
+      "rendered_sha256": "1cc677bc2aa1303012fc7db48d94f21e04ec4d2baf0a83e7856a4c75ce5c440f",
+      "renderer": "qwen-image-base",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/8ed70a6be7628171e48575c906082a57ff71b8f2/LICENSE"
+    },
+    "qwen-image-2512-fp8-lightning": {
+      "description": "Core-node Qwen Image 2512 FP8 Lightning workflow",
+      "destination": "qwen-image-2512-fp8-lightning.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "8ed70a6be7628171e48575c906082a57ff71b8f2",
+      "source_resource": "templates/image_qwen_Image_2512.json",
+      "source_sha256": "5b75df7e9af4757eeaa22008dc2ee897af3f5a75b8b45bfd15c4cc6a72ac3a57",
+      "rendered_sha256": "a2d4fd262c617d71373a345f193aa274ebdcc93054c9147675fcd93d6ee640ad",
+      "renderer": "qwen-image-lightning",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/8ed70a6be7628171e48575c906082a57ff71b8f2/LICENSE"
+    },
+    "qwen-image-edit-2511-fp8-base": {
+      "description": "Core-node Qwen Image Edit 2511 FP8 base workflow",
+      "destination": "qwen-image-edit-2511-fp8-base.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/image_qwen_image_edit_2511.json",
+      "source_sha256": "d561a38c15bd7d08758a5e6773d467142244d5b83fc5d3aecdf6d8df9fe881b6",
+      "rendered_sha256": "c582d0de5bf662a6f7f4912a85670736db3dcf8a893543f6a61a61af5645ba58",
+      "renderer": "qwen-edit-base",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-t2v-14b-fp8-lightning-v2": {
+      "description": "Core-node Wan 2.2 T2V FP8 Lightning Seko V2.0 workflow",
+      "destination": "wan-2.2-t2v-14b-fp8-lightning-v2.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_t2v.json",
+      "source_sha256": "c07feedfb87de638cb34bd517d916fc7afa7786be453e433a7bb49833a0c2801",
+      "rendered_sha256": "aee0bf682deace38801eb4c0043837040b5b86622f7ad689ad13a9f60b37a5df",
+      "renderer": "wan-t2v-lightning-v2",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "qwen-image-edit-2511-fp8-lightning": {
+      "description": "Core-node Qwen Image Edit 2511 FP8 Lightning workflow",
+      "destination": "qwen-image-edit-2511-fp8-lightning.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/image_qwen_image_edit_2511.json",
+      "source_sha256": "d561a38c15bd7d08758a5e6773d467142244d5b83fc5d3aecdf6d8df9fe881b6",
+      "rendered_sha256": "12632cf036461ab2ef864623c47ffa5b9a66642c5a68b828512399bbe2c93529",
+      "renderer": "qwen-edit-lightning",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-t2v-14b-fp8-base": {
+      "description": "Core-node Wan 2.2 T2V FP8 base workflow",
+      "destination": "wan-2.2-t2v-14b-fp8-base.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_t2v.json",
+      "source_sha256": "c07feedfb87de638cb34bd517d916fc7afa7786be453e433a7bb49833a0c2801",
+      "rendered_sha256": "30591259588de648e6d7904a671e2709da21e5f1e6c8225d570584a6b3143c4c",
+      "renderer": "wan-t2v-base",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-t2v-14b-fp8-lightning": {
+      "description": "Core-node Wan 2.2 T2V FP8 Lightning workflow",
+      "destination": "wan-2.2-t2v-14b-fp8-lightning.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_t2v.json",
+      "source_sha256": "c07feedfb87de638cb34bd517d916fc7afa7786be453e433a7bb49833a0c2801",
+      "rendered_sha256": "0d788b96f15235d7a1f1dd5e1acc3db5f083f337d8bb790c21ad2f1a3a6ed974",
+      "renderer": "wan-t2v-lightning",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-i2v-14b-fp8-base": {
+      "description": "Core-node Wan 2.2 I2V FP8 base workflow",
+      "destination": "wan-2.2-i2v-14b-fp8-base.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_i2v.json",
+      "source_sha256": "6eea9b627b10fcfaf3e75a43aad2c58d8daabdbf72b32ede1602c668cac376bb",
+      "rendered_sha256": "0c923cb38173b1e3373c8db27403674b6e09901e3a6212fd7254e7db6e6e64dd",
+      "renderer": "wan-i2v-base",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-i2v-14b-fp8-lightning": {
+      "description": "Core-node Wan 2.2 I2V FP8 Lightning workflow",
+      "destination": "wan-2.2-i2v-14b-fp8-lightning.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_i2v.json",
+      "source_sha256": "6eea9b627b10fcfaf3e75a43aad2c58d8daabdbf72b32ede1602c668cac376bb",
+      "rendered_sha256": "8bea04a74f19641d5422b2c6128c45039e167b351e464f685275aac238ee26f2",
+      "renderer": "wan-i2v-lightning",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "ltx-2-t2v-19b-fp8-full": {
+      "description": "Core-node LTX-2 19B FP8 full text-to-video workflow",
+      "destination": "ltx-2-t2v-19b-fp8-full.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "2a8603b40853507dbf696c475d9a80a58314808b",
+      "source_resource": "templates/video_ltx2_t2v.json",
+      "source_sha256": "c16297386f41a5045c43bb1bebc958fa6d9dd54d536fc7c9f9de160b50de66db",
+      "rendered_sha256": "cf6b1f463073b7003a6c6ce9a8b14dd2ef7a4a265d60f187e94d2db77ca70fa3",
+      "renderer": "ltx-full",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/2a8603b40853507dbf696c475d9a80a58314808b/LICENSE"
+    },
+    "ltx-2-i2v-19b-fp8-full": {
+      "description": "Core-node LTX-2 19B FP8 full image-to-video workflow",
+      "destination": "ltx-2-i2v-19b-fp8-full.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "2a8603b40853507dbf696c475d9a80a58314808b",
+      "source_resource": "templates/video_ltx2_i2v.json",
+      "source_sha256": "c262e99cfc5ce5d47bd376056cf45142f5d50543176cb05b816999f354e47920",
+      "rendered_sha256": "fa2780d649eba80f8eb7ada378362080ed85d46d00273ed70413512a6a123c29",
+      "renderer": "ltx-full",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/2a8603b40853507dbf696c475d9a80a58314808b/LICENSE"
+    },
+    "ltx-2-t2v-19b-fp8-distilled": {
+      "description": "Core-node LTX-2 19B distilled FP8 text-to-video workflow",
+      "destination": "ltx-2-t2v-19b-fp8-distilled.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "2a8603b40853507dbf696c475d9a80a58314808b",
+      "source_resource": "templates/video_ltx2_t2v_distilled.json",
+      "source_sha256": "a663cba9accb0a882da3208574cc1b0e364f529bc6249e58cca677c0a2da5b82",
+      "rendered_sha256": "72df1cd2d162b5febbf8268affe481007a4fa596316adf6c7e299dfcb31cd7ba",
+      "renderer": "ltx-distilled",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/2a8603b40853507dbf696c475d9a80a58314808b/LICENSE"
+    },
+    "ltx-2-i2v-19b-fp8-distilled": {
+      "description": "Core-node LTX-2 19B distilled FP8 image-to-video workflow",
+      "destination": "ltx-2-i2v-19b-fp8-distilled.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "2a8603b40853507dbf696c475d9a80a58314808b",
+      "source_resource": "templates/video_ltx2_i2v_distilled.json",
+      "source_sha256": "c893fccf3fa0b0fc1d76c82e1c628c209e6a49906f994ab5edfea4bc5d0ff055",
+      "rendered_sha256": "1021da6e753da961677a56a262b4258ccdce5275ea99d2ae5a68ba4949606b53",
+      "renderer": "ltx-distilled",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/2a8603b40853507dbf696c475d9a80a58314808b/LICENSE"
+    },
+    "hunyuan-video-1.5-t2v-720p-fp16": {
+      "description": "Core-node HunyuanVideo 1.5 720p FP16 text-to-video workflow",
+      "destination": "hunyuan-video-1.5-t2v-720p-fp16.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "52a53af170145cfd579e6e6f6334ce25e9b8cf10",
+      "source_resource": "templates/video_hunyuan_video_1.5_720p_t2v.json",
+      "source_sha256": "b52ab35cd7f5253288d32ca2d18329607a0e5fb265886e234bae7b75deff8cfe",
+      "rendered_sha256": "6035c945b02c8367aabd7f13449a88847fa6ec8fea791e6bea6955bd8ed01768",
+      "renderer": "hunyuan-1.5",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/52a53af170145cfd579e6e6f6334ce25e9b8cf10/LICENSE"
+    },
+    "hunyuan-video-1.5-i2v-720p-fp16": {
+      "description": "Core-node HunyuanVideo 1.5 720p FP16 image-to-video workflow",
+      "destination": "hunyuan-video-1.5-i2v-720p-fp16.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "52a53af170145cfd579e6e6f6334ce25e9b8cf10",
+      "source_resource": "templates/video_hunyuan_video_1.5_720p_i2v.json",
+      "source_sha256": "4f6ab488b60f7b70f6501217c1ed697a366f29c3c36755e87ef76f6023676015",
+      "rendered_sha256": "7eee672aa927b5b30c2a05e8a02a415733bb9b58cca44f4b6b1f84349972c0bc",
+      "renderer": "hunyuan-1.5",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/52a53af170145cfd579e6e6f6334ce25e9b8cf10/LICENSE"
+    },
+    "hunyuan-video-1.5-i2v-480p-step-distilled": {
+      "description": "Core-node HunyuanVideo 1.5 480p step-distilled image-to-video workflow",
+      "destination": "hunyuan-video-1.5-i2v-480p-step-distilled.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "52a53af170145cfd579e6e6f6334ce25e9b8cf10",
+      "source_resource": "templates/video_hunyuan_video_1.5_720p_i2v.json",
+      "source_sha256": "4f6ab488b60f7b70f6501217c1ed697a366f29c3c36755e87ef76f6023676015",
+      "rendered_sha256": "c6efd3681df907f5c09a989805b03157899c2d4dbeac2a44ac7d2a7abf44de6a",
+      "renderer": "hunyuan-i2v-480p-step-distilled",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/52a53af170145cfd579e6e6f6334ce25e9b8cf10/LICENSE"
+    },
+    "hunyuan-video-1.5-t2v-480p-cfg-distilled": {
+      "description": "Core-node HunyuanVideo 1.5 480p CFG-distilled text-to-video workflow",
+      "destination": "hunyuan-video-1.5-t2v-480p-cfg-distilled.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "52a53af170145cfd579e6e6f6334ce25e9b8cf10",
+      "source_resource": "templates/video_hunyuan_video_1.5_720p_t2v.json",
+      "source_sha256": "b52ab35cd7f5253288d32ca2d18329607a0e5fb265886e234bae7b75deff8cfe",
+      "rendered_sha256": "cb7fa4fb8b53dbce94f724ffe12d9ecc59f0a3bd82708aa93d83f14ee88c0b66",
+      "renderer": "hunyuan-t2v-480p-cfg-distilled",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/52a53af170145cfd579e6e6f6334ce25e9b8cf10/LICENSE"
+    },
+    "qwen-image-2512-bf16-base": {
+      "description": "Qwen Image 2512 BF16 text-to-image, 20-step base workflow",
+      "destination": "qwen-image-2512-bf16-base.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "8ed70a6be7628171e48575c906082a57ff71b8f2",
+      "source_resource": "templates/image_qwen_Image_2512.json",
+      "source_sha256": "5b75df7e9af4757eeaa22008dc2ee897af3f5a75b8b45bfd15c4cc6a72ac3a57",
+      "rendered_sha256": "fc657dcf047ebb9771e4d5e42cee235bcce25b3e93c49048ded9b38e0fb97f48",
+      "renderer": "qwen-image-base-bf16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/8ed70a6be7628171e48575c906082a57ff71b8f2/LICENSE"
+    },
+    "qwen-image-2512-bf16-lightning": {
+      "description": "Qwen Image 2512 BF16 text-to-image, 4-step Lightning workflow",
+      "destination": "qwen-image-2512-bf16-lightning.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "8ed70a6be7628171e48575c906082a57ff71b8f2",
+      "source_resource": "templates/image_qwen_Image_2512.json",
+      "source_sha256": "5b75df7e9af4757eeaa22008dc2ee897af3f5a75b8b45bfd15c4cc6a72ac3a57",
+      "rendered_sha256": "11e27092717e43c14a3b30ee052e47310238f2a1113e01f059bd8fe6de568efe",
+      "renderer": "qwen-image-lightning-bf16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/8ed70a6be7628171e48575c906082a57ff71b8f2/LICENSE"
+    },
+    "qwen-image-edit-2511-bf16-base": {
+      "description": "Qwen Image Edit 2511 BF16, 20-step base workflow",
+      "destination": "qwen-image-edit-2511-bf16-base.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/image_qwen_image_edit_2511.json",
+      "source_sha256": "d561a38c15bd7d08758a5e6773d467142244d5b83fc5d3aecdf6d8df9fe881b6",
+      "rendered_sha256": "4398d5d49abb6fb3d04e3c5f712780bf6c0248775dc75a429463da8a1b66ae1a",
+      "renderer": "qwen-edit-base-bf16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "qwen-image-edit-2511-bf16-lightning": {
+      "description": "Qwen Image Edit 2511 BF16, 4-step Lightning workflow",
+      "destination": "qwen-image-edit-2511-bf16-lightning.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/image_qwen_image_edit_2511.json",
+      "source_sha256": "d561a38c15bd7d08758a5e6773d467142244d5b83fc5d3aecdf6d8df9fe881b6",
+      "rendered_sha256": "5a1d14faba453d2f5d4745fdd7bacacc8c162f028e920f024a4090e6cc7b0131",
+      "renderer": "qwen-edit-lightning-bf16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-t2v-14b-fp16-base": {
+      "description": "Wan 2.2 14B FP16 T2V, 20-step base workflow",
+      "destination": "wan-2.2-t2v-14b-fp16-base.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_t2v.json",
+      "source_sha256": "c07feedfb87de638cb34bd517d916fc7afa7786be453e433a7bb49833a0c2801",
+      "rendered_sha256": "8e2b31f89e6707d4598377fead2e745ecb4bf714c447d220e6918a463ee55ff9",
+      "renderer": "wan-t2v-base-fp16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-t2v-14b-fp16-lightning": {
+      "description": "Wan 2.2 14B FP16 T2V, 4-step Lightning workflow",
+      "destination": "wan-2.2-t2v-14b-fp16-lightning.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_t2v.json",
+      "source_sha256": "c07feedfb87de638cb34bd517d916fc7afa7786be453e433a7bb49833a0c2801",
+      "rendered_sha256": "c772e11377e60593419c8afcc162dd16e6247a209bdab684e39e0e79b7bc4c61",
+      "renderer": "wan-t2v-lightning-fp16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-t2v-14b-fp16-lightning-v2": {
+      "description": "Wan 2.2 14B FP16 T2V, 4-step Lightning Seko V2.0 workflow",
+      "destination": "wan-2.2-t2v-14b-fp16-lightning-v2.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_t2v.json",
+      "source_sha256": "c07feedfb87de638cb34bd517d916fc7afa7786be453e433a7bb49833a0c2801",
+      "rendered_sha256": "ce734758a08ab44ec300898dffdef320a24e0f28df984328342a1b68d875233f",
+      "renderer": "wan-t2v-lightning-v2-fp16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-i2v-14b-fp16-base": {
+      "description": "Wan 2.2 14B FP16 I2V, 20-step base workflow",
+      "destination": "wan-2.2-i2v-14b-fp16-base.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_i2v.json",
+      "source_sha256": "6eea9b627b10fcfaf3e75a43aad2c58d8daabdbf72b32ede1602c668cac376bb",
+      "rendered_sha256": "1ca1f2d24ab4c26503828b874195d87738e7e75c8836a6958bb2a33282e9dca9",
+      "renderer": "wan-i2v-base-fp16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "wan-2.2-i2v-14b-fp16-lightning": {
+      "description": "Wan 2.2 14B FP16 I2V, 4-step Lightning workflow",
+      "destination": "wan-2.2-i2v-14b-fp16-lightning.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "bbe3015c7cb64ed16b9c4cf3ad35d152952babec",
+      "source_resource": "templates/video_wan2_2_14B_i2v.json",
+      "source_sha256": "6eea9b627b10fcfaf3e75a43aad2c58d8daabdbf72b32ede1602c668cac376bb",
+      "rendered_sha256": "c0912043d2c5a694290c3d37fd3162080a74711b8c95dfcad0dc230dec1d50fa",
+      "renderer": "wan-i2v-lightning-fp16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/bbe3015c7cb64ed16b9c4cf3ad35d152952babec/LICENSE"
+    },
+    "ltx-2-t2v-19b-bf16-full": {
+      "description": "LTX-2 19B BF16 full T2V workflow",
+      "destination": "ltx-2-t2v-19b-bf16-full.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "2a8603b40853507dbf696c475d9a80a58314808b",
+      "source_resource": "templates/video_ltx2_t2v.json",
+      "source_sha256": "c16297386f41a5045c43bb1bebc958fa6d9dd54d536fc7c9f9de160b50de66db",
+      "rendered_sha256": "cea5042e8df79b2af2233013f14dcbf94b4f229c6f163b17a235ce0f2f9de6d2",
+      "renderer": "ltx-full-bf16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/2a8603b40853507dbf696c475d9a80a58314808b/LICENSE"
+    },
+    "ltx-2-i2v-19b-bf16-full": {
+      "description": "LTX-2 19B BF16 full I2V workflow",
+      "destination": "ltx-2-i2v-19b-bf16-full.json",
+      "source_package": "comfyui_workflow_templates_json",
+      "source_version": "0.1.6",
+      "source_revision": "2a8603b40853507dbf696c475d9a80a58314808b",
+      "source_resource": "templates/video_ltx2_i2v.json",
+      "source_sha256": "c262e99cfc5ce5d47bd376056cf45142f5d50543176cb05b816999f354e47920",
+      "rendered_sha256": "32fdc49fdb80cbf8a91855b3d13ddb75a69e0505949027d240557bc96d745635",
+      "renderer": "ltx-full-bf16",
+      "license": "MIT",
+      "license_url": "https://github.com/Comfy-Org/workflow_templates/blob/2a8603b40853507dbf696c475d9a80a58314808b/LICENSE"
+    }
+  },
+  "benchmarks": {
+    "qwen-image-2512-fp8-base": {
+      "resource": "benchmarks/qwen-image-2512-fp8-base.json",
+      "sha256": "79001927e4b8efe5c576517a29656117bf584867f3cd1aa2596538f2e9296d00"
+    },
+    "qwen-image-2512-fp8-lightning": {
+      "resource": "benchmarks/qwen-image-2512-fp8-lightning.json",
+      "sha256": "d0102e5561091addc2d9cec908d725848dc07ac71d091c017549616385065dc7"
+    },
+    "qwen-image-edit-2511-fp8-base": {
+      "resource": "benchmarks/qwen-image-edit-2511-fp8-base.json",
+      "sha256": "51f04fe2700dd5a43e0f133d8b96e7b5ace5ec3962a6fd4649764a4878897f1b"
+    },
+    "qwen-image-edit-2511-fp8-lightning": {
+      "resource": "benchmarks/qwen-image-edit-2511-fp8-lightning.json",
+      "sha256": "cac93f3e179c5b47ff76f314491200352a98edb1149e6d0b9f84b78ee6401db2"
+    },
+    "wan-2.2-t2v-14b-fp8-base": {
+      "resource": "benchmarks/wan-2.2-t2v-14b-fp8-base.json",
+      "sha256": "127451c92d5b5fba04c879d1b4ca6ba4e09e4199be00870b38821c9451e5ee19"
+    },
+    "wan-2.2-t2v-14b-fp8-lightning": {
+      "resource": "benchmarks/wan-2.2-t2v-14b-fp8-lightning.json",
+      "sha256": "afdb4cf8e73b05b7543304eca0b094e9c72d926e629090735fc7302123d0b981"
+    },
+    "wan-2.2-t2v-14b-fp8-lightning-v2": {
+      "resource": "benchmarks/wan-2.2-t2v-14b-fp8-lightning-v2.json",
+      "sha256": "d9be40e63169ab3f5d784fdad49d8e3924c1dfbb8cea671d9711b1caa3681a7d"
+    },
+    "wan-2.2-i2v-14b-fp8-base": {
+      "resource": "benchmarks/wan-2.2-i2v-14b-fp8-base.json",
+      "sha256": "c705b68f9f4c9637611569d2b54aa74289ecf2ac43ad0ef486ee80d90a3b00de"
+    },
+    "wan-2.2-i2v-14b-fp8-lightning": {
+      "resource": "benchmarks/wan-2.2-i2v-14b-fp8-lightning.json",
+      "sha256": "636d1be9c8accdd36fa7979fdfe4ba44d7b982de742f7178454ee649e52617b6"
+    },
+    "ltx-2-t2v-19b-fp8-full": {
+      "resource": "benchmarks/ltx-2-t2v-19b-fp8-full.json",
+      "sha256": "3137f6ae1779f427be84a3af8e5bb5bfd165db626f250e8eebd4b6519ee94ef9"
+    },
+    "ltx-2-i2v-19b-fp8-full": {
+      "resource": "benchmarks/ltx-2-i2v-19b-fp8-full.json",
+      "sha256": "10c53bdb4d262030a73859edfdc0210d14166b3911cc50a59ddfb6d0d7919f20"
+    },
+    "ltx-2-t2v-19b-fp8-distilled": {
+      "resource": "benchmarks/ltx-2-t2v-19b-fp8-distilled.json",
+      "sha256": "03a775d5fc954b85515ded2f73dc3cd8c538688b5b390acd88a36bea626581b9"
+    },
+    "ltx-2-i2v-19b-fp8-distilled": {
+      "resource": "benchmarks/ltx-2-i2v-19b-fp8-distilled.json",
+      "sha256": "265beb31ca8e5f7e3afde96ad092a54b657babf9d1e653fe5b8585c2c799d9ba"
+    },
+    "hunyuan-video-1.5-t2v-720p-fp16": {
+      "resource": "benchmarks/hunyuan-video-1.5-t2v-720p-fp16.json",
+      "sha256": "bb097c0e08d7da230808f2e73713c7ed985c569343f687bcefa9857013f50cb0"
+    },
+    "hunyuan-video-1.5-i2v-720p-fp16": {
+      "resource": "benchmarks/hunyuan-video-1.5-i2v-720p-fp16.json",
+      "sha256": "17078a09fc432669389f81ec4ea0c89471ff8407c1f8741a6459b2bb2adcc905"
+    },
+    "qwen-image-2512-bf16-base": {
+      "resource": "benchmarks/qwen-image-2512-bf16-base.json",
+      "sha256": "e718f3fba8d54deeb698ed2b01b09e569344f2d7610644edc0243cbab47dd106"
+    },
+    "qwen-image-2512-bf16-lightning": {
+      "resource": "benchmarks/qwen-image-2512-bf16-lightning.json",
+      "sha256": "2e44b77b1fda5252c9fcfef8c45638a632332bf4cc9ebd8a259feb409fe80297"
+    },
+    "qwen-image-edit-2511-bf16-base": {
+      "resource": "benchmarks/qwen-image-edit-2511-bf16-base.json",
+      "sha256": "8baa1c8d026c17ee5acf6ed553b75539b31965101f144494246df7207cd96704"
+    },
+    "qwen-image-edit-2511-bf16-lightning": {
+      "resource": "benchmarks/qwen-image-edit-2511-bf16-lightning.json",
+      "sha256": "d037432ef936eff954565b1000271425efda650cde2d167e29ed2ce41ba46dc7"
+    },
+    "wan-2.2-t2v-14b-fp16-base": {
+      "resource": "benchmarks/wan-2.2-t2v-14b-fp16-base.json",
+      "sha256": "6f15fc2ad6e0a04313183343f16dbbca83801b8b50932e9de4b5a70b1d74f427"
+    },
+    "wan-2.2-t2v-14b-fp16-lightning": {
+      "resource": "benchmarks/wan-2.2-t2v-14b-fp16-lightning.json",
+      "sha256": "adce7020eb649ed83ae89bc4f22f18d520941333e2ec915a20b5c58f765fe646"
+    },
+    "wan-2.2-t2v-14b-fp16-lightning-v2": {
+      "resource": "benchmarks/wan-2.2-t2v-14b-fp16-lightning-v2.json",
+      "sha256": "0ea9d84820034a9cffeefd58305e0c10077ec2b8c242900920e0a5a2b97d80e4"
+    },
+    "wan-2.2-i2v-14b-fp16-base": {
+      "resource": "benchmarks/wan-2.2-i2v-14b-fp16-base.json",
+      "sha256": "41c4229726fc0c7ddabfa987e8d37cd80192dcb808d9fca36a396ea723cca0ac"
+    },
+    "wan-2.2-i2v-14b-fp16-lightning": {
+      "resource": "benchmarks/wan-2.2-i2v-14b-fp16-lightning.json",
+      "sha256": "0663a014cfdd57644f3cf96fc1c320e59341d1693f8a4e34e559fcd9c2989c99"
+    },
+    "ltx-2-t2v-19b-bf16-full": {
+      "resource": "benchmarks/ltx-2-t2v-19b-bf16-full.json",
+      "sha256": "dde442eb9343bdd16e5dcc8acf6ca498bff270a737a9e02cdfddc4d765effb0b"
+    },
+    "ltx-2-i2v-19b-bf16-full": {
+      "resource": "benchmarks/ltx-2-i2v-19b-bf16-full.json",
+      "sha256": "be4fbd7f77e49c81b5dd226ddaf347364c8d7f7cdc07486230d6054d13601eba"
+    },
+    "hunyuan-video-1.5-i2v-480p-step-distilled": {
+      "resource": "benchmarks/hunyuan-video-1.5-i2v-720p-fp16.json",
+      "sha256": "17078a09fc432669389f81ec4ea0c89471ff8407c1f8741a6459b2bb2adcc905",
+      "renderer": "hunyuan-i2v-480p-step-distilled",
+      "rendered_sha256": "b40ef223be1c4af6e39cce44de1bfe0aa491e58206ea70e1a6f3f6a87997f88c"
+    },
+    "hunyuan-video-1.5-t2v-480p-cfg-distilled": {
+      "resource": "benchmarks/hunyuan-video-1.5-t2v-720p-fp16.json",
+      "sha256": "bb097c0e08d7da230808f2e73713c7ed985c569343f687bcefa9857013f50cb0",
+      "renderer": "hunyuan-t2v-480p-cfg-distilled",
+      "rendered_sha256": "437ede7b094b12fc5dccd4faae2b1904d7013365fbd62f94b46409b86a15e579"
+    }
+  },
+  "llama_presets": {
+    "qwen3-0.6b-q8-0": {
+      "bundle": "llama-qwen3-0.6b-q8-0",
+      "artifact": "qwen3-0.6b-q8-gguf",
+      "default_context": 4096,
+      "jinja": true
+    },
+    "qwen3.6-35b-a3b-ud-q8-k-xl": {
+      "bundle": "llama-qwen3.6-35b-a3b-ud-q8-k-xl",
+      "artifact": "qwen3.6-35b-a3b-ud-q8-k-xl-gguf",
+      "default_context": 262144,
+      "jinja": true,
+      "opencode_agent": true,
+      "opencode_reasoning_budget": true
+    },
+    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": {
+      "bundle": "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
+      "artifact": "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf",
+      "default_context": 262144,
+      "mtp_draft_tokens": 3,
+      "jinja": true,
+      "opencode_agent": true,
+      "opencode_reasoning_budget": true
+    },
+    "qwen3.6-27b-q8-0": {
+      "bundle": "llama-qwen3.6-27b-q8-0",
+      "artifact": "qwen3.6-27b-q8-0-gguf",
+      "default_context": 262144,
+      "jinja": true,
+      "opencode_agent": true,
+      "opencode_reasoning_budget": true
+    },
+    "qwen3.6-27b-mtp-q8-0": {
+      "bundle": "llama-qwen3.6-27b-mtp-q8-0",
+      "artifact": "qwen3.6-27b-mtp-q8-0-gguf",
+      "default_context": 262144,
+      "mtp_draft_tokens": 2,
+      "jinja": true,
+      "opencode_agent": true,
+      "opencode_reasoning_budget": true
+    },
+    "gemma4-31b-it-q8-0-mtp": {
+      "bundle": "llama-gemma4-31b-it-q8-0-mtp",
+      "artifact": "gemma4-31b-it-q8-gguf",
+      "draft_artifact": "gemma4-31b-it-mtp-q8-gguf",
+      "default_context": 262144,
+      "mtp_draft_tokens": 4,
+      "jinja": true,
+      "opencode_agent": true,
+      "opencode_reasoning_budget": true
+    },
+    "laguna-s-2.1-q4-k-m": {
+      "bundle": "llama-laguna-s-2.1-q4-k-m",
+      "artifact": "laguna-s-2.1-q4-k-m-gguf",
+      "default_context": 262144,
+      "jinja": true,
+      "opencode_agent": true,
+      "flash_attention": {
+        "strix-halo": "off",
+        "strix-point": "off"
+      }
+    },
+    "hy-mt1.5-7b-q8-0": {
+      "bundle": "llama-hy-mt1.5-7b-q8-0",
+      "artifact": "hy-mt1.5-7b-q8-gguf",
+      "default_context": 32768
+    },
+    "translategemma-27b-it-q8-0": {
+      "bundle": "llama-translategemma-27b-it-q8-0",
+      "artifact": "translategemma-27b-it-q8-gguf",
+      "default_context": 4096,
+      "chat_template": "translategemma-manual"
+    }
+  }
+}

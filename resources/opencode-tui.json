@@ -1,0 +1,7 @@
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "keybinds": {
+    "agent_cycle": "shift+tab",
+    "agent_cycle_reverse": "tab"
+  }
+}

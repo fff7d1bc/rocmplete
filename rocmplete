@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+"""Repository-local entry point for ROCmplete."""
+
+import sys
+from pathlib import Path
+
+if sys.version_info < (3, 12):
+    raise SystemExit("error: ROCmplete requires Python 3.12 or newer")
+
+SOURCE_ROOT = Path(__file__).resolve().parent / "src"
+sys.path.insert(0, str(SOURCE_ROOT))
+
+from rocmplete.cli import main
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

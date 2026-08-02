@@ -1,0 +1,722 @@
+# Architecture and invariants
+
+## Mental model
+
+ROCmplete has three layers:
+
+```text
+host launcher
+  ├── builds locally pinned application images
+  ├── selects an exact render-node set and constructs constrained Podman commands
+  └── installs verified content into one persistent data directory
+
+application images
+  ├── shared pinned Ubuntu + minimal ROCm runtime
+  ├── shared ROCm/PyTorch base where applicable
+  ├── native build toolchains without PyTorch where required
+  ├── separate application dependency/source layers
+  └── entrypoints that confine paths and validate the selected profile
+
+persistent storage
+  ├── application-owned writable state under apps/<application>/
+  ├── verified managed files under content/
+  └── removable download scratch space under staging/
+```
+
+The host Python launcher does not import ROCm or application dependencies. It
+only needs Python 3.12+, Podman, and access to the device files.
+
+Data-path resolution has two explicit modes. Status, inspection, and dry-run
+commands resolve an absent path without creating it. Real installs, shells,
+and application execution prepare only the required partition. Each runtime
+receives its application directory as writable `/data`; managed content is
+mounted separately and read-only below `/content`.
+
+## Command flow
+
+`rocmplete` is a small Python entry script. It adds the repository-local
+`src/` directory to the import path and calls `rocmplete.cli.main()`. Keeping
+the import package below `src/` leaves `rocmplete` as the only matching path at
+the repository root for shell completion. `src/rocmplete/project.py` owns
+repository-root discovery for build context and catalog resources.
+
+`src/rocmplete/ui.py` owns semantic terminal styling. It emits ANSI sequences
+only to a TTY, honors `NO_COLOR`, and leaves redirected output plain. CLI and
+content modules select roles such as heading, command, success, warning, or
+error; they do not embed raw escape sequences.
+
+For a managed web application:
+
+```text
+CLI parser
+  → resolve application/profile/port/data/render-node set
+  → validate host paths and device access
+  → runtime/ constructs the application Podman command
+  → application entrypoint validates the GPU architecture inside the image
+  → application binds inside a private rootless network namespace
+  → Podman publishes exactly one TCP port on the requested host IP
+```
+
+Profile precedence is:
+
+```text
+--profile → ROCMLETE_PROFILE → auto
+```
+
+With one render node, the host selects it. With zero or multiple nodes, a GPU
+run fails until the caller supplies an exact set by repeating `--render-node`.
+Applications declare whether one workload may receive more than one node.
+The profile does not select a physical device. A multi-GPU workload must
+resolve to one supported architecture.
+
+Attached application runs keep Podman in the terminal process group for normal
+interactive input and signal delivery. `podman.run_managed_foreground` owns
+the named-container cleanup race: if Ctrl-C interrupts both the launcher and
+Podman client before `--rm` completes, it force-removes that one exact managed
+container and reaps the client before propagating the interruption. A nonzero
+attached container status becomes a `LauncherError` that retains the exact
+child status for the human diagnostic. Detached runs deliberately retain the
+ordinary Podman lifecycle.
+
+Every ROCmplete-created runtime container carries Podman metadata labels for
+ownership, role, and application where applicable. Scoped cleanup discovers
+these labels instead of assuming that all owned containers are the
+long-running application names. A small exact-name set covers known transient
+containers, while generated downloader names retain their separately
+constrained prefix.
+Explicit application stop allows a brief graceful interval before forced
+removal. Interruption and confirmed cleanup use a zero-second forced removal
+and verify absence under a signal-masked critical section, so repeated Ctrl-C
+cannot strand the removal client after Podman enters `Stopping`.
+
+For content installation:
+
+```text
+catalog loader
+  → resolve an application/category, family, aggregate, or exact bundle
+  → show sizes, destinations, license state, and agreements
+  → optionally find same-name bytes in a non-overlapping local mirror
+  → download through the locally built image's pinned HF or HTTPS downloader
+  → verify size and SHA-256
+  → atomically install direct files
+  → prune staging only after successful verification and installation
+  → render and install a pinned workflow when the bundle has one
+```
+
+Artifact downloads execute in the dedicated content-tools image. Curated
+workflow sources are package resources of the managed ComfyUI
+image and must be read from that image instead; a content-tools image override
+must never become a workflow-source override. Managed ComfyUI benchmarks also
+default to the ComfyUI application image.
+
+Downloader containers use unique `rocmplete-download-*` names. Repeated
+Ctrl-C is ignored only while the launcher sends an immediate kill, reaps the
+isolated Podman client, and waits for that exact child name to disappear. The
+absence check is authoritative because Podman may return a transient failure
+after the container has already entered `Stopping`. A new downloader refuses
+to start while another managed downloader name remains. On enforcing SELinux
+hosts, the reusable storage bind uses the shared `:z` label: private `:Z` MCS
+categories would make an interrupted container's resumable partials
+inaccessible to its successor even though both processes use the same keep-id
+UID. Host umask and file ownership remain unchanged. Host-side progress
+measures the current request's planned payloads and changed retry partials,
+not the apparent size of the whole staging tree, because Hugging Face may
+preserve superseded `.incomplete` files after interruption.
+
+`content import URL` is a constrained front end to that same path:
+
+```text
+allowlisted Civitai or Hugging Face URL
+  → provider metadata and immutable file identity
+  → explicit choice when version, file, or destination is ambiguous
+  → schema-valid ignored local content pack
+  → ordinary content-install planning, approval, download, and verification
+```
+
+`src/rocmplete/remote_import.py` owns provider URL parsing, metadata requests,
+file/type inference, stable generated identifiers, and atomic pack writes.
+It does not own another downloader. Tokens are attached only to the initial
+provider request and are not forwarded across redirects. Generated imports
+remain `NOASSERTION` even when provider metadata names an upstream license.
+
+`src/rocmplete/recipes.py` owns the small application-first recipes shown by
+the guided installer and application guides. A recipe resolves to exact
+catalog bundles, validates application ownership, and provides the copyable
+next command printed after installation. It is not a broad model family.
+
+For a benchmark:
+
+```text
+pinned API-format graph
+  → deterministic seed/input/output rewriting
+  → private ComfyUI instance on 127.0.0.1
+  → fresh-process request then warm requests
+  → persistent or isolated generated compiler caches
+  → result JSON under apps/comfyui/benchmarks
+  → benchmark container and isolated cache always removed in finally
+```
+
+For a native llama.cpp benchmark:
+
+```text
+exact local GGUF or installed catalog preset
+  → one network-isolated llama-bench container
+  → entrypoint enforces CPU or detected GPU profile policy
+  → fixed explicit pp/tg/repetition parameters
+  → parse llama-bench JSON stdout
+  → add image, profile, device, model, and parameter identity
+  → atomically create result JSON under apps/llama-cpp/benchmarks
+  → named benchmark container removed in finally
+```
+
+Backend comparison invokes that same path once for ROCm and once for Vulkan.
+Each native result remains independently useful. A small atomic comparison
+manifest records both paths, failures, extracted pp/tg rates, and the derived
+time for that exact token ratio. `LauncherError` from one backend is recorded
+before the other runs; `KeyboardInterrupt` still escapes immediately after
+the current benchmark's normal container cleanup.
+
+For bounded target-hardware smoke acceptance:
+
+```text
+detected profile + selected render node
+  → exact GPU exposure and CPU device-absence probes
+  → profile-specific case plan and exact image/content prerequisites
+  → one constrained real workload per applicable application
+  → checkpoint after every attempt and require human review for media
+  → fingerprinted JSON plus Markdown below apps/acceptance/results
+```
+
+The acceptance fingerprint binds the actual source identity, image IDs, catalog
+artifact/tree/workflow hashes, detected architecture/profile, render node,
+the complete immutable case descriptions and review criteria, and runtime
+policies. Resume validates the suite ID, root status, attempts, artifacts, and
+case metadata before those values can form output paths or be checkpointed.
+Clean source uses the Git revision;
+tracked changes and untracked runtime/build inputs add a content digest.
+Resume skips accepted cases, retries failed or interrupted cases, and fails
+closed when any bound input changes.
+The bounded suite is an operational smoke layer, not a replacement for the
+complete model-family and performance matrix.
+
+This fingerprint is a resume-compatibility check over the run definition. It
+does not authenticate the case outcomes and is not a signed attestation.
+
+## Image layout
+
+`Containerfile` defines a small `content-tools` target containing pinned
+Hugging Face download dependencies and the resumable direct-HTTPS helper.
+Every application build ensures and tags this prerequisite as
+`localhost/rocmplete:content-ubuntu26.04-huggingface1.24`; `content install`
+uses it without building anything itself. This keeps downloads independent of
+ComfyUI and makes a llama.cpp-only initial setup complete.
+
+`Containerfile` defines a minimal `rocm-runtime` target, which the launcher
+builds and tags as the managed local prerequisite
+`localhost/rocmplete:runtime-ubuntu26.04-rocm7.14-r1`. It owns the pinned
+Ubuntu runtime, Python environment, and AMD's modular ROCm core, libraries,
+and exact `gfx1150`, `gfx1151`, `gfx1200`, and `gfx1201` device wheels. It
+does not contain PyTorch or a compiler toolchain.
+
+The `rocm-base` target starts from `ROCM_RUNTIME_IMAGE`, adds PyTorch,
+torchvision, torchaudio, and the common Python-application build tools, and is
+tagged as
+`localhost/rocmplete:base-ubuntu26.04-rocm7.14-torch2.11-r4`. Each final
+PyTorch application target starts from the `ROCM_BASE_IMAGE` build argument:
+
+- `comfyui`
+
+Application stages must not install conflicting frameworks into one
+all-purpose image.
+Derived builds use `--pull=never` for both managed base references, so a
+missing local prerequisite fails rather than pulling an image with the same
+name. `command_build` always passes required local prerequisites through
+Podman's layer cache before building a dependent image. An existing tag alone
+is not treated as proof that build-context inputs still match the checkout. A
+fully cold `--no-cache` build deliberately refreshes the complete prerequisite
+closure. The public `build base` target builds `rocm-runtime` followed by the
+ROCm/PyTorch base for GPU diagnostics or prerequisite validation; it does not
+also build content tools or an application. The symmetric
+`build content-tools` target refreshes only the verified download-tools
+prerequisite.
+
+`llama-cpp` deliberately does not inherit the PyTorch base. Its SDK stage
+starts from `ROCM_RUNTIME_IMAGE`, adds only AMD's modular development payload,
+and compiles pinned upstream llama.cpp with both HIP and Vulkan backends for
+all four supported architectures. The development payload exists only in the
+builder. The final image also starts from `ROCM_RUNTIME_IMAGE`, adds the Mesa
+RADV and small native runtime dependencies, and copies only the server, CLI,
+and benchmark binaries. RPC and remote UI assets are disabled.
+`ApplicationSpec.shared_pytorch_base` keeps the choice of the higher base
+explicit in build and image-archive planning; every GPU application still
+shares the lower runtime.
+
+`dwarfstar` follows the same native split without inheriting llama.cpp's
+Vulkan or HTTP dependencies. A shared `native-rocm-sdk` stage adds AMD's
+modular development payload to `ROCM_RUNTIME_IMAGE`. The DwarfStar builder
+fetches one full source commit, uses the upstream ROCm target while compiling
+HIP code for `gfx1150`, `gfx1151`, `gfx1200`, and `gfx1201`, and embeds RPATHs
+to the modular ROCm runtime libraries. Clang's per-architecture offload jobs
+share the bounded GNU Make jobserver, so the four device targets compile in
+parallel without creating a second, unbounded worker pool. The final image
+starts again from `ROCM_RUNTIME_IMAGE` and retains only `ds4`, `ds4-server`,
+`ds4-bench`, the license, and ROCmplete's constrained entrypoint. Upstream
+setup scripts and runtime binaries are not build inputs.
+
+All GPU applications follow the global `ROCM_VERSION`. The native llama.cpp
+builder changes the development dependency shape, not release policy. A ROCm
+update is therefore incomplete until the shared runtime, PyTorch base, and
+native build pass their applicable hardware acceptance.
+
+For `build all --no-cache`, the launcher builds `content-tools`,
+`rocm-runtime`, and `rocm-base` once each with no cache, then invokes each
+application target with no cache. PyTorch applications use the freshly tagged
+PyTorch base; native applications use the freshly tagged lower runtime. This
+keeps cache-free application semantics without reinstalling the common ROCm
+payload for each dependency branch.
+
+Podman's intermediate layers and downloaded Python packages are separate cache
+classes. Normal builds reuse both while still asking Podman to validate every
+required prerequisite target. `--no-layer-cache` passes Podman's `--no-cache`
+only to the selected target; prerequisite targets retain their layer cache,
+and all targets retain the host pip cache. `--no-cache` bypasses both cache
+classes and cold-builds the prerequisite closure.
+
+The host pip cache lives below
+`${XDG_CACHE_HOME:-$HOME/.cache}/rocmplete/build/pip` and is mounted only for
+build `RUN` instructions at `/var/cache/rocmplete/pip`. The launcher supplies
+the mount and pip build arguments together; direct Containerfile builds
+default to `PIP_NO_CACHE_DIR=true`. The cache is therefore neither copied into
+an image nor mixed with persistent application data. `cleanup build-cache`
+removes only ROCmplete's build-cache directory and never prunes Podman state.
+Like every cleanup scope, it prints a validated non-empty plan and crosses the
+shared confirmation boundary before mutation.
+
+`src/rocmplete/image_archive.py` owns offline build-output transfer. A managed
+export is one Docker-format archive containing the content-tools prerequisite,
+the shared ROCm runtime, the ROCm/PyTorch base when required, and selected
+application images.
+It is written to a same-directory partial path,
+validated against the pre-export image IDs, and atomically promoted without
+overwriting an existing destination.
+
+Import parses only bounded `manifest.json` and image-config members without
+extracting the archive. It rejects duplicate or unmanaged tags, missing base
+closure, unsupported OS/architecture, malformed configs, and current tags
+whose local image ID differs. Podman performs layer loading and its own digest
+checks only after this validation. Successful loading is followed by exact tag
+and config-digest verification. Archive transfer never includes persistent
+application or content data.
+
+The `.containerignore` file is an allowlist. Any new build input must be
+explicitly added there or Podman will report that the source was filtered out.
+
+Application source repositories are initialized and fetched at exact commits.
+The build checks `git rev-parse HEAD` before removing `.git`. Upstream license
+files remain with their source trees; application stages may also copy them to
+documented paths below `/usr/share/licenses/rocmplete`.
+
+Application-specific build inputs live below `applications/<application>/`.
+ComfyUI Manager policy uses a strict build-time patch program. It matches
+expected upstream text exactly and refuses zero or multiple matches. An
+upstream upgrade causing a patch failure is a review request, not something
+to bypass with a looser replacement.
+
+The pinned DwarfStar source receives the fail-closed
+`applications/dwarfstar/multiarch-wmma-fallback.patch`. Upstream's direct
+256-bit WMMA prefill kernel is specific to the `gfx11` targets it was written
+for and does not compile for RDNA 4. The patch retains that optimized dispatch
+on `gfx1150` and `gfx1151`, while RDNA 4 uses the existing generic batched Q8
+path. Remove it only when a reviewed upstream pin selects a correct kernel by
+device capability itself.
+
+The pinned llama.cpp source receives the fail-closed
+`applications/llama-cpp/hip-apu-host-buffer.patch`, taken from upstream PR
+25863. It preserves integrated-device detection and pinned host allocation
+while preventing direct computation on unsafe `ROCm_Host` buffers. Remove the
+patch when a reviewed future pin contains the upstream fix.
+`applications/llama-cpp/entrypoint.sh` exposes a constrained server/CLI policy
+around the resulting binaries. It checks the architecture reported by
+`rocminfo`, then maps the exact selected render-node count to explicit
+`ROCmN` or `VulkanN` llama.cpp device names. Building two backends into one
+binary must not make both available devices part of one workload
+accidentally. This native check intentionally does not import or depend on
+PyTorch.
+
+`applications/dwarfstar/entrypoint.sh` is intentionally smaller. It accepts
+only server or CLI mode, verifies that exactly one supported architecture is
+visible, resolves or checks the matching hardware profile, and constructs the
+reviewed model, context, output-limit, thinking, and bind arguments. It does
+not expose upstream DSpark, MTP, distributed,
+SSD-streaming, multi-GPU, benchmark, evaluation, or agent surfaces.
+
+## Runtime isolation
+
+The common web runtime in `src/rocmplete/runtime/web.py` applies:
+
+- `--rm` and a deterministic container name;
+- a private rootless network namespace and one explicitly published TCP port;
+- a read-only root filesystem;
+- all capabilities dropped;
+- `no-new-privileges`;
+- `keep-id` user namespacing and the host umask for persistent-data ownership
+  and modes;
+- a zero soft and hard core-dump limit;
+- PID and shared-memory limits;
+- an explicit writable `/tmp` tmpfs;
+- one application-specific writable `/data` bind mount;
+- only required managed-content partitions below read-only `/content`;
+- `/dev/kfd` and only the selected render-node set for non-CPU profiles.
+
+On enforcing SELinux hosts, the launcher requires the standard
+`container_use_devices` policy boolean before a GPU run. Podman still mounts
+only `/dev/kfd` and the selected render nodes. ROCmplete refuses a disabled
+policy with a copyable host command instead of disabling SELinux labeling for
+the container; ROCr otherwise reports device enumeration successfully and can
+segfault only when it first maps `/dev/kfd`.
+
+Doctor also reads
+`/proc/sys/kernel/apparmor_restrict_unprivileged_userns` when that optional
+kernel interface exists. A nonzero value can block bubblewrap installations
+without a matching AppArmor profile. Doctor offers a persistent sysctl opt-out
+and labels its system-wide security scope; it does not mutate the host or
+pretend that disabling the restriction is equivalent to adding a narrow
+executable profile.
+
+Files copied from the host into immutable image paths are normalized to
+readable image modes during the build; they must not inherit a restrictive
+developer umask such as `0077`. Writable scratch directories baked below a
+tmpfs mount likewise need an explicit mode suitable for the keep-id process.
+Persistent application data continues to honor the invoking user's umask.
+Managed content is writable only to the installer, not application runtimes.
+
+Web applications bind to their address-family wildcard only inside their
+private network namespace. Podman publishes the one application TCP port on
+`127.0.0.1` by default. `--listen 0.0.0.0` publishes it on every IPv4 host
+interface and explicitly puts pasta in IPv4-only mode so it does not accept
+and reset IPv6 connections that should fall back to IPv4. An IPv6 host address
+uses an internal `::` bind. One exact host IP limits publication to that
+address. Non-loopback publication makes the launcher print an
+unauthenticated-exposure warning.
+
+`--unconfined` only disables the seccomp filter. It does not make the
+filesystem writable or restore capabilities.
+
+## Profile validation
+
+Profiles exist on both sides of the container boundary:
+
+- `src/rocmplete/config.py` controls accepted CLI values.
+- `containers/common/profile.py` maps PyTorch architecture names to resolved
+  profiles.
+
+This duplication is intentional: the host validates user input, while the
+container validates what ROCm actually sees. Both lists must change together.
+
+`auto` resolves both `gfx1200` and `gfx1201` to `rdna4`, `gfx1151` to
+`strix-halo`, and `gfx1150` to `strix-point`. A forced profile must match.
+`cpu` does not query a GPU and the host exposes no GPU devices.
+
+ComfyUI's entrypoint applies application-specific policy after resolution,
+including `--disable-mmap` for both RDNA 3.5 APU profiles and conservative
+memory flags.
+ComfyUI Manager is installed at the version required by the pinned ComfyUI
+source but is enabled only by forwarding `--enable-manager` after the
+ROCmplete `--` separator. Its security policy receives
+`ROCMLETE_HOST_LISTEN`, because ComfyUI itself must bind to a wildcard inside
+the private container namespace even when Podman publishes only on host
+loopback. Manager installation remains denied for a non-loopback host
+publication.
+
+The entrypoint creates a persistent child virtual environment below
+`/data/custom-node-python`. A `.pth` file exposes the immutable image
+site-packages as its base, while standard Manager and node `pip` subprocesses
+write only to the child environment. ROCmplete's validated Manager patch uses
+`pip` instead of Manager's optional `uv` path here because `pip` includes the
+image packages exposed through `.pth` when resolving and listing the combined
+environment. The image-owned Python environment stays immutable; custom-node
+source and dependency changes are confined to application data.
+
+ComfyUI-GGUF and rgthree-comfy are immutable, source-pinned image extensions.
+At startup the entrypoint creates a temporary custom-node view containing
+symlinks to the bundled copies. If `/data/custom_nodes` already contains the
+same directory name, the persistent copy is omitted from that view and takes
+precedence. This collision rule prevents duplicate registration without
+modifying persistent user data. `--disable-bundled-extensions` omits the
+complete temporary view while leaving persistent nodes alone.
+
+llama.cpp performs its native architecture check with `rocminfo`. On Strix
+Halo and Strix Point it enables `GGML_CUDA_ENABLE_UNIFIED_MEMORY` and
+`--load-mode none`; on RDNA4 it retains upstream automatic GPU-layer and fit
+behavior.
+
+## Persistent data
+
+Without configuration, the default host directory is:
+
+```text
+${XDG_DATA_HOME:-$HOME/.local/share}/rocmplete
+```
+
+`[storage].data_dir` in
+`${XDG_CONFIG_HOME:-$HOME/.config}/rocmplete/config.toml` provides the durable
+host-level override. An explicit `--data-dir` wins over `ROCMLETE_DATA_DIR`,
+which wins over TOML configuration, which wins over the XDG data default.
+Configuration lookup and dry-run resolution do not create either directory.
+The TOML surface is intentionally limited and unknown sections or keys fail
+closed.
+
+The storage boundary is:
+
+```text
+apps/
+  comfyui/
+    user/
+      default/workflows/
+        curated/                rendered and validated workflows
+        imported/               exact third-party workflow artifacts
+    input/ output/ custom_nodes/
+    custom-node-python/         persistent custom-node Python environment
+    home/ cache/ benchmarks/
+  llama-cpp/
+    home/ cache/ models.ini
+  dwarfstar/
+    home/
+  acceptance/
+    results/                         checkpointed JSON and Markdown summaries
+content/
+  comfyui/models/               direct ComfyUI model files
+  llama-cpp/models/             managed GGUF model files
+  dwarfstar/models/             managed DeepSeek V4 Flash GGUF
+staging/
+  comfyui/ llama-cpp/ dwarfstar/
+  .cache/ .home/                downloader-only transient state
+```
+
+Managed `content/` and generated caches are reproducible from the catalog.
+Application `custom-loras`, `state`, `user`, `input`, `output`, and benchmark
+results may be irreplaceable and deserve backup before destructive
+maintenance.
+
+Persistent benchmarks reuse the normal generated caches but always start a
+fresh ComfyUI process. Isolated benchmarks override HOME, XDG cache,
+Hugging Face, Torch, and Triton cache paths with a fresh subtree under
+`apps/comfyui/benchmarks/.cache/`. Cache mode is part of result metadata and
+suite signatures.
+
+Direct managed artifacts are regular files. A symlink, directory, device, or
+other unexpected type at an artifact destination is treated as a user
+collision rather than followed or replaced.
+
+Temporary work is partitioned by consumer under `staging/`. Completed staging
+is removed after its bytes reach their final verified location; failed or
+interrupted staging remains resumable. A complete file that fails SHA-256
+verification is atomically renamed with an `.invalid-*` suffix: the rejected
+bytes remain available for investigation while the expected path becomes
+retryable.
+
+A local migration mirror is indexed recursively without following symlinks.
+Candidates are shortlisted by basename but accepted only after exact size and
+SHA-256 verification. Copy mode preserves the source. Move mode transfers the
+in-mirror regular file and may break old managed symlinks; mirror and
+destination roots are therefore required not to overlap.
+
+## Catalog and workflow trust chain
+
+`catalog/catalog.json` is schema version 18. The loader in
+`src/rocmplete/catalog.py` rejects malformed identifiers, unsafe paths,
+non-full revisions, invalid hashes, duplicate destinations, unknown
+references, and incomplete bundle/benchmark relationships.
+
+The catalog supports direct artifacts and bounded archive collections:
+
+- A direct artifact is one remote file installed into its declared managed
+  partition. ComfyUI artifacts use `content/comfyui/models`; managed GGUF
+  artifacts use `content/llama-cpp/models`; DwarfStar GGUFs use the separate
+  `content/dwarfstar/models` partition.
+- An archive collection expands into direct artifacts that share one bounded
+  archive transport while retaining independently verified member identities
+  and destinations.
+
+Every ComfyUI bundle with a workflow must also have a benchmark resource. This
+is enforced while loading the catalog.
+
+Each `llama_presets` entry must reference a llama.cpp bundle and a `.gguf`
+artifact in that bundle's `llama-models` partition. Bundle and preset IDs name
+the concrete architecture, variant, and quantization; task-oriented labels
+belong to the recipe layer. `default_context` is the reviewed launcher
+starting point. Agent presets may expose their native context, while bounded
+or memory-constrained workloads may deliberately start smaller. A preset
+can enable the single allowlisted `draft-mtp` policy with a bounded token count
+and can name a different draft GGUF from that same bundle; an omitted draft
+artifact means the target GGUF contains its own MTP tensors. Presets can also
+explicitly enable Jinja, select a project-owned chat template from a closed
+allowlist, and select `on`, `off`, or `auto` Flash Attention behavior for a
+concrete GPU profile. Managed templates are copied into the image and never
+read from host content. The launcher renders only installed presets into a
+private atomic INI, rejects partial managed content, and mounts both that exact
+file and the model partition read-only. Single-model startup passes the same
+catalog-owned policy through narrow environment fields that the entrypoint
+validates before constructing llama.cpp arguments. The entrypoint derives a
+tmpfs router copy that injects offline and resolved-profile policy into each
+model section without modifying the mounted source. The router is upstream
+llama-server; ROCmplete does not implement a routing daemon.
+
+`opencode_agent` is a reviewed compatibility claim, not an inference from
+model size or Jinja alone. It requires Jinja and at least a 16384-token managed
+context. Each model still needs an end-to-end OpenCode function-tool
+acceptance test.
+`opencode_reasoning_budget` is the narrower model claim behind OpenCode's
+reasoning selectors. The pinned llama.cpp server otherwise ignores `low`,
+`medium`, and `high` effort values for these models. A fail-closed source
+patch maps those values to 1024, 4096, and 8192
+`thinking_budget_tokens` for Chat Completions requests; `none` remains zero
+and explicitly disables thinking.
+The catalog must not advertise these levels for a preset whose template does
+not expose the same bounded reasoning behavior.
+
+`bin/rocmplete` is a PATH-friendly delegate to the root checkout launcher and
+resolves symlinks before locating it. `src/rocmplete/opencode.py` renders the
+OpenAI-compatible llama.cpp and DwarfStar providers at launch. `bin/opencode`
+delegates to the host launcher,
+which supplies the main JSON through `OPENCODE_CONFIG_CONTENT` and points
+`OPENCODE_TUI_CONFIG` at the repository-owned read-only keymap. No integration
+file is installed in the user's config directory. The model map contains only
+the reviewed agent set and advertises each preset's managed starting context.
+Presets with `opencode_reasoning_budget` also advertise OpenCode instant, low,
+medium, and high variants backed by the same server-side behavior. The
+instant variant sends `none`; the remaining variants use the bounded ceilings.
+The model-level fallback is medium. OpenCode merges an explicitly selected
+variant afterward, so persisted per-model choices continue to take precedence.
+The launcher prefers the recommended installed MTP preset and otherwise uses
+the first installed agent-capable preset. It refuses to start when none are
+installed. The wrapper resolves and executes the real OpenCode binary while
+excluding itself from the executable search, forwards all OpenCode arguments,
+and does not edit shell startup files. The generated global policy requires
+approval for edits, shell commands, and subagent launches while leaving
+ordinary reads and searches automatic. `default_agent` selects Investigate
+for new sessions. The TUI config reverses the normal Tab cycle because
+OpenCode places the selected default first, then sorts the other visible
+agents by name. This produces the intended Investigate, Plan, Build order
+while Shift+Tab moves in reverse. Investigate overrides only the task policy
+with an exact allowlist of its two ROCmplete-owned read-only workers. A project
+config has higher OpenCode precedence and may override these defaults.
+
+DwarfStar is a separate provider at its own loopback endpoint, with the one
+reviewed `deepseek-v4-flash` model advertising the same 131072-token runtime
+allocation and 16000-token output ceiling as the managed server. It offers
+only `instant` (`reasoning_effort: none`) and `thinking`
+(`reasoning_effort: high`). At this context DwarfStar maps low, medium, and
+high to the same normal thinking mode; Think Max needs a substantially larger
+context and is not advertised. The generated provider does not imply that the
+DwarfStar server or model is installed or running.
+
+The launcher uses bubblewrap by default and refuses to fall back silently when
+`bwrap` is unavailable. It unshares user, PID, IPC, UTS, cgroup, and other
+available namespaces while deliberately restoring host networking for the
+loopback model endpoints. It drops capabilities, starts a new session, and
+uses parent-death cleanup. `/usr`, `/etc`, the resolved OpenCode installation,
+and the one repository-owned TUI JSON file are read-only. The exact resolved
+working directory is the only general persistent writable mount and keeps its
+host path. This preserves OpenCode project identity, session directories, and
+absolute paths while exposing no siblings from the host filesystem. When the
+host uses Fedora's `/home -> var/home` link, the same link is recreated in the
+otherwise empty sandbox root so login-home and canonical paths keep resolving
+to the one mounted project. The TUI file appears at a synthetic path below
+`/run/rocmplete`, avoiding otherwise empty source-tree parent directories. A
+minimal `/dev`, private `/tmp` and `/run`, and no GPU devices are provided. The
+host home and its ancestors are refused as working directories;
+broader project parents remain an explicit user-selected scope and are printed
+before launch.
+
+The child environment starts empty. Terminal and locale values, generated
+OpenCode settings, a narrow executable path, and sanitized Git author and
+committer identity are added explicitly. Tokens, proxy settings, SSH and
+desktop sockets, and unrelated `ROCMLETE_*` values are not inherited.
+External OpenCode plugins and skills are disabled. The real home is absent;
+config, data, state, cache, sessions, logs, and tool output persist only below
+`StorageLayout.application("opencode") / "sandbox"`, whose owned directories
+are forced to mode `0700`. Sandbox state and the writable working directory
+must not overlap. Project configuration and `AGENTS.md` discovery remain
+available from the mounted project.
+
+An OpenCode executable inside Linuxbrew causes its complete
+`/home/linuxbrew/.linuxbrew` prefix to be mounted read-only. Other executables
+outside `/usr` are mounted as the exact resolved file. `--no-sandbox` is an
+explicit troubleshooting escape hatch and restores the former ordinary host
+process behavior. Neither mode starts or supervises a model server.
+
+Investigate is an additional primary agent selected through OpenCode's normal
+agent switcher. It inherits the selected managed model but fixes temperature
+at zero and denies edit, bash, and todo tools. Its task policy first denies all
+subagents, then allows only `investigate-local` and `investigate-web`. Both are
+hidden subagents with their own temperature-zero prompts, independent mutation
+and recursion denials, and a 500-word return bound. The local worker is confined
+to read-only repository tools with web and external-directory access denied.
+The web worker has web access but denies local reads, searches, LSP, external
+directories, commands, and mutation. Their child-session source material is
+not copied into the primary history; only the returned report is.
+
+Investigate's inline prompt makes the original question the only objective,
+requires targeted evidence, distinguishes inference from observed facts, and
+rejects generated continuation or summary text as authorization for further
+work. Investigate deliberately has no `steps` limit: reaching one makes
+OpenCode inject a higher-priority summary, remaining-work, and recommendation
+prompt, which is counterproductive for this mode. Hard tool denials are the
+mutation boundary; normal user interruption bounds an unproductive
+investigation.
+
+OpenCode reserves the advertised per-turn output limit when deciding when to
+compact a session. ROCmplete caps that allowance at 16384 tokens so a 256K
+agent preset retains roughly 240K tokens for prompts, history, tools, and
+retained context. Compaction remains lossy and permission gates remain the
+hard boundary when a local model misreads a generated summary or continuation.
+
+This protocol choice is deliberate. llama.cpp maps ordinary function tools
+from Chat Completions, which covers OpenCode's host-side editing tools. A
+newly maintained preset still needs a complete tool-call and tool-result
+acceptance test before unattended use.
+
+Most benchmark resources are used unchanged. A small allowlisted renderer may
+derive a closely related task-specific prompt from the same pinned upstream
+graph; both source and rendered SHA-256 values are then cataloged. Unknown
+renderers or structural drift are fatal.
+
+A benchmark suite orchestrates the same per-bundle runner. Its signature
+covers the ordered selection, pinned workflow and benchmark hashes, image
+reference, GPU profile, render node, seeds, run count, cache mode, and runtime
+policies. Resume is rejected when a signed input changes. State is written
+after every entry transition, and an entry is skipped only while its
+referenced completed result still exists.
+
+Workflow reproducibility has two hashes:
+
+1. `source_sha256` proves the resource extracted from the pinned workflow
+   template package.
+2. `rendered_sha256` proves the deterministic ROCmplete transformation.
+
+Installed workflows contain source, modification, license, and hash
+provenance under `extra.rocmplete`. Existing differing workflows are treated
+as user modifications and are not replaced without `--force`.
+
+ROCmplete owns two workflow subdirectories. `curated/` contains deterministic
+renderings of pinned official templates. `imported/` contains exact downloaded
+workflow artifacts that may have unmet external dependencies. Other workflow
+paths are user-owned and are not content installation targets.
+
+## Fail-closed behavior to preserve
+
+Many apparent inconveniences are deliberate:
+
+- A changed upstream patch target breaks the build.
+- A changed official workflow shape breaks its renderer.
+- An unexpected destination file blocks installation.
+- A catalog hash mismatch blocks download or benchmark use.
+- Managed content without a current verification receipt blocks runtime use;
+  `content install` hashes existing bytes and refreshes the receipt.
+- An unsupported GPU architecture blocks startup.
+- Multiple render nodes require an explicit complete selection.
+- Missing or ambiguous license information requires explicit acknowledgment.
+
+Fix the underlying pin, transform, metadata, or policy. Do not turn these into
+warnings merely to make an upgrade pass.

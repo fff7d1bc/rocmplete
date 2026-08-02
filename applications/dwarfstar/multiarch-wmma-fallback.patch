@@ -1,0 +1,57 @@
+diff --git a/rocm/ds4_rocm_runtime.cuh b/rocm/ds4_rocm_runtime.cuh
+--- a/rocm/ds4_rocm_runtime.cuh
++++ b/rocm/ds4_rocm_runtime.cuh
+@@ -17,6 +17,7 @@ static cudaEvent_t g_selected_readback_event;
+ static uint64_t g_selected_readback_event_value;
+ static cublasHandle_t g_cublas;
+ static int g_cublas_ready;
++static int g_gpu_device_major;
+ #ifdef __HIP_PLATFORM_AMD__
+ #include "ds4_rocm_hipblaslt.cuh"
+ #endif
+@@ -5795,6 +5796,7 @@ extern "C" int ds4_gpu_init(void) {
+     if (!cuda_ok(cudaSetDevice(dev), "set device")) return 0;
+     cudaDeviceProp prop;
+     if (cudaGetDeviceProperties(&prop, dev) == cudaSuccess) {
++        g_gpu_device_major = prop.major;
+         fprintf(stderr, DS4_GPU_LOG_PREFIX "backend initialized on %s (sm_%d%d)\n",
+                 prop.name, prop.major, prop.minor);
+     }
+diff --git a/rocm/ds4_rocm_q8.cuh b/rocm/ds4_rocm_q8.cuh
+--- a/rocm/ds4_rocm_q8.cuh
++++ b/rocm/ds4_rocm_q8.cuh
+@@ -679,6 +679,7 @@ __global__ static void matmul_q8_0_f32_batch_sharedx_kernel(
+  * into LDS as f16, while each wave owns 16 output rows and computes four
+  * 16-token WMMA columns.  It is opt-in from host code because it only wins once
+  * the token batch is large enough to amortize the bigger tile. */
++#if !defined(__HIP_DEVICE_COMPILE__) || defined(__gfx1150__) || defined(__gfx1151__)
+ __launch_bounds__(128, 2)
+ __global__ static void matmul_q8_0_f32_batch_wmma_4w_kernel(
+         float *out,
+@@ -782,3 +783,3 @@ __global__ static void matmul_q8_0_f32_batch_wmma_4w_kernel(
+ }
+-
++#endif
+ template <int TILES_N=8, int BM=16, int BN=16, int BK=16>
+diff --git a/rocm/ds4_rocm_matmul.cuh b/rocm/ds4_rocm_matmul.cuh
+--- a/rocm/ds4_rocm_matmul.cuh
++++ b/rocm/ds4_rocm_matmul.cuh
+@@ -388,7 +388,9 @@ extern "C" int ds4_gpu_matmul_f32(ds4_gpu_tensor *out,
+     }
+     if (n_tok > 1) {
+ #if defined(__HIP_PLATFORM_AMD__) || defined(__HIPCC__)
+-        if (!g_quality_mode && (in_dim % 32u) == 0u &&
++#if !defined(__HIP_DEVICE_COMPILE__) || defined(__gfx1150__) || defined(__gfx1151__)
++        if (g_gpu_device_major == 11 && !g_quality_mode &&
++            (in_dim % 32u) == 0u &&
+             out_dim >= 1024u &&
+             n_tok >= 256u &&
+             in_dim <= UINT32_MAX && out_dim <= UINT32_MAX && n_tok <= UINT32_MAX) {
+@@ -405,6 +407,7 @@ extern "C" int ds4_gpu_matmul_f32(ds4_gpu_tensor *out,
+                     blocks * 34u);
+             return cuda_ok(cudaGetLastError(), "matmul_q8_0 f32 batch wmma 4w launch");
+         }
++#endif
+ #endif
+         if ((in_dim & 31u) == 0u && out_dim <= UINT32_MAX && n_tok <= UINT32_MAX) {
+             const uint32_t rows_per_block = 32u;

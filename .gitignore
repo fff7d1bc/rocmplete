@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+.venv/
+venv/
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+
+# Local content-pack definitions and companion manifests.
+/local-content/
