@@ -509,11 +509,14 @@ class CliTests(unittest.TestCase):
         user_input.assert_not_called()
         run.assert_not_called()
 
-    @patch("rocmplete.cli.podman.container_exists", return_value=True)
+    @patch(
+        "rocmplete.cli._existing_managed_containers",
+        return_value=("rocmplete-comfyui",),
+    )
     @patch("rocmplete.cli.podman.run_quiet_stdout")
     @patch("rocmplete.cli.podman.require_rootless")
     def test_noninteractive_container_cleanup_requires_yes(
-        self, require_rootless, run, container_exists
+        self, require_rootless, run, existing_containers
     ):
         _, arguments = parse_arguments(
             [
@@ -567,11 +570,11 @@ class CliTests(unittest.TestCase):
         )
 
     @patch("rocmplete.cli.podman.image_exists", return_value=True)
-    @patch("rocmplete.cli.podman.container_exists", return_value=False)
+    @patch("rocmplete.cli._existing_managed_containers", return_value=())
     @patch("rocmplete.cli.podman.run_quiet_stdout", return_value=0)
     @patch("rocmplete.cli.podman.require_rootless")
     def test_cleanup_all_images_removes_shared_base_last(
-        self, require_rootless, run, container_exists, image_exists
+        self, require_rootless, run, existing_containers, image_exists
     ):
         _, arguments = parse_arguments(["cleanup", "images", "--yes"])
         with redirect_stdout(io.StringIO()):
@@ -1082,9 +1085,10 @@ class CliTests(unittest.TestCase):
         self.assertIn("./rocmplete build base", output.getvalue())
         require_rootless.assert_not_called()
 
+    @patch("rocmplete.cli._existing_managed_containers", return_value=())
     @patch("rocmplete.cli.podman.require_rootless")
     def test_noninteractive_cleanup_requires_yes_before_mutation(
-        self, require_rootless
+        self, require_rootless, existing_containers
     ):
         with tempfile.TemporaryDirectory() as directory:
             data_dir = Path(directory) / "data"
@@ -1102,12 +1106,12 @@ class CliTests(unittest.TestCase):
                 command_cleanup(arguments)
         require_rootless.assert_called_once_with()
 
-    @patch("rocmplete.cli.podman.container_exists", return_value=False)
+    @patch("rocmplete.cli._existing_managed_containers", return_value=())
     @patch("rocmplete.cli.podman.require_rootless")
     @patch("builtins.input", return_value="yes")
     @patch("rocmplete.cli.sys.stdin")
     def test_cleanup_data_can_be_confirmed_interactively(
-        self, stdin, user_input, require_rootless, container_exists
+        self, stdin, user_input, require_rootless, existing_containers
     ):
         stdin.isatty.return_value = True
         with tempfile.TemporaryDirectory() as directory:
@@ -1125,11 +1129,12 @@ class CliTests(unittest.TestCase):
             user_input.call_args.args[0],
         )
 
+    @patch("rocmplete.cli._existing_managed_containers", return_value=())
     @patch("rocmplete.cli.podman.require_rootless")
     @patch("builtins.input", return_value="no")
     @patch("rocmplete.cli.sys.stdin")
     def test_cleanup_data_decline_preserves_data(
-        self, stdin, user_input, require_rootless
+        self, stdin, user_input, require_rootless, existing_containers
     ):
         stdin.isatty.return_value = True
         with tempfile.TemporaryDirectory() as directory:
@@ -1145,10 +1150,10 @@ class CliTests(unittest.TestCase):
             self.assertEqual(preserved.read_bytes(), b"test")
         require_rootless.assert_called_once_with()
 
-    @patch("rocmplete.cli.podman.container_exists", return_value=False)
+    @patch("rocmplete.cli._existing_managed_containers", return_value=())
     @patch("rocmplete.cli.podman.require_rootless")
     def test_cleanup_removes_confirmed_data(
-        self, require_rootless, container_exists
+        self, require_rootless, existing_containers
     ):
         with tempfile.TemporaryDirectory() as directory:
             data_dir = tempfile.mkdtemp(dir=directory)
@@ -1170,10 +1175,10 @@ class CliTests(unittest.TestCase):
                 )
             )
 
-    @patch("rocmplete.cli.podman.container_exists", return_value=False)
+    @patch("rocmplete.cli._existing_managed_containers", return_value=())
     @patch("rocmplete.cli.podman.require_rootless")
     def test_cleanup_removes_only_generated_cache_and_staging(
-        self, require_rootless, container_exists
+        self, require_rootless, existing_containers
     ):
         with tempfile.TemporaryDirectory() as directory:
             data_dir = Path(directory) / "rocmplete"
@@ -2723,7 +2728,12 @@ class CliTests(unittest.TestCase):
                     "--dry-run",
                 ]
             )
-            with redirect_stdout(io.StringIO()) as output:
+            with patch(
+                "rocmplete.cli.select_render_nodes",
+                return_value=("/dev/dri/renderD128",),
+            ), patch(
+                "rocmplete.cli.check_gpu_device_access",
+            ), redirect_stdout(io.StringIO()) as output:
                 self.assertEqual(command_run(arguments), 0)
         command = output.getvalue()
         self.assertIn("--ctx-size 262144", command)

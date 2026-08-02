@@ -99,7 +99,7 @@ class BundleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             runtime = root / "runtime"
-            runtime.mkdir()
+            runtime.mkdir(mode=0o700)
             data_dir = root / "data"
             data_dir.mkdir()
             with patch.dict(
