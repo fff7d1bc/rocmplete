@@ -195,6 +195,10 @@ class OpenCodeLauncherTests(unittest.TestCase):
             {
                 "instant": {"reasoningEffort": "none"},
                 "thinking": {"reasoningEffort": "high"},
+                "low": {"disabled": True},
+                "medium": {"disabled": True},
+                "high": {"disabled": True},
+                "max": {"disabled": True},
             },
         )
 

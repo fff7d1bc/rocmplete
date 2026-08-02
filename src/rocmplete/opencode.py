@@ -40,6 +40,15 @@ _DWARFSTAR_PROVIDER_NAME = "ROCmplete DwarfStar"
 _DWARFSTAR_VARIANTS = {
     "instant": {"reasoningEffort": "none"},
     "thinking": {"reasoningEffort": "high"},
+    # OpenCode derives generic effort variants for reasoning-capable
+    # OpenAI-compatible models, then merges custom variants over them. DwarfStar
+    # maps all three of these to the same normal-thinking path, while Think Max
+    # cannot run at ROCmplete's managed 128K context. Disable the inherited
+    # aliases so the picker presents only behavior that actually differs.
+    "low": {"disabled": True},
+    "medium": {"disabled": True},
+    "high": {"disabled": True},
+    "max": {"disabled": True},
 }
 _DEFAULT_AGENT = "investigate"
 _DEFAULT_REASONING_EFFORT = "medium"

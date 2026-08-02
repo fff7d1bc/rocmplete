@@ -787,8 +787,10 @@ Its OpenCode variants are `instant` and `thinking`. Instant sends
 `reasoning_effort: none`; thinking sends `reasoning_effort: high`, which is
 DwarfStar's normal thinking mode. The engine maps low, medium, and high to the
 same mode below its much larger Think Max context threshold, so ROCmplete does
-not expose three misleading labels. If the DwarfStar server uses another
-port, pass `./rocmplete opencode --dwarfstar-port PORT --` or set
+not expose three misleading labels. It also suppresses OpenCode's inherited
+`max` label because the managed 128K server cannot activate the 384K-minimum
+Think Max mode. If the DwarfStar server uses another port, pass
+`./rocmplete opencode --dwarfstar-port PORT --` or set
 `ROCMLETE_OPENCODE_DWARFSTAR_PORT`.
 
 Run the hardware-bound smoke separately after initial setup. Outside Strix

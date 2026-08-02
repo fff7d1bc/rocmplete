@@ -608,8 +608,10 @@ allocation and 16000-token output ceiling as the managed server. It offers
 only `instant` (`reasoning_effort: none`) and `thinking`
 (`reasoning_effort: high`). At this context DwarfStar maps low, medium, and
 high to the same normal thinking mode; Think Max needs a substantially larger
-context and is not advertised. The generated provider does not imply that the
-DwarfStar server or model is installed or running.
+context and is not advertised. Disabled custom entries remove OpenCode's
+inherited low, medium, high, and max variants from the picker without hiding
+reasoning output. The generated provider does not imply that the DwarfStar
+server or model is installed or running.
 
 The launcher uses bubblewrap by default and refuses to fall back silently when
 `bwrap` is unavailable. It unshares user, PID, IPC, UTS, cgroup, and other
