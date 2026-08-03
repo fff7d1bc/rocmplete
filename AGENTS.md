@@ -132,6 +132,14 @@ Use project terminology precisely:
 Keep these dimensions orthogonal instead of encoding their cross-product in
 top-level commands or profile names.
 
+For llama.cpp, keep guided content recipes organized by model family. A
+recipe may install multiple reviewed variants from the same family when they
+form one practical selection, as `qwen3.6` does. Give unrelated families
+separate recipes even when they share a use case; do not group them under
+subjective role names such as `agents`, `assistants`, or `coding-models`.
+Precision, MTP, and other advanced controls may remain exact bundles when they
+would only clutter the guided menu.
+
 ## Working agreements
 
 ### Current project phase: public pre-release
