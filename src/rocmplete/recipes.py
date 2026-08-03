@@ -88,6 +88,28 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             ),
         ),
         ContentRecipe(
+            identifier="ornith",
+            application="llama-cpp",
+            description="Ornith 1.0 35B Q8_0 coding and agent model",
+            bundles=("llama-ornith-1.0-35b-q8-0",),
+            launch=RecipeLaunch(
+                "llama-cpp",
+                mode="server",
+                preset="ornith-1.0-35b-q8-0",
+            ),
+        ),
+        ContentRecipe(
+            identifier="kat-coder",
+            application="llama-cpp",
+            description="KAT-Coder V2.5 Dev 35B Q8_0 coding and agent model",
+            bundles=("llama-kat-coder-v2.5-dev-q8-0",),
+            launch=RecipeLaunch(
+                "llama-cpp",
+                mode="server",
+                preset="kat-coder-v2.5-dev-q8-0",
+            ),
+        ),
+        ContentRecipe(
             identifier="laguna-s-2.1",
             application="llama-cpp",
             description="Laguna S 2.1 Q4_K_M coding and agent model",

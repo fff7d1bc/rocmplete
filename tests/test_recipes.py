@@ -15,6 +15,8 @@ class ContentRecipeTests(unittest.TestCase):
     def test_recipe_launch_is_the_single_command_source(self):
         comfy = content_recipe("comfyui", "image")
         llama = content_recipe("llama-cpp", "qwen3.6")
+        ornith = content_recipe("llama-cpp", "ornith")
+        kat_coder = content_recipe("llama-cpp", "kat-coder")
         laguna = content_recipe("llama-cpp", "laguna-s-2.1")
         hy = content_recipe("llama-cpp", "translation-hy")
         gemma = content_recipe("llama-cpp", "translation-gemma")
@@ -32,6 +34,24 @@ class ContentRecipeTests(unittest.TestCase):
                 "llama-qwen3.6-27b-mtp-q8-0",
                 "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
             ),
+        )
+        self.assertEqual(
+            ornith.next_command,
+            "./rocmplete run llama-cpp server "
+            "--preset ornith-1.0-35b-q8-0",
+        )
+        self.assertEqual(
+            ornith.bundles,
+            ("llama-ornith-1.0-35b-q8-0",),
+        )
+        self.assertEqual(
+            kat_coder.next_command,
+            "./rocmplete run llama-cpp server "
+            "--preset kat-coder-v2.5-dev-q8-0",
+        )
+        self.assertEqual(
+            kat_coder.bundles,
+            ("llama-kat-coder-v2.5-dev-q8-0",),
         )
         self.assertEqual(
             laguna.next_command,

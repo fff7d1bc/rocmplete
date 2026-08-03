@@ -990,6 +990,40 @@
         "url": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/blob/23749fefcc72300e3a2ad315e1317431b06b590a/LICENSE"
       }
     },
+    "ornith-1.0-35b-q8-gguf": {
+      "description": "Official Ornith 1.0 35B Q8_0 GGUF for llama.cpp",
+      "source": {
+        "repository": "deepreinforce-ai/Ornith-1.0-35B-GGUF",
+        "revision": "383064f72a1ef3087b779f268d3ca117eb989aac",
+        "path": "ornith-1.0-35b-Q8_0.gguf"
+      },
+      "destination": "ornith-1.0-35b/ornith-1.0-35b-Q8_0.gguf",
+      "target": "llama-models",
+      "size": 36903138880,
+      "sha256": "cbc992bca07901c1a51f33e65e6fc5d687de179c852a772dfd15e4c3261dbf5c",
+      "license": {
+        "spdx": "MIT",
+        "status": "verified",
+        "url": "https://huggingface.co/deepreinforce-ai/Ornith-1.0-35B-GGUF/blob/383064f72a1ef3087b779f268d3ca117eb989aac/README.md"
+      }
+    },
+    "kat-coder-v2.5-dev-q8-gguf": {
+      "description": "KAT-Coder V2.5 Dev Q8_0 GGUF for llama.cpp",
+      "source": {
+        "repository": "bartowski/Kwaipilot_KAT-Coder-V2.5-Dev-GGUF",
+        "revision": "d8f684f08d2950ea9d2db6a35ef7dada0707858b",
+        "path": "Kwaipilot_KAT-Coder-V2.5-Dev-Q8_0.gguf"
+      },
+      "destination": "kat-coder-v2.5-dev/Kwaipilot_KAT-Coder-V2.5-Dev-Q8_0.gguf",
+      "target": "llama-models",
+      "size": 36914690464,
+      "sha256": "5fa510f44779b0e3d38a6678985f417a1c65e3000405ca5d6dcf7fd065e47a15",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/bartowski/Kwaipilot_KAT-Coder-V2.5-Dev-GGUF/blob/d8f684f08d2950ea9d2db6a35ef7dada0707858b/README.md"
+      }
+    },
     "hy-mt1.5-7b-q8-gguf": {
       "description": "Official Tencent HY-MT1.5 7B Q8_0 GGUF for llama.cpp",
       "source": {
@@ -1737,6 +1771,28 @@
         "llama"
       ]
     },
+    "llama-ornith-1.0-35b-q8-0": {
+      "description": "Ornith 1.0 35B Q8_0 llama.cpp coding-agent model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "ornith-1.0-35b-q8-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-kat-coder-v2.5-dev-q8-0": {
+      "description": "KAT-Coder V2.5 Dev Q8_0 llama.cpp coding-agent model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "kat-coder-v2.5-dev-q8-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
     "llama-qwen3.6-35b-a3b-ud-q8-k-xl": {
       "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL llama.cpp model",
       "application": "llama-cpp",
@@ -2328,6 +2384,22 @@
       "artifact": "qwen3-0.6b-q8-gguf",
       "default_context": 4096,
       "jinja": true
+    },
+    "ornith-1.0-35b-q8-0": {
+      "bundle": "llama-ornith-1.0-35b-q8-0",
+      "artifact": "ornith-1.0-35b-q8-gguf",
+      "default_context": 262144,
+      "jinja": true,
+      "opencode_agent": true,
+      "opencode_reasoning_budget": true
+    },
+    "kat-coder-v2.5-dev-q8-0": {
+      "bundle": "llama-kat-coder-v2.5-dev-q8-0",
+      "artifact": "kat-coder-v2.5-dev-q8-gguf",
+      "default_context": 262144,
+      "jinja": true,
+      "opencode_agent": true,
+      "opencode_reasoning_budget": true
     },
     "qwen3.6-35b-a3b-ud-q8-k-xl": {
       "bundle": "llama-qwen3.6-35b-a3b-ud-q8-k-xl",

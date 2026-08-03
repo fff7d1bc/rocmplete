@@ -159,8 +159,8 @@ Use 128K or 64K when memory matters more than the full native window:
 
 In router mode, `--context` overrides every loaded preset, not only the model
 named by the next request. That is reasonable for a router containing only
-Qwen3.6 variants. Omit it for a mixed router so TranslateGemma, Laguna, and
-other models retain their catalog-owned limits.
+256K agent presets. Omit it for a mixed router so TranslateGemma and other
+bounded-task models retain their catalog-owned limits.
 
 The generated OpenCode model map describes the 256K catalog default. Keep the
 server at that default when using the launcher; a manual server override
@@ -201,6 +201,30 @@ effect of speculative decoding:
 
 Keep whichever model succeeds on representative tasks rather than choosing
 from the parameter count or quantization name alone.
+
+### Ornith and KAT-Coder
+
+Ornith and KAT-Coder have separate family-oriented recipes, so either Q8_0 35B
+MoE model can be installed independently on a high-memory host:
+
+```bash
+./rocmplete content install llama-cpp ornith
+./rocmplete content install llama-cpp kat-coder
+```
+
+| Preset | Source | Current role |
+| --- | --- | --- |
+| `ornith-1.0-35b-q8-0` | DeepReinforce's official Ornith 1.0 GGUF | Agentic-coding candidate |
+| `kat-coder-v2.5-dev-q8-0` | Bartowski's plain Q8_0 conversion of Kwaipilot's public text-only checkpoint | Newer agentic-coding candidate kept separate from APEX and MTP derivatives |
+
+Both presets use their embedded tool-aware Jinja template and native 256K
+context. They appear in the OpenCode model picker after installation, but
+neither replaces ROCmplete's Qwen3.6 default. Treat benchmark claims as leads,
+then compare tool-call correctness, task completion, repetition, wall time,
+and recovery from long sessions on the same repositories. ROCmplete does not
+catalog the community APEX mixed-precision or grafted-MTP variants because
+the Q8 baselines fit the maintained high-memory target and provide a clearer
+quality control.
 
 MTP is a decoding optimization, not a reasoning mode or a more capable model.
 Its prediction heads propose several future tokens and the main model verifies

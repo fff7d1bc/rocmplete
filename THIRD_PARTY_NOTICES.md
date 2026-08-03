@@ -56,6 +56,15 @@ revisions recorded in `catalog/catalog.json`.
   model card explicitly declares Apache-2.0 and links its corresponding Qwen
   source-model license. ROCmplete records every GGUF shard's exact size and
   SHA-256 and does not redistribute those weights.
+- Ornith 1.0 35B Q8_0 is downloaded from DeepReinforce's official GGUF
+  repository at one full pinned revision. The repository declares MIT in its
+  model card. ROCmplete records the exact size and SHA-256 and does not
+  redistribute the model.
+- KAT-Coder V2.5 Dev Q8_0 is downloaded from one full pinned Bartowski GGUF
+  revision derived from Kwaipilot's public text-only checkpoint. The
+  conversion repository declares Apache-2.0 and records its upstream model
+  lineage. ROCmplete records the exact size and SHA-256 and does not
+  redistribute the model.
 - The managed Gemma 4 31B IT Q8_0 target and matching Q8_0 MTP draft are
   downloaded together from one full pinned llama.cpp project revision. The
   repository declares Apache-2.0. ROCmplete records both files' exact sizes

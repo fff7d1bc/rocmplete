@@ -148,7 +148,14 @@ For an API serving several installed presets, use the managed router:
 
 The [llama.cpp guide](guide/applications.md#llamacpp) explains presets,
 contexts, MTP, translations, the terminal CLI, tool calling, and choosing
-between the managed Qwen variants.
+between the managed Qwen variants. High-memory hosts can also install the
+Ornith and KAT-Coder Q8 coding-agent candidates independently without changing
+the default:
+
+```bash
+./rocmplete content install llama-cpp ornith
+./rocmplete content install llama-cpp kat-coder
+```
 
 ### DwarfStar
 

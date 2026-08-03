@@ -224,6 +224,10 @@ def _llama_guide() -> ApplicationGuide:
                     "The qwen3.6 recipe installs dense 27B MTP Q8_0 and sparse "
                     "35B-A3B MTP Dynamic Q8_K_XL together. Its printed next "
                     "step starts dense 27B MTP as the general baseline.",
+                    "The separate ornith and kat-coder recipes install the "
+                    "official Ornith 1.0 35B Q8_0 GGUF or the plain "
+                    "KAT-Coder V2.5 Dev Q8_0 conversion. They are comparison "
+                    "candidates, not replacement defaults.",
                     "For local agent work on a high-memory host, compare "
                     "alternative presets on real repository tasks before "
                     "choosing a default.",
@@ -304,9 +308,10 @@ def _llama_guide() -> ApplicationGuide:
                 (
                     "Router mode exposes every complete managed preset. "
                     "The API model name is the ROCmplete preset name.",
-                    "Qwen3.6, Gemma 4, and Laguna start at their native "
-                    "256K context. Use --context 131072 or --context 65536 "
-                    "for a smaller working set. In router mode that option "
+                    "Qwen3.6, Ornith, KAT-Coder, Gemma 4, and Laguna start "
+                    "at their native 256K context. Use --context 131072 "
+                    "or --context 65536 for a smaller working set. In "
+                    "router mode that option "
                     "overrides every loaded preset, so omit it for a "
                     "mixed-model router.",
                 ),
@@ -322,7 +327,8 @@ def _llama_guide() -> ApplicationGuide:
             GuideSection(
                 "Tool-using clients",
                 (
-                    "Managed Qwen and Gemma 4 agent presets enable their "
+                    "Managed Qwen, Ornith, KAT-Coder, and Gemma 4 agent "
+                    "presets enable their "
                     "embedded Jinja templates for llama.cpp's structured "
                     "tool-call path. The Qwen templates include reviewed "
                     "developer-role fixes. Gemma uses Google's canonical "

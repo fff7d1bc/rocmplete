@@ -241,12 +241,15 @@ them stable and descriptive. Router startup includes
 installed presets, ignores wholly missing presets, and refuses partial
 managed installs.
 
-The public llama.cpp recipes are the paired `qwen3.6` selection, the explicitly
-experimental `laguna-s-2.1`, and the focused `translation-hy` and
-`translation-gemma` choices. The Qwen recipe deliberately installs the dense
-27B MTP and sparse 35B-A3B MTP choices together. Their non-MTP controls,
-smoke-test model, and other deliberately large models remain exact bundles and
-presets rather than multiplying beginner choices.
+The public llama.cpp recipes are the paired `qwen3.6` selection, the separate
+high-memory `ornith` and `kat-coder` families, the explicitly experimental
+`laguna-s-2.1`, and the focused `translation-hy` and `translation-gemma`
+choices. The Qwen recipe deliberately installs the dense 27B MTP and sparse
+35B-A3B MTP choices together. Ornith and KAT-Coder remain separate because
+they are unrelated model families; both use faithful Q8 controls while
+excluding community APEX and grafted-MTP derivatives. Non-MTP Qwen controls,
+the smoke-test model, and other deliberately large models remain exact bundles
+and presets rather than multiplying beginner choices.
 The mandatory internal `all` and `llama` tags still support the literal global
 aggregate and application ownership.
 

@@ -114,6 +114,10 @@ class ApplicationGuideTests(unittest.TestCase):
         self.assertNotIn("./rocmplete client", text)
         self.assertIn("qwen3.6 recipe installs dense 27B MTP Q8_0", text)
         self.assertIn(
+            "separate ornith and kat-coder recipes install the official Ornith",
+            text,
+        )
+        self.assertIn(
             "Qwen3.6 35B-A3B MTP Q8_K_XL preset is the recommended "
             "OpenCode starting point",
             normalized,
@@ -125,7 +129,8 @@ class ApplicationGuideTests(unittest.TestCase):
         self.assertIn("MTP proposes and verifies extra tokens", text)
         self.assertIn("not a reasoning mode", text)
         self.assertIn(
-            "Qwen3.6, Gemma 4, and Laguna start at their native 256K",
+            "Qwen3.6, Ornith, KAT-Coder, Gemma 4, and Laguna start at "
+            "their native 256K",
             text,
         )
         self.assertIn("--context 131072", text)

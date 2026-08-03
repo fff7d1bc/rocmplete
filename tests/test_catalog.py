@@ -85,10 +85,10 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 46)
-        self.assertEqual(len(catalog.artifacts), 60)
+        self.assertEqual(len(catalog.bundles), 48)
+        self.assertEqual(len(catalog.artifacts), 62)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 9)
+        self.assertEqual(len(catalog.llama_presets), 11)
         self.assertFalse(
             [
                 artifact.identifier
@@ -191,6 +191,33 @@ class CatalogTests(unittest.TestCase):
             "9408dcb356cc061a05c139e5647cbde0698ff980c"
             "6a69f7fc214e9989f86cfa8",
         )
+        coding_candidates = {
+            "ornith-1.0-35b-q8-0": (
+                "deepreinforce-ai/Ornith-1.0-35B-GGUF",
+                36903138880,
+                "cbc992bca07901c1a51f33e65e6fc5d687de179c852a772dfd15e4c3261dbf5c",
+                "MIT",
+            ),
+            "kat-coder-v2.5-dev-q8-0": (
+                "bartowski/Kwaipilot_KAT-Coder-V2.5-Dev-GGUF",
+                36914690464,
+                "5fa510f44779b0e3d38a6678985f417a1c65e3000405ca5d6dcf7fd065e47a15",
+                "Apache-2.0",
+            ),
+        }
+        for identifier, expected in coding_candidates.items():
+            with self.subTest(preset=identifier):
+                preset = catalog.llama_preset(identifier)
+                artifact = catalog.artifact(preset.artifact)
+                self.assertEqual(preset.default_context, 262144)
+                self.assertTrue(preset.jinja)
+                self.assertTrue(preset.opencode_agent)
+                self.assertTrue(preset.opencode_reasoning_budget)
+                self.assertEqual(artifact.source.repository, expected[0])
+                self.assertEqual(artifact.size, expected[1])
+                self.assertEqual(artifact.sha256, expected[2])
+                self.assertEqual(artifact.license.spdx, expected[3])
+                self.assertEqual(artifact.license.status, "verified")
         gemma = catalog.llama_preset("gemma4-31b-it-q8-0-mtp")
         self.assertEqual(gemma.default_context, 262144)
         self.assertEqual(gemma.mtp_draft_tokens, 4)
