@@ -27,7 +27,8 @@ Recipes are organized by their consuming application:
 comfyui
   image  edit  t2v  i2v
 llama-cpp
-  qwen3.6  laguna-s-2.1  translation-hy  translation-gemma
+  qwen3.6  ornith  kat-coder  laguna-s-2.1
+  shisa-v2.1  translation-gemma  translation-hy
 dwarfstar
   flash-0731
 ```
@@ -39,6 +40,7 @@ Install interactively, or select one recipe explicitly:
 ./rocmplete content install comfyui image
 ./rocmplete content install llama-cpp qwen3.6
 ./rocmplete content install llama-cpp laguna-s-2.1
+./rocmplete content install llama-cpp shisa-v2.1 --accept-license
 ./rocmplete content install llama-cpp translation-gemma --accept-license
 ./rocmplete content install dwarfstar flash-0731
 ```

@@ -85,10 +85,10 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 48)
-        self.assertEqual(len(catalog.artifacts), 62)
+        self.assertEqual(len(catalog.bundles), 49)
+        self.assertEqual(len(catalog.artifacts), 63)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 11)
+        self.assertEqual(len(catalog.llama_presets), 12)
         self.assertFalse(
             [
                 artifact.identifier
@@ -300,6 +300,39 @@ class CatalogTests(unittest.TestCase):
                 for item in catalog.bundle_agreements(gemma_bundle)
             ],
             ["gemma-terms"],
+        )
+        shisa = catalog.llama_preset("shisa-v2.1-llama3.3-70b-q8-0")
+        shisa_bundle = catalog.bundle(shisa.bundle)
+        shisa_artifact = catalog.artifact(shisa.artifact)
+        self.assertEqual(shisa.default_context, 16384)
+        self.assertTrue(shisa.jinja)
+        self.assertFalse(shisa.opencode_agent)
+        self.assertEqual(
+            catalog.bundle_size(shisa_bundle), 74975055328
+        )
+        self.assertEqual(
+            shisa_artifact.source.repository,
+            "mradermacher/shisa-v2.1-llama3.3-70b-GGUF",
+        )
+        self.assertEqual(
+            shisa_artifact.source.revision,
+            "25cb86e709e7ecbe19a71452bbc374f1f5a6462b",
+        )
+        self.assertEqual(
+            shisa_artifact.sha256,
+            "1e02e2c7273bee1f84bf212a901ba6a4206859592f63afeb760127ecd0eb1ad5",
+        )
+        self.assertEqual(
+            shisa_artifact.license.spdx,
+            "LicenseRef-Llama-3.3-Community",
+        )
+        self.assertEqual(shisa_artifact.license.status, "verified")
+        self.assertEqual(
+            [
+                item.identifier
+                for item in catalog.bundle_agreements(shisa_bundle)
+            ],
+            ["llama-3.3-community-license"],
         )
         template_path = (
             DEFAULT_CATALOG_PATH.parent.parent

@@ -240,6 +240,10 @@ def _llama_guide() -> ApplicationGuide:
                     "MTP proposes and verifies extra tokens during decoding. "
                     "It may improve generation speed, but it is not a "
                     "reasoning mode and does not accelerate prompt ingestion.",
+                    "Shisa V2.1 is the high-memory Japanese and English "
+                    "translation choice. Its Llama 3.3 70B Q8_0 preset starts "
+                    "at 16K so a bounded translation job leaves runtime "
+                    "headroom.",
                     "TranslateGemma has one preset. It adds the required Gemma "
                     "turn markers but leaves the language direction and "
                     "translation rules in your user message.",

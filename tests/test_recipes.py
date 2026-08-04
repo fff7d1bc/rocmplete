@@ -20,6 +20,7 @@ class ContentRecipeTests(unittest.TestCase):
         laguna = content_recipe("llama-cpp", "laguna-s-2.1")
         hy = content_recipe("llama-cpp", "translation-hy")
         gemma = content_recipe("llama-cpp", "translation-gemma")
+        shisa = content_recipe("llama-cpp", "shisa-v2.1")
         dwarfstar = content_recipe("dwarfstar", "flash-0731")
 
         self.assertEqual(comfy.next_command, "./rocmplete run comfyui")
@@ -66,6 +67,15 @@ class ContentRecipeTests(unittest.TestCase):
             gemma.next_command,
             "./rocmplete run llama-cpp server "
             "--preset translategemma-27b-it-q8-0",
+        )
+        self.assertEqual(
+            shisa.next_command,
+            "./rocmplete run llama-cpp server "
+            "--preset shisa-v2.1-llama3.3-70b-q8-0",
+        )
+        self.assertEqual(
+            shisa.bundles,
+            ("llama-shisa-v2.1-llama3.3-70b-q8-0",),
         )
         self.assertEqual(
             dwarfstar.next_command,

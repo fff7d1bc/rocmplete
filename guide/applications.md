@@ -478,7 +478,33 @@ response is not evidence that the structured tool-call path works.
 
 ### Japanese and English translation
 
-There are two translation models. TranslateGemma is the 27B IT Q8_0 choice:
+There are three focused translation models. Shisa V2.1 is the quality-first
+Japanese and English choice for a high-memory host. This is a 69.83 GiB Q8_0
+quant of the Llama 3.3 70B model:
+
+```bash
+./rocmplete content install llama-cpp shisa-v2.1 --accept-license
+./rocmplete run llama-cpp server \
+  --preset shisa-v2.1-llama3.3-70b-q8-0
+```
+
+The preset starts at 16384 tokens. That is enough for a glossary, speaker and
+scene notes, several nearby lines, and the requested translation without
+committing a large KV cache to every server run. Raise it with `--context`
+only after measuring the complete workload. The model supports ordinary
+`system`, `user`, and `assistant` messages through its embedded Jinja template.
+For a visual-novel translation request, put stable rules and the glossary in a
+system message, then give each user message the source text plus only the
+local context needed to disambiguate it.
+
+Start deterministic evaluation at temperature zero. If the literal result is
+correct but stiff, compare a small nonzero value such as `0.2` against the same
+fixed test set. Keep names, control codes, terminology, and output shape under
+validation rather than relying on sampling to preserve them. The installer
+requires acknowledgment of the Llama 3.3 Community License Agreement.
+
+TranslateGemma is the smaller 27B IT Q8_0 choice for constrained, manually
+prompted translation:
 
 ```bash
 ./rocmplete content install llama-cpp translation-gemma --accept-license

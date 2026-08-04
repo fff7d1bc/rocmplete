@@ -21,6 +21,11 @@
       "url": "https://huggingface.co/Comfy-Org/Krea-2/blob/952f49d49653cb42e7d6cf7cbfad74738073ec7d/LICENSE.pdf",
       "summary": "Review the complete KREA 2 Community License Agreement before downloading or using these weights."
     },
+    "llama-3.3-community-license": {
+      "name": "Llama 3.3 Community License Agreement",
+      "url": "https://www.llama.com/llama3_3/license/",
+      "summary": "Includes attribution, naming, commercial-scale, and acceptable-use conditions. Review the complete terms before use."
+    },
     "openmdw-1.1": {
       "name": "OpenMDW License Agreement 1.1",
       "url": "https://huggingface.co/poolside/Laguna-S-2.1/blob/b0a9fd7c850eea9d68cf3ffc5bd5d3c5dced43c0/LICENSE.md",
@@ -1064,6 +1069,26 @@
         "gemma-terms"
       ]
     },
+    "shisa-v2.1-llama3.3-70b-q8-gguf": {
+      "description": "Shisa V2.1 Llama 3.3 70B Q8_0 GGUF for llama.cpp",
+      "source": {
+        "repository": "mradermacher/shisa-v2.1-llama3.3-70b-GGUF",
+        "revision": "25cb86e709e7ecbe19a71452bbc374f1f5a6462b",
+        "path": "shisa-v2.1-llama3.3-70b.Q8_0.gguf"
+      },
+      "destination": "shisa-v2.1-llama3.3-70b/shisa-v2.1-llama3.3-70b.Q8_0.gguf",
+      "target": "llama-models",
+      "size": 74975055328,
+      "sha256": "1e02e2c7273bee1f84bf212a901ba6a4206859592f63afeb760127ecd0eb1ad5",
+      "license": {
+        "spdx": "LicenseRef-Llama-3.3-Community",
+        "status": "verified",
+        "url": "https://huggingface.co/mradermacher/shisa-v2.1-llama3.3-70b-GGUF/blob/25cb86e709e7ecbe19a71452bbc374f1f5a6462b/README.md"
+      },
+      "agreements": [
+        "llama-3.3-community-license"
+      ]
+    },
     "laguna-s-2.1-q4-k-m-gguf": {
       "description": "Official Laguna S 2.1 Q4_K_M GGUF for llama.cpp",
       "source": {
@@ -1882,6 +1907,17 @@
         "llama"
       ]
     },
+    "llama-shisa-v2.1-llama3.3-70b-q8-0": {
+      "description": "Shisa V2.1 Llama 3.3 70B Q8_0 llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "shisa-v2.1-llama3.3-70b-q8-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
     "dwarfstar-deepseek-v4-flash-0731-iq2xxs": {
       "description": "DeepSeek V4 Flash 0731 resident IQ2XXS model for high-memory DwarfStar hosts",
       "application": "dwarfstar",
@@ -2466,6 +2502,12 @@
       "artifact": "translategemma-27b-it-q8-gguf",
       "default_context": 4096,
       "chat_template": "translategemma-manual"
+    },
+    "shisa-v2.1-llama3.3-70b-q8-0": {
+      "bundle": "llama-shisa-v2.1-llama3.3-70b-q8-0",
+      "artifact": "shisa-v2.1-llama3.3-70b-q8-gguf",
+      "default_context": 16384,
+      "jinja": true
     }
   }
 }

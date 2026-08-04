@@ -3610,6 +3610,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("llama-cpp laguna-s-2.1", text)
         self.assertIn("llama-cpp translation-hy", text)
         self.assertIn("llama-cpp translation-gemma", text)
+        self.assertIn("llama-cpp shisa-v2.1", text)
         self.assertNotIn("Exact bundles:", text)
         self.assertNotIn("family qwen", text)
         self.assertIn("content list --models", text)
@@ -3660,7 +3661,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(command_content(arguments, load_catalog()), 0)
         text = output.getvalue()
         self.assertIn("family qwen   8  bundles", text)
-        self.assertIn("all  48  bundles", text)
+        self.assertIn("all  49  bundles", text)
         self.assertNotIn("Exact bundles:", text)
 
     def test_content_list_application_filter_requires_filterable_view(self):
@@ -4325,11 +4326,11 @@ class CliTests(unittest.TestCase):
         self.assertIn("exact-bundles", text)
         self.assertIn("Browse exact bundles:", text)
         self.assertIn("ComfyUI — image models (9 bundles)", text)
-        self.assertIn("llama.cpp (11 bundles)", text)
+        self.assertIn("llama.cpp (12 bundles)", text)
         self.assertIn("Laguna S 2.1", text)
         self.assertIn("laguna-s-2.1-q4-k-m", text)
 
-    @patch("builtins.input", side_effect=("7", "9"))
+    @patch("builtins.input", side_effect=("8", "9"))
     @patch("rocmplete.cli.sys.stdin")
     def test_llama_recipe_menu_can_browse_exact_llama_bundles(
         self, stdin, input_mock
@@ -4357,7 +4358,7 @@ class CliTests(unittest.TestCase):
                 "comfyui-images": 9,
                 "comfyui-videos": 20,
                 "comfyui-addons": 7,
-                "llama-cpp": 11,
+                "llama-cpp": 12,
                 "dwarfstar": 1,
             },
         )
@@ -4462,6 +4463,10 @@ class CliTests(unittest.TestCase):
                 "llama-cpp",
                 "translation-gemma",
             ): ("llama-translategemma-27b-it-q8-0",),
+            (
+                "llama-cpp",
+                "shisa-v2.1",
+            ): ("llama-shisa-v2.1-llama3.3-70b-q8-0",),
         }
         for (application, recipe), bundles in expected.items():
             with self.subTest(application=application, recipe=recipe):
@@ -4544,8 +4549,8 @@ class CliTests(unittest.TestCase):
                     )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 62)
-        self.assertEqual(len({item.identifier for item in artifacts}), 62)
+        self.assertEqual(len(artifacts), 63)
+        self.assertEqual(len({item.identifier for item in artifacts}), 63)
         self.assertEqual(
             install_artifacts.call_args.args[2],
             "localhost/custom-content-tools",
@@ -4561,7 +4566,7 @@ class CliTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Content ready: 48 bundles and 28 workflows.",
+            "Content ready: 49 bundles and 28 workflows.",
             output.getvalue(),
         )
 
@@ -4589,10 +4594,10 @@ class CliTests(unittest.TestCase):
                 )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 12)
-        self.assertEqual(len({item.identifier for item in artifacts}), 12)
+        self.assertEqual(len(artifacts), 13)
+        self.assertEqual(len({item.identifier for item in artifacts}), 13)
         self.assertIn(
-            "Content ready: 11 bundles and 0 workflows.",
+            "Content ready: 12 bundles and 0 workflows.",
             output.getvalue(),
         )
 

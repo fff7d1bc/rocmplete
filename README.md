@@ -157,6 +157,16 @@ the default:
 ./rocmplete content install llama-cpp kat-coder
 ```
 
+For Japanese and English translation on a high-memory host, the separate
+Shisa V2.1 recipe installs the 70B Q8_0 model and requires acknowledgment of
+the Llama 3.3 terms:
+
+```bash
+./rocmplete content install llama-cpp shisa-v2.1 --accept-license
+./rocmplete run llama-cpp server \
+  --preset shisa-v2.1-llama3.3-70b-q8-0
+```
+
 ### DwarfStar
 
 DwarfStar serves the pinned DeepSeek V4 Flash 0731 IQ2XXS model. The model is

@@ -144,6 +144,19 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
                 preset="translategemma-27b-it-q8-0",
             ),
         ),
+        ContentRecipe(
+            identifier="shisa-v2.1",
+            application="llama-cpp",
+            description=(
+                "Shisa V2.1 Llama 3.3 70B Q8_0 Japanese/English translator"
+            ),
+            bundles=("llama-shisa-v2.1-llama3.3-70b-q8-0",),
+            launch=RecipeLaunch(
+                "llama-cpp",
+                mode="server",
+                preset="shisa-v2.1-llama3.3-70b-q8-0",
+            ),
+        ),
     ),
     "dwarfstar": (
         ContentRecipe(

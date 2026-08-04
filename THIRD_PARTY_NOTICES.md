@@ -85,6 +85,12 @@ revisions recorded in `catalog/catalog.json`.
   model as its base. ROCmplete requires acceptance of the Gemma terms, adds a
   string-only Gemma turn adapter for manually prompted text translation, and
   does not redistribute the weights.
+- Shisa V2.1 Llama 3.3 70B Q8_0 is downloaded from one full pinned
+  `mradermacher/shisa-v2.1-llama3.3-70b-GGUF` revision. The conversion
+  repository declares the Llama 3.3 license and identifies Shisa V2.1 Llama
+  3.3 70B as its base. ROCmplete records the exact size and SHA-256, requires
+  acceptance of the Llama 3.3 Community License Agreement, and does not
+  redistribute the weights.
 - lightx2v's Wan 2.2 Lightning LoRAs declare Apache-2.0. The Comfy-Org
   FP8/FP16 repack used by optional ComfyUI Wan bundles does not currently
   declare a license. ROCmplete records it as `NOASSERTION`, retains its
