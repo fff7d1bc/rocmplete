@@ -191,7 +191,7 @@ class AcceptanceTests(unittest.TestCase):
                         bundle.identifier
                         for bundle in required_bundles(catalog, cases)
                     ],
-                    ["dwarfstar-deepseek-v4-flash-0731-iq2xxs"],
+                    ["dwarfstar-deepseek-v4-flash-0731-q2-imatrix"],
                 )
 
     def test_dwarfstar_acceptance_runs_a_bounded_direct_answer(self):

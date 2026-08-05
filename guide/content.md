@@ -30,7 +30,7 @@ llama-cpp
   qwen3.6  ornith  kat-coder  laguna-s-2.1
   shisa-v2.1  translation-gemma  translation-hy
 dwarfstar
-  flash-0731
+  flash-0731-q2-imatrix
 ```
 
 Install interactively, or select one recipe explicitly:
@@ -42,7 +42,7 @@ Install interactively, or select one recipe explicitly:
 ./rocmplete content install llama-cpp laguna-s-2.1
 ./rocmplete content install llama-cpp shisa-v2.1 --accept-license
 ./rocmplete content install llama-cpp translation-gemma --accept-license
-./rocmplete content install dwarfstar flash-0731
+./rocmplete content install dwarfstar flash-0731-q2-imatrix
 ```
 
 The `qwen3.6` recipe installs both practical MTP choices: dense 27B MTP Q8_0

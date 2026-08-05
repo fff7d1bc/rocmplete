@@ -169,13 +169,15 @@ the Llama 3.3 terms:
 
 ### DwarfStar
 
-DwarfStar serves the pinned DeepSeek V4 Flash 0731 IQ2XXS model. The model is
-about 80.76 GiB before context and working allocations, so this path is for a
-host with enough GPU-mapped memory:
+DwarfStar serves the pinned DeepSeek V4 Flash 0731 Q2 imatrix model. It uses
+IQ2_XXS for routed gate/up weights, Q2_K for routed down weights, and Q8 for
+attention projections, shared experts, and output. The model is about 80.76
+GiB before context and working allocations, so this path is for a host with
+enough GPU-mapped memory:
 
 ```bash
 ./rocmplete build dwarfstar
-./rocmplete content install dwarfstar flash-0731
+./rocmplete content install dwarfstar flash-0731-q2-imatrix
 ./rocmplete run dwarfstar server
 ```
 

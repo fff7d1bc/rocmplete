@@ -118,9 +118,9 @@ SMOKE_CASES = (
     ),
     AcceptanceCase(
         "dwarfstar",
-        "DwarfStar DeepSeek V4 Flash 0731 direct-answer generation",
+        "DwarfStar DeepSeek V4 Flash 0731 Q2 imatrix direct-answer generation",
         "dwarfstar",
-        "dwarfstar-deepseek-v4-flash-0731-iq2xxs",
+        "dwarfstar-deepseek-v4-flash-0731-q2-imatrix",
     ),
 )
 
@@ -1106,7 +1106,7 @@ def run_dwarfstar_case(
     profile: str,
     render_node: str,
 ) -> Mapping[str, object]:
-    bundle = catalog.bundle("dwarfstar-deepseek-v4-flash-0731-iq2xxs")
+    bundle = catalog.bundle("dwarfstar-deepseek-v4-flash-0731-q2-imatrix")
     artifact = catalog.artifact(bundle.artifacts[0])
     installed = artifact_path(data_dir, artifact)
     if not installed.is_file():

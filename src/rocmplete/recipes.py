@@ -160,12 +160,13 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
     ),
     "dwarfstar": (
         ContentRecipe(
-            identifier="flash-0731",
+            identifier="flash-0731-q2-imatrix",
             application="dwarfstar",
             description=(
-                "DeepSeek V4 Flash 0731 IQ2XXS for high-memory AMD GPU hosts"
+                "DeepSeek V4 Flash 0731 chat-v2 imatrix; routed "
+                "IQ2_XXS/Q2_K with Q8 attention/shared/output"
             ),
-            bundles=("dwarfstar-deepseek-v4-flash-0731-iq2xxs",),
+            bundles=("dwarfstar-deepseek-v4-flash-0731-q2-imatrix",),
             launch=RecipeLaunch("dwarfstar", mode="server"),
         ),
     ),

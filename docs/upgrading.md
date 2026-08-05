@@ -280,7 +280,7 @@ model, and acceptance case form one reviewed compatibility unit:
 DWARFSTAR_COMMIT
 ROCM_VERSION
 APPLICATIONS["dwarfstar"].image
-dwarfstar-deepseek-v4-flash-0731-iq2xxs
+dwarfstar-deepseek-v4-flash-0731-q2-imatrix
 applications/dwarfstar/entrypoint.sh
 ```
 
@@ -311,10 +311,11 @@ For an upstream source update:
 6. Build `dwarfstar --no-layer-cache`. Run `pip check`, help for every retained
    binary, and `ldd`; verify that the final image has no compiler, Git checkout,
    development wheel, PyTorch payload, or extra DwarfStar executables.
-7. Re-run `content install dwarfstar flash-0731 --dry-run`. Change the model
-   pin only after reviewing the exact replacement model card, license, byte
-   size, SHA-256, filename, architecture, and compatibility with the selected
-   DwarfStar source.
+7. Re-run
+   `content install dwarfstar flash-0731-q2-imatrix --dry-run`. Change the
+   model pin only after reviewing the exact replacement model card, license,
+   byte size, SHA-256, filename, architecture, and compatibility with the
+   selected DwarfStar source.
 8. Run the automated DwarfStar acceptance case explicitly on every
    memory-capable target architecture, followed by the manual 128K server,
    thinking, direct-answer, multi-turn cache, long decode, and interruption

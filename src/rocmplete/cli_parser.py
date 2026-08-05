@@ -63,8 +63,8 @@ Try one of these:
   Install every managed llama.cpp model:
     ./rocmplete content install llama-cpp all
 
-  Install DeepSeek V4 Flash 0731 for DwarfStar:
-    ./rocmplete content install dwarfstar flash-0731
+  Install the DeepSeek V4 Flash 0731 Q2 imatrix model for DwarfStar:
+    ./rocmplete content install dwarfstar flash-0731-q2-imatrix
 
   Install a ComfyUI model family:
     ./rocmplete content install family qwen
@@ -330,7 +330,8 @@ Try one of these on a host with enough GPU-mapped memory:
     ./rocmplete run dwarfstar cli --no-thinking --prompt "Say hello"
 
 The managed image is built from pinned source. The model is installed and
-verified separately with 'content install dwarfstar flash-0731'.
+verified separately with
+'content install dwarfstar flash-0731-q2-imatrix'.
 """
 def _add_render_node_arguments(
     parser: argparse.ArgumentParser, multi_gpu: bool = False
@@ -476,7 +477,7 @@ def _add_dwarfstar_run_arguments(
         "--model",
         help=(
             "exact local DwarfStar-compatible GGUF file; defaults to the "
-            "installed flash-0731 model"
+            "installed flash-0731-q2-imatrix model"
         ),
     )
     parser.add_argument(

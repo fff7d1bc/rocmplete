@@ -490,7 +490,10 @@ def _dwarfstar_guide() -> ApplicationGuide:
                     "3.9 generated tokens per second; that is a feasibility "
                     "observation, not formal acceptance. Build it from "
                     "pinned source and install the verified "
-                    "80.76 GiB IQ2XXS model. The 112 GiB "
+                    "80.76 GiB Q2 imatrix model. Its routed gate/up "
+                    "weights use IQ2_XXS, routed down weights use Q2_K, "
+                    "and attention projections, shared experts, and output "
+                    "use Q8. The 112 GiB "
                     "shared-memory starting point supports the managed 128K "
                     "context in that manual run. The bounded smoke "
                     "still uses only a 4K context.",
@@ -506,7 +509,8 @@ def _dwarfstar_guide() -> ApplicationGuide:
                         "Build the source-pinned multi-architecture image.",
                     ),
                     _action(
-                        "./rocmplete content install dwarfstar flash-0731",
+                        "./rocmplete content install dwarfstar "
+                        "flash-0731-q2-imatrix",
                         "Install the verified DeepSeek V4 Flash 0731 model.",
                     ),
                     _action(
@@ -537,7 +541,7 @@ def _dwarfstar_guide() -> ApplicationGuide:
                 "Context and thinking",
                 (
                     "Without --model, ROCmplete selects the installed, "
-                    "verified flash-0731 model. Pass one exact local "
+                    "verified flash-0731-q2-imatrix model. Pass one exact local "
                     "DwarfStar-compatible GGUF path to test another model; "
                     "its containing directory is mounted read-only.",
                     "The managed default is 131072 context tokens with a "

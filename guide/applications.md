@@ -780,7 +780,7 @@ Build, install, and run it explicitly:
 
 ```bash
 ./rocmplete build dwarfstar
-./rocmplete content install dwarfstar flash-0731
+./rocmplete content install dwarfstar flash-0731-q2-imatrix
 ./rocmplete run dwarfstar server
 ```
 
@@ -792,9 +792,21 @@ therefore loopback-only, not LAN-accessible. Pass `--listen 0.0.0.0` or one
 exact non-loopback host address only when unauthenticated network publication
 is intentional.
 
-Without `--model`, ROCmplete selects the installed and verified `flash-0731`
-model. A different DwarfStar-compatible local GGUF can be selected explicitly;
-its containing directory is mounted read-only:
+Without `--model`, ROCmplete selects the installed and verified
+`flash-0731-q2-imatrix` model. This is the 0731 chat-v2 imatrix GGUF with
+IQ2_XXS routed gate/up weights, Q2_K routed down weights, and Q8 attention
+projections, shared experts, and output. It is the upstream Q2 model intended
+for 96/128 GB machines, not a uniformly IQ2_XXS fallback.
+
+The pinned upstream Strix Halo guide selects this quantization layout and
+warns that mixed Q2/Q4 builds can put enough pressure on the ROCm path to
+trigger system OOM. ROCmplete therefore does not offer the larger mixed
+Q2/Q4, Q4, MXFP4, or PRO models as managed alternatives on this hardware
+class. DSpark is a separate experimental speculative-decoding aid, not a
+higher-quality model, and is not part of the managed bundle.
+
+A different DwarfStar-compatible local GGUF can be selected explicitly; its
+containing directory is mounted read-only:
 
 ```bash
 ./rocmplete run dwarfstar server \

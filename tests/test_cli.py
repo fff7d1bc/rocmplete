@@ -3761,7 +3761,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("qwen3.6-27b-mtp-q8-0", text)
             self.assertIn("DwarfStar models", text)
             self.assertIn(
-                "dwarfstar-deepseek-v4-flash-0731-iq2xxs", text
+                "dwarfstar-deepseek-v4-flash-0731-q2-imatrix", text
             )
             translate_line = next(
                 line
@@ -3800,7 +3800,7 @@ class CliTests(unittest.TestCase):
     def test_content_list_models_reports_verified_dwarfstar_model_ready(self):
         catalog = load_catalog()
         bundle = catalog.bundle(
-            "dwarfstar-deepseek-v4-flash-0731-iq2xxs"
+            "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
         )
         artifact = catalog.artifact(bundle.artifacts[0])
         with tempfile.TemporaryDirectory() as directory:
@@ -3830,7 +3830,7 @@ class CliTests(unittest.TestCase):
             with redirect_stdout(io.StringIO()) as output:
                 self.assertEqual(command_content(arguments, catalog), 0)
         self.assertIn(
-            "ready   80.76 GiB  dwarfstar-deepseek-v4-flash-0731-iq2xxs",
+            "ready   80.76 GiB  dwarfstar-deepseek-v4-flash-0731-q2-imatrix",
             output.getvalue(),
         )
 

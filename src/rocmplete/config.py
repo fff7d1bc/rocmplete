@@ -47,7 +47,7 @@ LLAMA_BACKENDS = ("rocm", "vulkan")
 DWARFSTAR_DEFAULT_CONTEXT = 131072
 DWARFSTAR_DEFAULT_OUTPUT_TOKENS = 16000
 DWARFSTAR_DEFAULT_MODEL_BUNDLE = (
-    "dwarfstar-deepseek-v4-flash-0731-iq2xxs"
+    "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
 )
 COMFY_BENCHMARK_CONTAINER_NAME = "rocmplete-benchmark"
 LLAMA_BENCHMARK_CONTAINER_NAME = "rocmplete-llama-benchmark"
@@ -99,7 +99,10 @@ APPLICATIONS = {
         logs=True,
         shared_pytorch_base=False,
         multi_gpu=False,
-        after_build="./rocmplete content install dwarfstar flash-0731",
+        after_build=(
+            "./rocmplete content install dwarfstar "
+            "flash-0731-q2-imatrix"
+        ),
         after_content="./rocmplete run dwarfstar server",
     ),
 }

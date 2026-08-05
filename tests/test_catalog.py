@@ -112,7 +112,7 @@ class CatalogTests(unittest.TestCase):
             catalog.artifact(llama.artifact).target, "llama-models"
         )
         dwarfstar = catalog.bundle(
-            "dwarfstar-deepseek-v4-flash-0731-iq2xxs"
+            "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
         )
         self.assertEqual(dwarfstar.application, "dwarfstar")
         self.assertEqual(dwarfstar.groups, ("all", "dwarfstar"))
@@ -797,7 +797,7 @@ class CatalogTests(unittest.TestCase):
     def test_dwarfstar_bundle_requires_one_dedicated_gguf(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         bundle = raw["bundles"][
-            "dwarfstar-deepseek-v4-flash-0731-iq2xxs"
+            "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
         ]
         artifact = raw["artifacts"][bundle["artifacts"][0]]
         artifact["target"] = "llama-models"

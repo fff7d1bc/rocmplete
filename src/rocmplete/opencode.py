@@ -265,7 +265,7 @@ def _default_model(catalog: Catalog, data_dir: Path) -> Tuple[str, str]:
     if installed:
         return PROVIDER_ID, installed[0]
     dwarfstar = catalog.bundle(
-        "dwarfstar-deepseek-v4-flash-0731-iq2xxs"
+        "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
     )
     if all(
         content_status_ready(status)
@@ -275,7 +275,8 @@ def _default_model(catalog: Catalog, data_dir: Path) -> Tuple[str, str]:
     raise LauncherError(
         "no installed model is maintained for OpenCode"
         "\n  llama.cpp: ./rocmplete content install llama-cpp qwen3.6"
-        "\n  DwarfStar: ./rocmplete content install dwarfstar flash-0731"
+        "\n  DwarfStar: ./rocmplete content install dwarfstar "
+        "flash-0731-q2-imatrix"
     )
 
 

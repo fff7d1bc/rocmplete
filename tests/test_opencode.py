@@ -277,7 +277,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
             self._fake_opencode(binary_dir)
             self._mark_bundle_installed(
                 data_dir,
-                "dwarfstar-deepseek-v4-flash-0731-iq2xxs",
+                "dwarfstar-deepseek-v4-flash-0731-q2-imatrix",
             )
 
             plan = create_launch_plan(

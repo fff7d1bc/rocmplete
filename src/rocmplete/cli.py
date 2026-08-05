@@ -5609,7 +5609,7 @@ def _managed_dwarfstar_model(catalog: Catalog, data_dir: Path) -> Path:
         raise LauncherError(
             "DwarfStar model is not installed: {}\n"
             "  Install content: ./rocmplete content install dwarfstar "
-            "flash-0731".format(
+            "flash-0731-q2-imatrix".format(
                 states or "managed content is incomplete"
             )
         )

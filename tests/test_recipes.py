@@ -21,7 +21,7 @@ class ContentRecipeTests(unittest.TestCase):
         hy = content_recipe("llama-cpp", "translation-hy")
         gemma = content_recipe("llama-cpp", "translation-gemma")
         shisa = content_recipe("llama-cpp", "shisa-v2.1")
-        dwarfstar = content_recipe("dwarfstar", "flash-0731")
+        dwarfstar = content_recipe("dwarfstar", "flash-0731-q2-imatrix")
 
         self.assertEqual(comfy.next_command, "./rocmplete run comfyui")
         self.assertEqual(
