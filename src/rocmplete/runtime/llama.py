@@ -178,7 +178,10 @@ def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
     if options.api_key_file is not None:
         command.extend(["--api-key-file", "/run/secrets/llama-api-key"])
     if options.prompt is not None:
-        command.extend(["--prompt", options.prompt])
+        # A predefined prompt is the non-interactive CLI path. Without
+        # --single-turn llama-cli answers once and then keeps reading stdin;
+        # EOF over SSH can make it spin through empty prompts indefinitely.
+        command.extend(["--prompt", options.prompt, "--single-turn"])
     return command
 
 

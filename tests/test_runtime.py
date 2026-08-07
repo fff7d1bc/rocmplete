@@ -935,7 +935,9 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertNotIn("--device", command)
         self.assertEqual(command[command.index("--network") + 1], "none")
         self.assertNotIn("--publish", command)
-        self.assertEqual(command[-2:], ["--prompt", "hello"])
+        self.assertEqual(
+            command[-3:], ["--prompt", "hello", "--single-turn"]
+        )
 
     def test_llama_managed_mtp_preset_is_constrained_by_environment(self):
         command = llama_command(

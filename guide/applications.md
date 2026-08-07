@@ -730,10 +730,11 @@ Any local regular `.gguf` file can also be used:
 ```
 
 The model's parent directory is mounted read-only, supporting multi-file GGUF
-shards. The server exposes an OpenAI-compatible API on port 8080. Remote model
-fetching and the mutable upstream embedded web UI are disabled. Non-loopback
-publication has no authentication unless `--api-key-file` names a readable
-key file.
+shards. A CLI invocation with `--prompt` answers once and exits; omit it for
+an interactive terminal conversation. The server exposes an OpenAI-compatible
+API on port 8080. Remote model fetching and the mutable upstream embedded web
+UI are disabled. Non-loopback publication has no authentication unless
+`--api-key-file` names a readable key file.
 
 On Strix Halo and Strix Point the entrypoint enables unified-memory policy and
 non-mmap model loading. RDNA 4 discrete GPUs use normal automatic layer
