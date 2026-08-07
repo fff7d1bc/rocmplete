@@ -351,6 +351,13 @@ when comparing results. Flash Attention defaults to `auto` for compatibility,
 but use explicit `on` and `off` runs when validating an upgrade because an
 upstream default can change without the workload changing.
 
+ROCmplete enables its reviewed f16 KV-contiguization patch automatically for
+Vulkan on Strix Halo. It addresses the dense-model prompt-processing cliff
+that otherwise appears as context grows. The path is deliberately not enabled
+for Strix Point or RDNA 4 without matching hardware results. It does not
+change ROCm behavior or make one backend the universal winner, so keep using
+the comparison above for each model and workload.
+
 To measure the memory and long-context effects of a quantized KV cache, set
 `--cache-type-k` and `--cache-type-v` to `q8_0` or `q4_0`. Quantized values
 require `--flash-attn on` and ROCmplete rejects an ambiguous or incompatible

@@ -262,6 +262,10 @@ COPY applications/llama-cpp/hip-apu-host-buffer.patch \
     /opt/rocmplete/llama-hip-apu-host-buffer.patch
 COPY applications/llama-cpp/reasoning-effort-budget.patch \
     /opt/rocmplete/llama-reasoning-effort-budget.patch
+COPY applications/llama-cpp/quantized-kv-flash-attention.patch \
+    /opt/rocmplete/llama-quantized-kv-flash-attention.patch
+COPY applications/llama-cpp/vulkan-f16-kv-contiguize.patch \
+    /opt/rocmplete/llama-vulkan-f16-kv-contiguize.patch
 RUN git init . && \
     git remote add origin https://github.com/ggml-org/llama.cpp.git && \
     git fetch --depth=1 origin "${LLAMA_CPP_COMMIT}" && \
@@ -272,6 +276,10 @@ RUN git init . && \
     git apply /opt/rocmplete/llama-hip-apu-host-buffer.patch && \
     git apply --check /opt/rocmplete/llama-reasoning-effort-budget.patch && \
     git apply /opt/rocmplete/llama-reasoning-effort-budget.patch && \
+    git apply --check /opt/rocmplete/llama-quantized-kv-flash-attention.patch && \
+    git apply /opt/rocmplete/llama-quantized-kv-flash-attention.patch && \
+    git apply --check /opt/rocmplete/llama-vulkan-f16-kv-contiguize.patch && \
+    git apply /opt/rocmplete/llama-vulkan-f16-kv-contiguize.patch && \
     rocm_root="$(rocm-sdk path --root)" && \
     site_packages="$(python -c \
         'import sysconfig; print(sysconfig.get_paths()["purelib"])')" && \

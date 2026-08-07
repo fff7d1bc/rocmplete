@@ -171,6 +171,11 @@ else
         bench_profile_args+=(--load-mode none)
     fi
     if [[ "$profile" == strix-halo ]]; then
+        if [[ "$backend" == vulkan ]]; then
+            # The patched path is opt-in so other architectures and Vulkan
+            # implementations retain pinned-upstream behavior.
+            export GGML_VK_FA_KV_CONTIG=1
+        fi
         if [[ "$router" == 0 && -n "$flash_attn_strix_halo" ]]; then
             model_policy_args+=(--flash-attn "$flash_attn_strix_halo")
         fi

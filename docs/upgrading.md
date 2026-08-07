@@ -238,19 +238,29 @@ For an upstream source update:
    ignores those values for managed reasoning models and ROCmplete advertises
    them. Confirm `none`, all three bounded budgets, and the exhaustion message
    through both endpoints.
-5. Keep both `GGML_HIP` and `GGML_VULKAN` enabled,
+5. Check whether upstream has absorbed the quantized-KV Flash Attention work
+   carried in `applications/llama-cpp/quantized-kv-flash-attention.patch`.
+   The patch combines Vulkan commits `4edaca09` and `4355d03e`
+   plus HIP commit `2a24abc6` from the `strix-halo-fa-fixes` branch. Remove it
+   only after matching upstream code passes the same f16/q8_0, backend, depth,
+   and output checks on every supported architecture. Also check the narrower
+   `applications/llama-cpp/vulkan-f16-kv-contiguize.patch`, derived from
+   commit `b1a10f981`. It is intentionally enabled only for Vulkan on
+   `gfx1151`; do not broaden that policy without hardware results from the
+   additional architecture.
+6. Keep both `GGML_HIP` and `GGML_VULKAN` enabled,
    `gfx1150;gfx1151;gfx1200;gfx1201`, RPC disabled, examples/tests disabled,
    and both `LLAMA_BUILD_UI` and `LLAMA_USE_PREBUILT_UI` disabled unless a
    separately pinned UI supply chain is deliberately added.
-6. Update the short commit and policy revision in the application image tag.
-7. Build `llama-cpp` without cache and confirm the build makes no unpinned
+7. Update the short commit and policy revision in the application image tag.
+8. Build `llama-cpp` without cache and confirm the build makes no unpinned
    asset download.
-8. Inspect `ldd` for all retained binaries and libraries, including
+9. Inspect `ldd` for all retained binaries and libraries, including
    `libggml-hip`, `libggml-vulkan`, and the Vulkan loader.
-9. Verify that the final Python environment contains core, libraries, and
+10. Verify that the final Python environment contains core, libraries, and
    exactly the four supported device wheels, but no devel or PyTorch package.
    Confirm that the image retains exactly the intended binaries.
-10. Run CPU `--version`, then real server/CLI and `llama-bench` acceptance with
+11. Run CPU `--version`, then real server/CLI and `llama-bench` acceptance with
    both backends on all supported hardware classes.
 
 Also compare upstream router preset syntax and controlled arguments

@@ -335,6 +335,22 @@ The pinned llama.cpp source receives the fail-closed
 25863. It preserves integrated-device detection and pinned host allocation
 while preventing direct computation on unsafe `ROCm_Host` buffers. Remove the
 patch when a reviewed future pin contains the upstream fix.
+
+The fail-closed `applications/llama-cpp/quantized-kv-flash-attention.patch`
+contains the reviewed Vulkan q8_0 and HIP q8_0/q4_0 dequantize-on-load changes
+from Nathan Wilson's `strix-halo-fa-fixes` branch at commits `4edaca09`,
+`4355d03e`, and `2a24abc6`. It removes repeated KV dequantization at long
+context while leaving f16 paths unchanged. The patch is retained only while
+the pinned upstream source lacks those changes and must be requalified on all
+four ROCmplete architectures whenever llama.cpp, ROCm, or Mesa moves.
+
+The separate fail-closed
+`applications/llama-cpp/vulkan-f16-kv-contiguize.patch` carries the small,
+environment-gated part of commit `b1a10f981` that copies strided f16 KV data
+into contiguous scratch before Vulkan Flash Attention prefill. ROCmplete
+enables it only for the Vulkan backend on `gfx1151`; every other backend and
+architecture retains pinned-upstream behavior. This deliberately excludes the
+fork's wider collection of experimental kernels and tuning flags.
 `applications/llama-cpp/entrypoint.sh` exposes a constrained server/CLI policy
 around the resulting binaries. It checks the architecture reported by
 `rocminfo`, then maps the exact selected render-node count to explicit

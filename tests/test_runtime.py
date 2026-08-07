@@ -148,6 +148,14 @@ class RuntimeCommandTests(unittest.TestCase):
             "COPY applications/llama-cpp/reasoning-effort-budget.patch",
             containerfile,
         )
+        self.assertIn(
+            "COPY applications/llama-cpp/quantized-kv-flash-attention.patch",
+            containerfile,
+        )
+        self.assertIn(
+            "COPY applications/llama-cpp/vulkan-f16-kv-contiguize.patch",
+            containerfile,
+        )
         self.assertIn("-DGGML_HIP=ON", containerfile)
         self.assertIn("-DGGML_VULKAN=ON", containerfile)
         self.assertIn(
@@ -165,6 +173,7 @@ class RuntimeCommandTests(unittest.TestCase):
                 ),
                 llama_entrypoint,
             )
+        self.assertIn("export GGML_VK_FA_KV_CONTIG=1", llama_entrypoint)
         self.assertIn(
             "git apply --check "
             "/opt/rocmplete/llama-hip-apu-host-buffer.patch",
@@ -173,6 +182,16 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn(
             "git apply --check "
             "/opt/rocmplete/llama-reasoning-effort-budget.patch",
+            containerfile,
+        )
+        self.assertIn(
+            "git apply --check "
+            "/opt/rocmplete/llama-quantized-kv-flash-attention.patch",
+            containerfile,
+        )
+        self.assertIn(
+            "git apply --check "
+            "/opt/rocmplete/llama-vulkan-f16-kv-contiguize.patch",
             containerfile,
         )
         reasoning_patch = (
