@@ -235,7 +235,7 @@ def write_backend_comparison(
     profile: str,
     render_nodes: Sequence[str],
     model: Mapping[str, object],
-    parameters: Mapping[str, int],
+    parameters: Mapping[str, object],
     results: Mapping[str, Path],
     errors: Mapping[str, str],
     output: Optional[Path] = None,
@@ -305,7 +305,7 @@ def run_llama_benchmark(
     backend: str,
     render_nodes: Sequence[str],
     model: Mapping[str, object],
-    parameters: Mapping[str, int],
+    parameters: Mapping[str, object],
     output: Optional[Path] = None,
 ) -> Path:
     if podman.container_exists(CONTAINER_NAME):

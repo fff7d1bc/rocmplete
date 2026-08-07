@@ -220,6 +220,8 @@ Try one of these:
   ./rocmplete benchmark run BUNDLE --dry-run
   ./rocmplete benchmark llama-cpp --preset qwen3-0.6b-q8-0 --dry-run
   ./rocmplete benchmark llama-cpp --preset PRESET --compare-backends
+  ./rocmplete benchmark llama-cpp --preset PRESET --context-depth 32768 \
+    --cache-type-k q8_0 --cache-type-v q8_0 --flash-attn on
   ./rocmplete benchmark suite --family qwen --dry-run
   ./rocmplete benchmark report SUITE.json
 """
@@ -1353,6 +1355,42 @@ def _parser() -> argparse.ArgumentParser:
         type=int,
         default=128,
         help="text-generation tokens (default: 128)",
+    )
+    llama_benchmark.add_argument(
+        "--context-depth",
+        type=int,
+        default=0,
+        help="tokens already present before each test (default: 0)",
+    )
+    llama_benchmark.add_argument(
+        "--batch-size",
+        type=int,
+        default=2048,
+        help="logical prompt batch size (default: 2048)",
+    )
+    llama_benchmark.add_argument(
+        "--ubatch-size",
+        type=int,
+        default=512,
+        help="physical prompt microbatch size (default: 512)",
+    )
+    llama_benchmark.add_argument(
+        "--cache-type-k",
+        choices=("f16", "q8_0", "q4_0"),
+        default="f16",
+        help="KV key-cache type (default: f16)",
+    )
+    llama_benchmark.add_argument(
+        "--cache-type-v",
+        choices=("f16", "q8_0", "q4_0"),
+        default="f16",
+        help="KV value-cache type (default: f16)",
+    )
+    llama_benchmark.add_argument(
+        "--flash-attn",
+        choices=("on", "off", "auto"),
+        default="auto",
+        help="Flash Attention policy (default: auto)",
     )
     llama_benchmark.add_argument(
         "--output",

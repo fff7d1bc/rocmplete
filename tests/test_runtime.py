@@ -1029,6 +1029,12 @@ class RuntimeCommandTests(unittest.TestCase):
                 repetitions=3,
                 prompt_tokens=64,
                 generation_tokens=32,
+                context_depth=32768,
+                batch_size=1024,
+                ubatch_size=256,
+                cache_type_k="q8_0",
+                cache_type_v="q8_0",
+                flash_attention="on",
             ),
             ":rw,Z",
         )
@@ -1055,6 +1061,16 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn("--output", command)
         self.assertIn("json", command)
         self.assertIn("--progress", command)
+        self.assertEqual(command[command.index("--n-depth") + 1], "32768")
+        self.assertEqual(command[command.index("--batch-size") + 1], "1024")
+        self.assertEqual(command[command.index("--ubatch-size") + 1], "256")
+        self.assertEqual(
+            command[command.index("--cache-type-k") + 1], "q8_0"
+        )
+        self.assertEqual(
+            command[command.index("--cache-type-v") + 1], "q8_0"
+        )
+        self.assertEqual(command[command.index("--flash-attn") + 1], "on")
 
     def test_llama_benchmark_passes_an_exact_multi_gpu_set(self):
         command = llama_benchmark_command(

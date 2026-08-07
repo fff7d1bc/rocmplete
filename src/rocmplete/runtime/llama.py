@@ -61,6 +61,12 @@ class LlamaBenchmarkOptions:
     repetitions: int = 5
     prompt_tokens: int = 512
     generation_tokens: int = 128
+    context_depth: int = 0
+    batch_size: int = 2048
+    ubatch_size: int = 512
+    cache_type_k: str = "f16"
+    cache_type_v: str = "f16"
+    flash_attention: str = "auto"
     unconfined: bool = False
 
 
@@ -219,6 +225,12 @@ def llama_benchmark_command(
             "--repetitions", str(options.repetitions),
             "--n-prompt", str(options.prompt_tokens),
             "--n-gen", str(options.generation_tokens),
+            "--n-depth", str(options.context_depth),
+            "--batch-size", str(options.batch_size),
+            "--ubatch-size", str(options.ubatch_size),
+            "--cache-type-k", options.cache_type_k,
+            "--cache-type-v", options.cache_type_v,
+            "--flash-attn", options.flash_attention,
             "--output", "json",
             "--progress",
         ]

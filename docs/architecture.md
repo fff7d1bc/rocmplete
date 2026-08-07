@@ -162,7 +162,7 @@ For a native llama.cpp benchmark:
 exact local GGUF or installed catalog preset
   → one network-isolated llama-bench container
   → entrypoint enforces CPU or detected GPU profile policy
-  → fixed explicit pp/tg/repetition parameters
+  → fixed explicit depth, pp/tg, batch, KV-cache, FA, and repetition parameters
   → parse llama-bench JSON stdout
   → add image, profile, device, model, and parameter identity
   → atomically create result JSON under apps/llama-cpp/benchmarks

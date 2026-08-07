@@ -332,6 +332,33 @@ a llama.cpp, ROCm, Mesa, kernel, or firmware change instead of carrying an old
 winner forward forever. Use `--backend rocm` or `--backend vulkan` for a
 single-backend result.
 
+Short empty-context runs are useful for a quick backend comparison, but they
+do not describe an agent session after its context has grown. Populate the KV
+cache before each measured prompt and generation run with `--context-depth`:
+
+```bash
+./rocmplete benchmark llama-cpp \
+  --preset qwen3.6-27b-q8-0 \
+  --compare-backends \
+  --context-depth 32768 \
+  --flash-attn on \
+  --prompt-tokens 512 --generation-tokens 128 --repetitions 5
+```
+
+The default depth is zero. `--batch-size` and `--ubatch-size` expose the
+logical and physical prompt batches used by `llama-bench`; keep them fixed
+when comparing results. Flash Attention defaults to `auto` for compatibility,
+but use explicit `on` and `off` runs when validating an upgrade because an
+upstream default can change without the workload changing.
+
+To measure the memory and long-context effects of a quantized KV cache, set
+`--cache-type-k` and `--cache-type-v` to `q8_0` or `q4_0`. Quantized values
+require `--flash-attn on` and ROCmplete rejects an ambiguous or incompatible
+combination before starting the container. Treat q4 cache measurements as
+experimental and check task output as well as throughput. These flags affect
+only the one-shot benchmark; they do not silently change the selected
+application preset.
+
 Treat the result as specific to that non-MTP preset too. Nearby variants are
 not interchangeable performance evidence. Quantization, dense or
 mixture-of-experts layout, and active parameter count can change the kernel and

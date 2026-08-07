@@ -4897,9 +4897,19 @@ def _command_llama_benchmark(
         ("--repetitions", arguments.repetitions),
         ("--prompt-tokens", arguments.prompt_tokens),
         ("--generation-tokens", arguments.generation_tokens),
+        ("--batch-size", arguments.batch_size),
+        ("--ubatch-size", arguments.ubatch_size),
     ):
         if value < 1:
             raise LauncherError("{} must be at least 1".format(name))
+    if arguments.context_depth < 0:
+        raise LauncherError("--context-depth must be zero or positive")
+    if arguments.ubatch_size > arguments.batch_size:
+        raise LauncherError("--ubatch-size must not exceed --batch-size")
+    if arguments.cache_type_v != "f16" and arguments.flash_attn != "on":
+        raise LauncherError(
+            "a quantized value cache requires --flash-attn on"
+        )
     profile = validate_profile(
         arguments.profile
         or environment_value(os.environ, "PROFILE", "auto")
@@ -4984,6 +4994,12 @@ def _command_llama_benchmark(
             repetitions=arguments.repetitions,
             prompt_tokens=arguments.prompt_tokens,
             generation_tokens=arguments.generation_tokens,
+            context_depth=arguments.context_depth,
+            batch_size=arguments.batch_size,
+            ubatch_size=arguments.ubatch_size,
+            cache_type_k=arguments.cache_type_k,
+            cache_type_v=arguments.cache_type_v,
+            flash_attention=arguments.flash_attn,
             unconfined=arguments.unconfined,
         )
         commands[backend] = llama_benchmark_command(
@@ -4995,10 +5011,17 @@ def _command_llama_benchmark(
     else:
         print("{} {}".format(style("Backend:", "label"), arguments.backend))
     print(
-        "{} pp{}, tg{}, {} repetitions".format(
+        "{} depth {}, pp{}, tg{}, batch {}/{}, KV {}/{}, FA {}, "
+        "{} repetitions".format(
             style("Parameters:", "label"),
+            arguments.context_depth,
             arguments.prompt_tokens,
             arguments.generation_tokens,
+            arguments.batch_size,
+            arguments.ubatch_size,
+            arguments.cache_type_k,
+            arguments.cache_type_v,
+            arguments.flash_attn,
             arguments.repetitions,
         )
     )
@@ -5028,6 +5051,12 @@ def _command_llama_benchmark(
         "repetitions": arguments.repetitions,
         "prompt_tokens": arguments.prompt_tokens,
         "generation_tokens": arguments.generation_tokens,
+        "context_depth": arguments.context_depth,
+        "batch_size": arguments.batch_size,
+        "ubatch_size": arguments.ubatch_size,
+        "cache_type_k": arguments.cache_type_k,
+        "cache_type_v": arguments.cache_type_v,
+        "flash_attention": arguments.flash_attn,
     }
     if not arguments.compare_backends:
         result = run_llama_benchmark(

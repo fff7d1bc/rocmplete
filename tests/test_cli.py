@@ -2810,6 +2810,18 @@ class CliTests(unittest.TestCase):
                     "32",
                     "--generation-tokens",
                     "16",
+                    "--context-depth",
+                    "32768",
+                    "--batch-size",
+                    "1024",
+                    "--ubatch-size",
+                    "256",
+                    "--cache-type-k",
+                    "q8_0",
+                    "--cache-type-v",
+                    "q8_0",
+                    "--flash-attn",
+                    "on",
                     "--dry-run",
                 ]
             )
@@ -2823,7 +2835,37 @@ class CliTests(unittest.TestCase):
             self.assertIn("ROCMLETE_LLAMA_MODE=bench", command)
             self.assertIn("--n-prompt 32", command)
             self.assertIn("--n-gen 16", command)
+            self.assertIn("--n-depth 32768", command)
+            self.assertIn("--batch-size 1024", command)
+            self.assertIn("--ubatch-size 256", command)
+            self.assertIn("--cache-type-k q8_0", command)
+            self.assertIn("--cache-type-v q8_0", command)
+            self.assertIn("--flash-attn on", command)
             self.assertNotIn("/dev/kfd", command)
+
+    def test_llama_benchmark_rejects_quantized_v_without_flash_attention(self):
+        with tempfile.TemporaryDirectory() as directory:
+            model = Path(directory) / "model.gguf"
+            model.write_bytes(b"small test model")
+            _, arguments = parse_arguments(
+                [
+                    "benchmark",
+                    "llama-cpp",
+                    "--model",
+                    str(model),
+                    "--profile",
+                    "cpu",
+                    "--cache-type-v",
+                    "q8_0",
+                    "--flash-attn",
+                    "auto",
+                    "--dry-run",
+                ]
+            )
+            with self.assertRaisesRegex(
+                LauncherError, "requires --flash-attn on"
+            ):
+                command_benchmark(arguments, load_catalog())
 
     def test_llama_backend_comparison_dry_run_resolves_both_commands(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -58,6 +58,9 @@ Exercise user-visible composition:
   --preset qwen3-0.6b-q8-0 --profile cpu --dry-run
 ./rocmplete benchmark llama-cpp \
   --preset qwen3-0.6b-q8-0 --compare-backends --dry-run
+./rocmplete benchmark llama-cpp \
+  --preset qwen3-0.6b-q8-0 --context-depth 32768 \
+  --cache-type-k q8_0 --cache-type-v q8_0 --flash-attn on --dry-run
 ./rocmplete acceptance run --dry-run
 ```
 
