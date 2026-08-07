@@ -191,6 +191,32 @@ Warnings or deviations:
 Result/log location:
 ```
 
+## Deferred acceptance handoff
+
+When one contributor cannot reach every required hardware class, leave a
+bounded, reproducible handoff instead of a generic request to “test on another
+GPU.” Keep hostnames and personal infrastructure out of this document; record
+the architecture and observable requirements.
+
+```text
+Change under test:
+Source commit and application image ID:
+Already accepted on:
+Deferred architecture/profile:
+Behavior or patch path requiring coverage:
+Required managed content:
+Exact commands:
+Expected success criteria:
+Result and log destination:
+Known warnings or capacity constraints:
+```
+
+Commands must name the profile, render-node set, backend, preset, context,
+cache policy, prompt and generation sizes, and repetition count whenever those
+values affect the conclusion. The person completing the handoff should append
+the observed result to the original change or its review record and retain
+the generated JSON rather than returning only “works for me.”
+
 The first publication may call uncompleted rows experimental, but it must not
 present them as accepted. A later dependency, runtime-policy, ROCm/PyTorch, or
 model change invalidates only the coupled rows; repeat those rows on every

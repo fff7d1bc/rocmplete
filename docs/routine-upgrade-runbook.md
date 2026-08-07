@@ -149,6 +149,10 @@ report:
 - hardware acceptance completed or deferred; and
 - the resulting commit.
 
+For deferred target-hardware work, include the public, host-neutral handoff
+from [hardware-acceptance.md](hardware-acceptance.md#deferred-acceptance-handoff)
+rather than referring to a contributor's private machine by name.
+
 ## Stop and report
 
 Do not force an update through any of these conditions:

@@ -300,6 +300,49 @@ native result JSON below `apps/llama-cpp/benchmarks`; it records the selected
 backend. Do not compare a catalog-pinned result with an unhashed local-model
 result.
 
+### llama.cpp source-update acceptance
+
+Use this finite sequence after moving `LLAMA_CPP_COMMIT` or rebasing a native
+backend patch. It turns the general validation tiers into a repeatable update
+gate without assuming that one contributor owns every hardware class.
+
+1. **Host-independent checks:** run Tier 1, perform the final no-cache
+   `llama-cpp` build, inspect image labels and history, check the native
+   runtime closure with `ldd`, and exercise CPU CLI and router startup. Confirm
+   that all four GPU targets remain in the image and that no source, model, or
+   web asset was fetched at runtime.
+2. **Primary target acceptance:** on one capable machine, run `doctor`, the
+   bounded acceptance smoke, real CLI and router generation, both API
+   endpoints, reasoning controls, MTP and non-MTP generation, and interruption
+   cleanup. Then run the benchmark matrix below for every backend or patch
+   path affected by the update.
+3. **Cross-architecture spot checks:** on each remaining applicable hardware
+   class, run `doctor`, a tiny-model GPU smoke, and the smallest representative
+   benchmark that exercises the changed backend path. A profile-specific
+   change does not require unrelated large-model testing, but generic HIP,
+   Vulkan, device-selection, or model-loading changes do.
+4. **Handoff:** record unavailable hardware as deferred rather than silently
+   treating the primary machine as universal acceptance. Use the handoff
+   format in [hardware-acceptance.md](hardware-acceptance.md#deferred-acceptance-handoff)
+   and provide commands with every default made explicit.
+
+Use catalog-managed models and keep the image, model, profile, render nodes,
+prompt sizes, generation sizes, repetitions, batch sizes, cache types, Flash
+Attention policy, and context depth identical between comparisons. The
+minimum matrix is:
+
+| Case | Purpose | Minimum comparison |
+| --- | --- | --- |
+| Tiny smoke | Detects basic load, offload, and generated-output failures cheaply. | ROCm and Vulkan, 32 prompt tokens, 16 generated tokens, one measured repetition. |
+| Representative f16 KV | Detects ordinary dense or sparse long-context regressions. | Both backends at shallow depth and at least 32K context, 512 prompt tokens, 128 generated tokens, three repetitions. |
+| Representative q8_0 KV | Exercises quantized-KV Flash Attention and its memory/performance tradeoff. | Repeat the long-context case with both K and V explicitly set to `q8_0` and Flash Attention explicitly enabled. |
+| MTP control | Separates model/runtime changes from speculative-decoding behavior. | The same managed family, prompt, and backend with MTP enabled and disabled; record acceptance rate as well as aggregate timing. |
+| Service behavior | Detects integration regressions outside `llama-bench`. | Router model selection, Chat Completions, Responses, reasoning levels, one-shot CLI exit, and clean stop or interruption. |
+
+The exact representative model may change with the catalog. State why the
+selected dense or sparse model covers the changed code, and do not substitute
+a faster unrelated architecture merely because it is convenient.
+
 Do not treat one successful tiny workflow as acceptance of every model family.
 
 ## Release checklist

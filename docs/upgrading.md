@@ -222,45 +222,42 @@ Review Ubuntu's `glslc`, SPIR-V headers, Vulkan loader, and Mesa RADV versions
 together. The shader compiler changes generated code at build time, while
 Mesa changes the runtime driver.
 
+### llama.cpp downstream patch ledger
+
+Treat every row as part of the pinned source rather than as incidental build
+machinery. On an update, classify each patch as unchanged, rebased, replaced
+upstream, or blocked. A patch that stops applying has not proved that its
+protected behavior is fixed.
+
+| Patch | Protected behavior and scope | Removal gate |
+| --- | --- | --- |
+| `hip-apu-host-buffer.patch` | Prevents unsafe direct computation on `ROCm_Host` buffers on HIP integrated GPUs while retaining pinned allocation. Relevant to `gfx1150` and `gfx1151`. | The selected upstream pin contains an equivalent to [PR 25863](https://github.com/ggml-org/llama.cpp/pull/25863), and long-input server, CLI, tool-call, and concurrent-slot checks remain correct on both APU architectures. |
+| `reasoning-effort-budget.patch` | Maps supported Chat Completions and Responses effort values onto ROCmplete's bounded reasoning policy. | Both endpoints honor no-thinking and the advertised low, medium, and high budgets without the patch, including the configured exhaustion message. Related upstream work is tracked in [PR 20479](https://github.com/ggml-org/llama.cpp/pull/20479). |
+| `quantized-kv-flash-attention.patch` | Provides reviewed Vulkan q8_0 and HIP q8_0/q4_0 dequantize-on-load paths. It combines commits `4edaca09`, `4355d03e`, and `2a24abc6` from the `strix-halo-fa-fixes` branch. | Matching upstream code passes the same f16 and q8_0 cache, backend, context-depth, performance, and output checks on every applicable hardware class. |
+| `vulkan-f16-kv-contiguize.patch` | Adds the environment-gated f16 KV contiguization path derived from commit `b1a10f981`. ROCmplete enables it only for Vulkan on `gfx1151`. | Equivalent upstream behavior retains the measured long-context improvement without shallow-context or output regressions. Do not broaden the profile gate without results from the additional architecture. |
+
 For an upstream source update:
 
 1. Resolve and review a full llama.cpp commit and its license.
 2. Inspect CMake option changes, server/CLI flags, offline behavior, automatic
    layer fitting, unified-memory controls, HIP/Vulkan device naming, and GGUF
    compatibility.
-3. Check whether upstream has merged the HIP APU host-buffer correction from
-   PR 25863. Keep `applications/llama-cpp/hip-apu-host-buffer.patch` only
-   while the selected pin still needs it; `git apply --check` must continue to
-   fail closed if the source no longer matches.
-4. Check Chat Completions and Responses handling for no-thinking plus real
-   low, medium, and high reasoning-budget support. Keep
-   `applications/llama-cpp/reasoning-effort-budget.patch` while upstream
-   ignores those values for managed reasoning models and ROCmplete advertises
-   them. Confirm `none`, all three bounded budgets, and the exhaustion message
-   through both endpoints.
-5. Check whether upstream has absorbed the quantized-KV Flash Attention work
-   carried in `applications/llama-cpp/quantized-kv-flash-attention.patch`.
-   The patch combines Vulkan commits `4edaca09` and `4355d03e`
-   plus HIP commit `2a24abc6` from the `strix-halo-fa-fixes` branch. Remove it
-   only after matching upstream code passes the same f16/q8_0, backend, depth,
-   and output checks on every supported architecture. Also check the narrower
-   `applications/llama-cpp/vulkan-f16-kv-contiguize.patch`, derived from
-   commit `b1a10f981`. It is intentionally enabled only for Vulkan on
-   `gfx1151`; do not broaden that policy without hardware results from the
-   additional architecture.
-6. Keep both `GGML_HIP` and `GGML_VULKAN` enabled,
+3. Review every downstream patch against the ledger above. Record its
+   classification and evidence. Keep `git apply --check` fail-closed behavior
+   for each retained or rebased patch.
+4. Keep both `GGML_HIP` and `GGML_VULKAN` enabled,
    `gfx1150;gfx1151;gfx1200;gfx1201`, RPC disabled, examples/tests disabled,
    and both `LLAMA_BUILD_UI` and `LLAMA_USE_PREBUILT_UI` disabled unless a
    separately pinned UI supply chain is deliberately added.
-7. Update the short commit and policy revision in the application image tag.
-8. Build `llama-cpp` without cache and confirm the build makes no unpinned
+5. Update the short commit and policy revision in the application image tag.
+6. Build `llama-cpp` without cache and confirm the build makes no unpinned
    asset download.
-9. Inspect `ldd` for all retained binaries and libraries, including
+7. Inspect `ldd` for all retained binaries and libraries, including
    `libggml-hip`, `libggml-vulkan`, and the Vulkan loader.
-10. Verify that the final Python environment contains core, libraries, and
+8. Verify that the final Python environment contains core, libraries, and
    exactly the four supported device wheels, but no devel or PyTorch package.
    Confirm that the image retains exactly the intended binaries.
-11. Run CPU `--version`, then real server/CLI and `llama-bench` acceptance with
+9. Run CPU `--version`, then real server/CLI and `llama-bench` acceptance with
    both backends on all supported hardware classes.
 
 Also compare upstream router preset syntax and controlled arguments
