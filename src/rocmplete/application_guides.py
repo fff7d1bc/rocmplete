@@ -341,11 +341,11 @@ def _llama_guide() -> ApplicationGuide:
                     "configure the client with that preset's actual context "
                     "limit. Qwen3 0.6B can smoke-test the protocol but is "
                     "not a dependable repository agent.",
-                    "ROCmplete's bin/opencode and bin/pi wrappers render the "
-                    "current server and model config at launch without "
-                    "editing either client's normal settings. Add the "
+                    "ROCmplete's bin/opencode, bin/pi, and bin/maki wrappers "
+                    "render the current server and model config at launch "
+                    "without editing any client's normal settings. Add the "
                     "checkout's bin directory to PATH once, then invoke "
-                    "either client normally. Both use ordinary Chat "
+                    "a client normally. All use ordinary Chat "
                     "Completions function tools.",
                     "Pi package commands such as install, list, and update "
                     "keep their upstream shape and use Pi's private "
@@ -372,7 +372,8 @@ def _llama_guide() -> ApplicationGuide:
                     "medium, and high thinking budgets. The disabled choice "
                     "turns thinking off; medium is the llama.cpp fallback. "
                     "OpenCode uses ctrl+t or /variants. Pi uses Shift+Tab "
-                    "or /settings.",
+                    "or /settings. Maki uses /thinking and Tab toggles its "
+                    "Plan and Build modes.",
                 ),
                 (
                     _action(
@@ -392,6 +393,11 @@ def _llama_guide() -> ApplicationGuide:
                     _action(
                         "./rocmplete agent pi",
                         "Start Pi directly; bin/pi is the PATH-friendly "
+                        "equivalent.",
+                    ),
+                    _action(
+                        "./rocmplete agent maki",
+                        "Start Maki directly; bin/maki is the PATH-friendly "
                         "equivalent.",
                     ),
                 ),
@@ -625,6 +631,12 @@ def _dwarfstar_guide() -> ApplicationGuide:
                         "--model deepseek-v4-flash --thinking high",
                         "Use the same server through ROCmplete's guarded "
                         "Pi launcher.",
+                    ),
+                    _action(
+                        "./rocmplete agent maki -- "
+                        "-m dwarfstar/deepseek-v4-flash",
+                        "Use the same server through ROCmplete's guarded "
+                        "Maki launcher.",
                     ),
                     _action(
                         "./rocmplete logs dwarfstar --follow",

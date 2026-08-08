@@ -336,17 +336,20 @@ the least ambiguous launch mode:
 ./rocmplete run llama-cpp server --router --models-max 1
 ```
 
-ROCmplete configures but does not install the clients. Install either upstream
-package by its supported method. For Linuxbrew or Homebrew:
+ROCmplete configures but does not install the clients. Install an upstream
+client by its supported method. For Linuxbrew or Homebrew:
 
 ```bash
 brew install opencode
 brew install pi-coding-agent
 ```
 
-ROCmplete ships PATH-friendly OpenCode and Pi launchers. Both render the
+Maki is distributed separately. Put its `maki` executable on `PATH` before
+using the ROCmplete launcher.
+
+ROCmplete ships PATH-friendly OpenCode, Pi, and Maki launchers. They render the
 current provider and model catalog every time they start. Install the
-recommended model and start the router first, then choose either client:
+recommended model and start the router first, then choose a client:
 
 ```bash
 ./rocmplete content install llama-cpp qwen3.6
@@ -354,6 +357,7 @@ recommended model and start the router first, then choose either client:
 export PATH="$PWD/bin:$PATH"
 opencode
 # or: pi
+# or: maki
 ```
 
 The generated provider lists every preset explicitly maintained for agent
@@ -361,7 +365,8 @@ work, including ones not currently installed. Selecting an absent model does
 not download it; the router reports that it is unavailable. Use the client's
 model picker to choose a different installed model. OpenCode accepts `-m
 rocmplete/PRESET`. Pi accepts `--model PRESET`, with `--provider rocmplete`
-available when the provider would otherwise be ambiguous.
+available when the provider would otherwise be ambiguous. Maki accepts `-m
+rocmplete/PRESET` and exposes the same entries through `/model`.
 
 `bin/opencode` delegates to `./rocmplete agent opencode`, injects the
 generated main configuration directly into the child process, and points it
@@ -404,6 +409,23 @@ writable project and host network inside the sandbox, so review them before
 installation. A local `pi install -l` still requires explicit project approval
 before its project resources can load.
 
+`bin/maki` delegates to `./rocmplete agent maki`. It atomically refreshes two
+executable provider descriptions and a small generated `init.lua` inside
+Maki's ROCmplete-owned XDG directories. The providers inherit Maki's native
+llama.cpp Chat Completions adapter and publish the exact context, output, and
+thinking capabilities of the reviewed presets. Maki's normal global config,
+sessions, and model choices are not read or modified.
+
+The recommended installed model starts at medium thinking. Maki remembers an
+explicit `/model` or `/thinking` choice in its private state. On the first
+launch, ROCmplete assigns the selected default to Maki's strong, medium, weak,
+and compaction tiers so a local subagent does not silently select another
+alphabetically sorted model. Later tier changes in `/model` are preserved.
+An unchanged generated assignment follows the default if installed content
+changes. The generated config also limits Maki to one concurrent task subagent
+because several simultaneous 256K local sessions can exhaust shared GPU
+memory.
+
 The PATH launchers require bubblewrap and start sandboxed by default. Their
 writable host paths are the launch directory and private per-client state
 below `DATA_DIR/apps/CLIENT/sandbox`. The launch directory keeps its absolute
@@ -427,6 +449,12 @@ System files and the resolved client installation are read-only. OpenCode's
 TUI keymap is mounted as one read-only file at a synthetic path. The launchers
 recognize Linuxbrew below `/home/linuxbrew/.linuxbrew` and mount that prefix
 read-only.
+
+Maki can load executable project configuration from `.maki/init.lua`. Treat it
+like code from the checkout. The bubblewrap boundary still prevents that code
+from reaching the rest of the home directory, but it retains access to the
+writable project and host network.
+
 Networking cannot be unshared because the managed router is normally on host
 loopback. The sandbox can therefore still reach the Internet, LAN, and other
 localhost services, and it can still alter or delete anything in the writable
@@ -444,6 +472,7 @@ Use the direct command for the explicit escape hatch:
 ```bash
 ./rocmplete agent opencode --no-sandbox --
 ./rocmplete agent pi --no-sandbox --
+./rocmplete agent maki --no-sandbox --
 ```
 
 This restores ordinary host filesystem access and should be reserved for a
@@ -487,25 +516,32 @@ not an authorization prompt for model tool calls. Pi has no built-in sandbox,
 so the bubblewrap boundary is the control that limits filesystem damage. Pass
 `--approve` only when project Pi resources are intentionally trusted.
 
+Maki starts in Build mode. Press `Tab` to toggle its built-in Plan mode, where
+only the plan file may be written, then return to Build when the plan is ready.
+Its `--print` mode always starts a new Build-mode session, so use the TUI when
+the Plan boundary matters.
+
 For long-context presets, ROCmplete advertises a 16K per-turn output ceiling to
-both clients. That leaves more of the native context available before automatic
-compaction while still accommodating the managed 8K high reasoning budget
-and a final response. This limit is per model turn, not the total session.
+all three clients. That leaves more of the native context available before
+automatic compaction while still accommodating the managed 8K high reasoning
+budget and a final response. This limit is per model turn, not the total
+session.
 
 Presets with reviewed bounded reasoning expose disabled, low, medium, and high
-choices. OpenCode names the disabled choice `instant`; Pi names it `off`.
-OpenCode uses `ctrl+t` or `/variants`, while Pi uses `Shift+Tab`, the thinking
-selector in `/settings`, or the startup `--thinking` option. Pi's `/model`
-changes the model rather than opening a separate reasoning selector. The
-disabled choice sends `reasoning_effort: none`. The other three are real
-llama.cpp thinking ceilings of 1024, 4096, and 8192 tokens, not just UI labels.
+choices. OpenCode names the disabled choice `instant`; Pi and Maki name it
+`off`. OpenCode uses `ctrl+t` or `/variants`, while Pi uses `Shift+Tab`, the
+thinking selector in `/settings`, or the startup `--thinking` option. Pi's
+`/model` changes the model rather than opening a separate reasoning selector.
+Maki uses `/thinking`. The disabled choice sends `reasoning_effort: none`. The
+other three are real llama.cpp thinking ceilings of 1024, 4096, and 8192
+tokens, not just UI labels.
 ROCmplete uses medium until a per-model choice takes precedence. A preset
 without reviewed budget support does not advertise reasoning choices.
 
-Both clients use `/v1/chat/completions` and expose their file and shell tools as
-ordinary function calls. That matches llama.cpp's current tool adapter. Still
-test a complete read, edit, command, and tool-result loop in both maintained
-clients before letting a newly added model work unattended.
+All three clients use `/v1/chat/completions` and expose their file and shell
+tools as ordinary function calls. That matches llama.cpp's current tool
+adapter. Still test a complete read, edit, command, and tool-result loop in
+each maintained client before letting a newly added model work unattended.
 
 Use the ROCmplete preset ID as the API model ID. Configure the client with the
 preset's actual starting context rather than advertising a larger limit. For
@@ -893,6 +929,7 @@ server, then choose it explicitly in either client:
 ./rocmplete run dwarfstar server
 opencode -m dwarfstar/deepseek-v4-flash
 pi --provider dwarfstar --model deepseek-v4-flash --thinking high
+maki -m dwarfstar/deepseek-v4-flash
 ```
 
 Its OpenCode variants are `instant` and `thinking`. Instant sends
@@ -905,7 +942,11 @@ Think Max mode. If the DwarfStar server uses another port, pass
 `./rocmplete agent opencode --dwarfstar-port PORT --` or set
 `ROCMLETE_OPENCODE_DWARFSTAR_PORT`. Pi exposes the same two behaviors as `off`
 and `high`; pass `./rocmplete agent pi --dwarfstar-port PORT --` or set
-`ROCMLETE_PI_DWARFSTAR_PORT` for its provider.
+`ROCMLETE_PI_DWARFSTAR_PORT` for its provider. Maki runs DwarfStar in its
+normal server-side thinking mode and does not advertise a selector because
+Maki's llama.cpp adapter sends a different budget field. Use the raw API when
+a direct-answer DwarfStar request is required. Set
+`ROCMLETE_MAKI_DWARFSTAR_PORT` when its server uses a different port.
 
 Run the hardware-bound smoke separately after initial setup. Outside Strix
 Halo, selecting DwarfStar explicitly is also the opt-in that prevents the

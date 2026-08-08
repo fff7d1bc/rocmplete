@@ -172,6 +172,13 @@ from .pi_agent import (
     prepare_state as prepare_pi_state,
     sandbox_paths as pi_sandbox_paths,
 )
+from .maki_agent import (
+    create_launch_plan as create_maki_launch_plan,
+    create_sandbox_plan as create_maki_sandbox_plan,
+    launch_environment as maki_launch_environment,
+    prepare_state as prepare_maki_state,
+    sandbox_paths as maki_sandbox_paths,
+)
 from .runtime.diagnostic import (
     gpu_diagnostic_command,
     parse_gpu_diagnostic_output,
@@ -1034,16 +1041,77 @@ def command_pi(
     return 0
 
 
+def command_maki(
+    arguments: argparse.Namespace, catalog: Optional[Catalog] = None
+) -> int:
+    env = os.environ
+    port_value = arguments.port or environment_value(env, "MAKI_PORT", "8080")
+    dwarfstar_port_value = arguments.dwarfstar_port or environment_value(
+        env, "MAKI_DWARFSTAR_PORT", "8000"
+    )
+    data_dir = _content_data_dir(arguments.data_dir, prepare=False)
+    plan = create_maki_launch_plan(
+        catalog or load_catalog(),
+        data_dir,
+        validate_port(port_value),
+        arguments.maki_arguments,
+        env,
+        dwarfstar_port=validate_port(dwarfstar_port_value),
+    )
+    if plan.mode == "passthrough":
+        try:
+            os.execvpe(plan.command[0], list(plan.command), dict(env))
+        except OSError as error:
+            raise LauncherError("cannot start Maki: {}".format(error))
+        return 0
+
+    data_dir = prepare_data_dir(data_dir)
+    paths = maki_sandbox_paths(data_dir)
+    prepare_maki_state(plan, paths, data_dir)
+    if arguments.sandbox:
+        sandbox = create_maki_sandbox_plan(
+            plan, data_dir, Path.cwd(), env
+        )
+        print("Maki sandbox", file=sys.stderr)
+        print(
+            "  Writable project  {}".format(sandbox.workdir),
+            file=sys.stderr,
+        )
+        print(
+            "  Private state     {}".format(sandbox.state_root),
+            file=sys.stderr,
+        )
+        if plan.mode == "session":
+            network = "host network retained for {} and {}".format(
+                plan.endpoint, plan.dwarfstar_endpoint
+            )
+        else:
+            network = "host network retained for explicit Maki command"
+        print("  Network           {}".format(network), file=sys.stderr)
+        command = sandbox.command
+        child = sandbox.environment
+    else:
+        command = plan.command
+        child = maki_launch_environment(paths, env)
+    try:
+        os.execvpe(command[0], list(command), dict(child))
+    except OSError as error:
+        raise LauncherError("cannot start Maki: {}".format(error))
+    return 0
+
+
 def command_agent(arguments: argparse.Namespace) -> int:
     if arguments.agent_client is None:
         return _print_incomplete_command(
             arguments.command_parser,
-            "choose opencode or pi",
+            "choose opencode, pi, or maki",
             AGENT_EXAMPLES,
         )
     if arguments.agent_client == "opencode":
         return command_opencode(arguments)
-    return command_pi(arguments)
+    if arguments.agent_client == "pi":
+        return command_pi(arguments)
+    return command_maki(arguments)
 
 
 def _interactive_build_target() -> str:
@@ -4174,6 +4242,11 @@ def _command_content_install(
                         (
                             "./rocmplete agent pi",
                             "Or start the guarded Pi client against the same "
+                            "router.",
+                        ),
+                        (
+                            "./rocmplete agent maki",
+                            "Or start the guarded Maki client against the same "
                             "router.",
                         ),
                     )

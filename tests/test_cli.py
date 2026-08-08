@@ -1012,6 +1012,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("bin/opencode", text)
         self.assertIn("./rocmplete agent pi", text)
         self.assertIn("bin/pi", text)
+        self.assertIn("./rocmplete agent maki", text)
+        self.assertIn("bin/maki", text)
         self.assertNotIn("OPENCODE_CONFIG", text)
         self.assertNotIn("OPENCODE_TUI_CONFIG", text)
         self.assertIn("TranslateGemma has one preset", normalized)
@@ -4672,6 +4674,7 @@ class CliTests(unittest.TestCase):
         )
         self.assertIn("./rocmplete agent opencode", rendered)
         self.assertIn("./rocmplete agent pi", rendered)
+        self.assertIn("./rocmplete agent maki", rendered)
         self.assertNotIn("./rocmplete client", rendered)
         self.assertNotIn("run llama-cpp server --preset", rendered)
         self.assertIn(
@@ -4692,6 +4695,10 @@ class CliTests(unittest.TestCase):
         )
         self.assertLess(
             rendered.index("./rocmplete agent pi"),
+            rendered.index("./rocmplete agent maki"),
+        )
+        self.assertLess(
+            rendered.index("./rocmplete agent maki"),
             rendered.index("run llama-cpp cli"),
         )
 
@@ -5039,12 +5046,13 @@ class CliTests(unittest.TestCase):
         with redirect_stderr(io.StringIO()) as output:
             self.assertEqual(main(["agent"]), 2)
         text = output.getvalue()
-        self.assertIn("error: choose opencode or pi", text)
+        self.assertIn("error: choose opencode, pi, or maki", text)
         self.assertIn("./rocmplete agent opencode", text)
         self.assertIn("./rocmplete agent pi", text)
+        self.assertIn("./rocmplete agent maki", text)
 
     def test_agent_clients_are_not_top_level_commands(self):
-        for command in ("opencode", "pi"):
+        for command in ("opencode", "pi", "maki"):
             with self.subTest(command=command):
                 with redirect_stderr(io.StringIO()):
                     with self.assertRaises(SystemExit) as result:

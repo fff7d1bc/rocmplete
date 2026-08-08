@@ -62,9 +62,10 @@ in the same change. Important ownership boundaries are:
 - `bin/rocmplete`: PATH-friendly delegation to the checkout launcher.
 - `src/rocmplete/agent_models.py` and `src/rocmplete/agent_sandbox.py`: shared
   agent-client model policy and bubblewrap boundary.
-- `bin/opencode`, `bin/pi`, `src/rocmplete/opencode.py`, and
-  `src/rocmplete/pi_agent.py`: runtime client launch and local model-catalog
-  generation below the public `agent` command group.
+- `bin/opencode`, `bin/pi`, `bin/maki`, `src/rocmplete/opencode.py`,
+  `src/rocmplete/pi_agent.py`, and `src/rocmplete/maki_agent.py`: runtime
+  client launch and local model-catalog generation below the public `agent`
+  command group.
 - `containers/common/profile.py` and application entrypoints: container-side
   profile enforcement and application policy.
 - `applications/<application>/`: application-owned dependency pins,

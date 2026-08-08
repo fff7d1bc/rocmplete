@@ -147,9 +147,10 @@ Run a supported coding agent against managed local models:
 
   ./rocmplete agent opencode
   ./rocmplete agent pi
+  ./rocmplete agent maki
 
-The PATH-friendly bin/opencode and bin/pi launchers provide the same guarded
-defaults without the ROCmplete command prefix.
+The PATH-friendly launchers in bin/ provide the same guarded defaults without
+the ROCmplete command prefix.
 """
 OPENCODE_EXAMPLES = """\
 Run OpenCode with the current ROCmplete model catalog:
@@ -206,6 +207,29 @@ For a router on another local port:
 For DwarfStar on another local port:
 
   ROCMLETE_PI_DWARFSTAR_PORT=8001 pi
+"""
+MAKI_EXAMPLES = """\
+Run Maki with the current ROCmplete model catalog:
+
+  export PATH="$PWD/bin:$PATH"
+  ./rocmplete run llama-cpp server --router --models-max 1
+  maki
+
+The PATH launcher uses bubblewrap by default. To troubleshoot without it:
+
+  ./rocmplete agent maki --no-sandbox --
+
+Forward normal Maki arguments through the launcher:
+
+  maki -m rocmplete/qwen3.6-35b-a3b-mtp-ud-q8-k-xl
+
+Use a separately running DwarfStar server:
+
+  ./rocmplete run dwarfstar server
+  maki -m dwarfstar/deepseek-v4-flash
+
+For servers on other local ports, set ROCMLETE_MAKI_PORT or
+ROCMLETE_MAKI_DWARFSTAR_PORT.
 """
 SHELL_EXAMPLES = """\
 Try one of these:
@@ -806,6 +830,49 @@ def _parser() -> argparse.ArgumentParser:
         help=argparse.SUPPRESS,
     )
     pi.set_defaults(command_parser=pi)
+
+    maki = agent_clients.add_parser(
+        "maki",
+        help="run Maki with the managed local model providers",
+        allow_abbrev=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=MAKI_EXAMPLES,
+    )
+    maki.add_argument(
+        "--port",
+        help=(
+            "local llama.cpp router port (default: "
+            "ROCMLETE_MAKI_PORT or 8080)"
+        ),
+    )
+    maki.add_argument(
+        "--dwarfstar-port",
+        help=(
+            "local DwarfStar server port (default: "
+            "ROCMLETE_MAKI_DWARFSTAR_PORT or 8000)"
+        ),
+    )
+    maki.add_argument("--data-dir", help="persistent data directory")
+    maki_sandbox = maki.add_mutually_exclusive_group()
+    maki_sandbox.add_argument(
+        "--sandbox",
+        dest="sandbox",
+        action="store_true",
+        default=True,
+        help="confine Maki to the launch directory with bubblewrap (default)",
+    )
+    maki_sandbox.add_argument(
+        "--no-sandbox",
+        dest="sandbox",
+        action="store_false",
+        help="run Maki with normal host filesystem access",
+    )
+    maki.add_argument(
+        "maki_arguments",
+        nargs=argparse.REMAINDER,
+        help=argparse.SUPPRESS,
+    )
+    maki.set_defaults(command_parser=maki)
     agent.set_defaults(command_parser=agent)
 
     images = subparsers.add_parser(

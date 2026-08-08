@@ -593,8 +593,8 @@ not expose the same bounded reasoning behavior.
 
 `bin/rocmplete` is a PATH-friendly delegate to the root checkout launcher and
 resolves symlinks before locating it. The public `agent` command groups coding
-frontends as `agent opencode` and `agent pi`; their short PATH launchers retain
-the upstream command names. `src/rocmplete/opencode.py` renders the
+frontends below one command; their short PATH launchers retain the upstream
+command names. `src/rocmplete/opencode.py` renders the
 OpenAI-compatible llama.cpp and DwarfStar providers at launch. `bin/opencode`
 delegates to the host launcher,
 which supplies the main JSON through `OPENCODE_CONFIG_CONTENT` and points
@@ -647,6 +647,20 @@ real executable without the managed environment. Its remaining subcommands
 accept global options first; a regression test preserves their position after
 the managed `--pure` option.
 
+`src/rocmplete/maki_agent.py` publishes the same reviewed model catalog as two
+executable dynamic providers below Maki's private XDG configuration. Both use
+Maki's native `llama-cpp` provider as their protocol base, so the exact
+loopback `/v1` URL comes from the generated provider while Chat Completions,
+tool calls, and local thinking budgets remain owned by Maki. A generated
+`init.lua` selects the recommended installed model, medium thinking, and one
+concurrent task subagent. The initial tier file assigns that model to every
+subagent tier. An unchanged seed follows a later default change, while any
+user-edited tier assignment is preserved. Managed configuration and provider
+scripts are refreshed atomically and reject links or multiply linked files.
+Maki update, rollback, migration, and informational commands pass through to
+the real executable. Other management commands use the private state without
+requiring an installed model.
+
 DwarfStar is a separate provider at its own loopback endpoint, with the one
 reviewed `deepseek-v4-flash` model advertising the same 131072-token runtime
 allocation and 16000-token output ceiling as the managed server. It offers
@@ -656,10 +670,13 @@ high to the same normal thinking mode; Think Max needs a substantially larger
 context and is not advertised. Disabled custom entries remove OpenCode's
 inherited low, medium, high, and max variants from the picker without hiding
 reasoning output. Pi maps the same behavior to `off` and `high` while hiding
-unsupported intermediate levels. A generated provider does not imply that the
-DwarfStar server or model is installed or running.
+unsupported intermediate levels. Maki's llama.cpp base sends
+`thinking_budget_tokens`, which DwarfStar does not consume, so its generated
+entry leaves the model at normal server-side thinking and advertises no false
+selector. A generated provider does not imply that the DwarfStar server or
+model is installed or running.
 
-`src/rocmplete/agent_sandbox.py` owns the common client boundary. Both
+`src/rocmplete/agent_sandbox.py` owns the common client boundary. All three
 launchers use bubblewrap by default and refuse to fall back silently when
 `bwrap` is unavailable. They unshare user, PID, IPC, UTS, cgroup, and other
 available namespaces while deliberately restoring host networking for the
@@ -696,6 +713,12 @@ explicit troubleshooting escape hatch and restores ordinary host filesystem
 access while retaining generated provider settings and private client state.
 Neither mode starts or supervises a model server.
 
+Maki prefers a legacy `~/.maki` directory over XDG paths. Sandboxed runs have
+an empty synthetic home and cannot see one. An unsandboxed run refuses to
+start while the legacy directory exists and directs the user to upstream
+`maki migrate xdg`; silently using ordinary host state would violate the
+private-state contract.
+
 Investigate is an additional primary agent selected through OpenCode's normal
 agent switcher. It inherits the selected managed model but fixes temperature
 at zero and denies edit, bash, and todo tools. Its task policy first denies all
@@ -723,7 +746,7 @@ retained context. Compaction remains lossy and the sandbox remains the hard
 filesystem boundary when a local model misreads generated context.
 
 This protocol choice is deliberate. llama.cpp maps ordinary function tools
-from Chat Completions, which covers both clients' host-side tools. A newly
+from Chat Completions, which covers all three clients' host-side tools. A newly
 maintained preset still needs a complete tool-call and tool-result acceptance
 test in each client before unattended use.
 

@@ -54,8 +54,8 @@ ROCmplete tries to cover the whole path.
   rebuilds.
 - Containers are rootless, read-only, capability-free, and expose only the
   selected GPU devices. Web applications publish on loopback by default.
-- Optional OpenCode and Pi launchers add a bubblewrap filesystem boundary
-  around local coding-agent work.
+- Optional OpenCode, Pi, and Maki launchers add a bubblewrap filesystem
+  boundary around local coding-agent work.
 - `acceptance run` checks more than startup. It runs small real workloads,
   checkpoints progress, and collects visual review after unattended work.
 
@@ -219,11 +219,12 @@ PATH launcher. At least one managed agent model must already be installed.
 export PATH="$PWD/bin:$PATH"
 opencode
 # or: pi
+# or: maki
 ```
 
-OpenCode starts new sessions in read-only Investigate mode. Both launchers keep
-the current directory and private client state writable while hiding the real
-home directory, credentials, Podman state, and GPU devices. The
+OpenCode starts new sessions in read-only Investigate mode. All three launchers
+keep the current directory and private client state writable while hiding the
+real home directory, credentials, Podman state, and GPU devices. The
 [tool-using client guide](guide/applications.md#tool-using-clients) documents
 models, reasoning variants, agent modes, sandbox limits, and escape hatches.
 
@@ -333,7 +334,7 @@ can prefer different backends on the same GPU. The
 ## User guides
 
 - [Applications](guide/applications.md) covers ComfyUI, llama.cpp, DwarfStar,
-  managed models, APIs, OpenCode, Pi, and multi-GPU workloads.
+  managed models, APIs, OpenCode, Pi, Maki, and multi-GPU workloads.
 - [Content](guide/content.md) covers recipes, exact bundles, licenses,
   verification, resumable downloads, mirrors, imports, and workflows.
 - [Operations](guide/operations.md) covers acceptance, builds, caches, image
