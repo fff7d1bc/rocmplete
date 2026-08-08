@@ -153,6 +153,7 @@ class ApplicationGuideTests(unittest.TestCase):
         self.assertIn("hidden read-only", text)
         self.assertIn("separate child sessions", text)
         self.assertIn("disabled choice turns thinking off", text)
+        self.assertIn("Pi uses Shift+Tab or /settings", normalized)
         self.assertIn("ctrl+t", text)
         self.assertIn("/variants", text)
         self.assertNotIn("OPENCODE_CONFIG", text)

@@ -475,12 +475,13 @@ and a final response. This limit is per model turn, not the total session.
 
 Presets with reviewed bounded reasoning expose disabled, low, medium, and high
 choices. OpenCode names the disabled choice `instant`; Pi names it `off`.
-OpenCode uses `ctrl+t` or `/variants`, while Pi uses `Shift+Tab`, `/model`, or
-`--thinking`. The disabled choice sends `reasoning_effort: none`. The other
-three are real llama.cpp thinking ceilings of 1024, 4096, and 8192 tokens, not
-just UI labels. ROCmplete uses medium until a per-model choice takes
-precedence. A preset without reviewed budget support does not advertise
-reasoning choices.
+OpenCode uses `ctrl+t` or `/variants`, while Pi uses `Shift+Tab`, the thinking
+selector in `/settings`, or the startup `--thinking` option. Pi's `/model`
+changes the model rather than opening a separate reasoning selector. The
+disabled choice sends `reasoning_effort: none`. The other three are real
+llama.cpp thinking ceilings of 1024, 4096, and 8192 tokens, not just UI labels.
+ROCmplete uses medium until a per-model choice takes precedence. A preset
+without reviewed budget support does not advertise reasoning choices.
 
 Both clients use `/v1/chat/completions` and expose their file and shell tools as
 ordinary function calls. That matches llama.cpp's current tool adapter. Still

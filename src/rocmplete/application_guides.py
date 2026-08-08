@@ -367,7 +367,7 @@ def _llama_guide() -> ApplicationGuide:
                     "medium, and high thinking budgets. The disabled choice "
                     "turns thinking off; medium is the llama.cpp fallback. "
                     "OpenCode uses ctrl+t or /variants. Pi uses Shift+Tab "
-                    "or /model.",
+                    "or /settings.",
                 ),
                 (
                     _action(
