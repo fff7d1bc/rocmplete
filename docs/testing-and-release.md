@@ -54,6 +54,8 @@ Exercise user-visible composition:
 ./rocmplete run dwarfstar server --profile strix-halo --dry-run
 ./rocmplete opencode --help
 ./rocmplete opencode --no-sandbox -- --help
+./rocmplete pi --help
+./rocmplete pi --no-sandbox -- --help
 ./rocmplete benchmark llama-cpp \
   --preset qwen3-0.6b-q8-0 --profile cpu --dry-run
 ./rocmplete benchmark llama-cpp \
@@ -86,13 +88,14 @@ Inspect resolved commands for:
 - exactly `/dev/kfd` plus the complete selected render-node set in GPU mode;
 - offline/network-none behavior where promised.
 
-For OpenCode sandbox changes, run a real bubblewrap probe on Linux. Confirm
-that OpenCode starts and exits cleanly, its launch directory and private XDG
-state are writable, and the real home, SSH agent, inherited token variables,
-host OpenCode state, and GPU devices are absent. Confirm that the host
-loopback llama.cpp endpoint remains reachable. Repeat with a Linuxbrew
-OpenCode installation because its prefix lives below `/home`, which the
-sandbox otherwise hides.
+For agent-client sandbox changes, run real OpenCode and Pi bubblewrap probes on
+Linux. Confirm each client starts and exits cleanly, its launch directory and
+private XDG state are writable, and the real home, SSH agent, inherited token
+variables, ordinary client state, and GPU devices are absent. Confirm that the
+host loopback llama.cpp endpoint remains reachable. Repeat with Linuxbrew
+client installations because their prefix lives below `/home`, which the
+sandbox otherwise hides. For Pi, also confirm `AGENTS.md` loads while
+unapproved project `.pi` resources do not.
 On Fedora-family hosts where `/home` links to `/var/home`, confirm that both
 absolute spellings resolve to the mounted project while sibling home content
 remains absent.
@@ -203,12 +206,12 @@ The pinned upstream router may also advertise its reserved empty `default`
 preset; that is not managed content and should not be selected during the
 smoke test.
 
-For DwarfStar/OpenCode integration, start the managed 128K DwarfStar server,
-select `dwarfstar/deepseek-v4-flash`, and complete one read plus function-tool
-round trip in Investigate or Plan. Confirm that `instant` disables thinking,
-`thinking` enables normal thinking, and the generated provider follows
-`--dwarfstar-port`. Do not claim agent compatibility from `/v1/models` or a
-plain text response alone.
+For DwarfStar agent-client integration, start the managed 128K DwarfStar
+server, select `dwarfstar/deepseek-v4-flash` in OpenCode and the matching
+provider/model in Pi, and complete one read plus function-tool round trip in
+each. Confirm that disabled reasoning and normal thinking both work and the
+generated providers follow `--dwarfstar-port`. Do not claim agent
+compatibility from `/v1/models` or a plain text response alone.
 
 MTP catalog changes additionally require one single-model dry run and router
 INI inspection for an embedded-draft preset and a separate-draft preset.

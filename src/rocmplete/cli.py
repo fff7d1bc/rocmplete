@@ -163,6 +163,13 @@ from .opencode import (
     prepare_sandbox_paths as prepare_opencode_sandbox_paths,
     sandbox_paths as opencode_sandbox_paths,
 )
+from .pi_agent import (
+    create_launch_plan as create_pi_launch_plan,
+    create_sandbox_plan as create_pi_sandbox_plan,
+    launch_environment as pi_launch_environment,
+    prepare_state as prepare_pi_state,
+    sandbox_paths as pi_sandbox_paths,
+)
 from .runtime.diagnostic import (
     gpu_diagnostic_command,
     parse_gpu_diagnostic_output,
@@ -954,6 +961,54 @@ def command_opencode(
         )
     except OSError as error:
         raise LauncherError("cannot start OpenCode: {}".format(error))
+    return 0
+
+
+def command_pi(
+    arguments: argparse.Namespace, catalog: Optional[Catalog] = None
+) -> int:
+    env = os.environ
+    port_value = arguments.port or environment_value(env, "PI_PORT", "8080")
+    dwarfstar_port_value = arguments.dwarfstar_port or environment_value(
+        env, "PI_DWARFSTAR_PORT", "8000"
+    )
+    data_dir = _content_data_dir(arguments.data_dir, prepare=False)
+    plan = create_pi_launch_plan(
+        catalog or load_catalog(),
+        data_dir,
+        validate_port(port_value),
+        arguments.pi_arguments,
+        env,
+        dwarfstar_port=validate_port(dwarfstar_port_value),
+    )
+    paths = pi_sandbox_paths(data_dir)
+    agent_dir = prepare_pi_state(plan, paths, data_dir)
+    if arguments.sandbox:
+        sandbox = create_pi_sandbox_plan(plan, data_dir, Path.cwd(), env)
+        print("Pi sandbox", file=sys.stderr)
+        print(
+            "  Writable project  {}".format(sandbox.workdir),
+            file=sys.stderr,
+        )
+        print(
+            "  Private state     {}".format(sandbox.state_root),
+            file=sys.stderr,
+        )
+        print(
+            "  Network           host network retained for {} and {}".format(
+                plan.endpoint, plan.dwarfstar_endpoint
+            ),
+            file=sys.stderr,
+        )
+        command = sandbox.command
+        child = sandbox.environment
+    else:
+        command = plan.command
+        child = pi_launch_environment(agent_dir, env)
+    try:
+        os.execvpe(command[0], list(command), dict(child))
+    except OSError as error:
+        raise LauncherError("cannot start Pi: {}".format(error))
     return 0
 
 
@@ -4075,11 +4130,18 @@ def _command_content_install(
                     )
                 )
             if any(preset.agent_tools for preset in presets):
-                actions.append(
+                actions.extend(
                     (
-                        "./rocmplete opencode",
-                        "Start the guarded coding client after the router "
-                        "is ready.",
+                        (
+                            "./rocmplete opencode",
+                            "Start the guarded OpenCode client after the "
+                            "router is ready.",
+                        ),
+                        (
+                            "./rocmplete pi",
+                            "Or start the guarded Pi client against the same "
+                            "router.",
+                        ),
                     )
                 )
             actions.extend(
@@ -5805,6 +5867,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             return print_application_guide(arguments.application)
         if arguments.command == "opencode":
             return command_opencode(arguments)
+        if arguments.command == "pi":
+            return command_pi(arguments)
         if arguments.command == "images":
             return command_images(arguments)
         if arguments.command == "doctor":

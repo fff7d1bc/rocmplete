@@ -60,8 +60,11 @@ in the same change. Important ownership boundaries are:
 - `src/rocmplete/llama_benchmark.py`: native llama-bench result capture,
   metadata, atomic writes, and cleanup.
 - `bin/rocmplete`: PATH-friendly delegation to the checkout launcher.
-- `bin/opencode` and `src/rocmplete/opencode.py`: runtime OpenCode launch and
-  local llama.cpp model-catalog generation.
+- `src/rocmplete/agent_models.py` and `src/rocmplete/agent_sandbox.py`: shared
+  agent-client model policy and bubblewrap boundary.
+- `bin/opencode`, `bin/pi`, `src/rocmplete/opencode.py`, and
+  `src/rocmplete/pi_agent.py`: runtime client launch and local model-catalog
+  generation.
 - `containers/common/profile.py` and application entrypoints: container-side
   profile enforcement and application policy.
 - `applications/<application>/`: application-owned dependency pins,

@@ -170,6 +170,34 @@ For DwarfStar on another local port:
 
   ROCMLETE_OPENCODE_DWARFSTAR_PORT=8001 opencode
 """
+PI_EXAMPLES = """\
+Run Pi with the current ROCmplete model catalog:
+
+  export PATH="$PWD/bin:$PATH"
+  ./rocmplete run llama-cpp server --router --models-max 1
+  pi
+
+The PATH launcher uses bubblewrap by default. To troubleshoot without it:
+
+  ./rocmplete pi --no-sandbox --
+
+Forward normal Pi arguments through the launcher:
+
+  pi --model qwen3.6-35b-a3b-mtp-ud-q8-k-xl --thinking high
+
+Use a separately running DwarfStar server:
+
+  ./rocmplete run dwarfstar server
+  pi --provider dwarfstar --model deepseek-v4-flash --thinking high
+
+For a router on another local port:
+
+  ROCMLETE_PI_PORT=9090 pi
+
+For DwarfStar on another local port:
+
+  ROCMLETE_PI_DWARFSTAR_PORT=8001 pi
+"""
 SHELL_EXAMPLES = """\
 Try one of these:
 
@@ -716,6 +744,49 @@ def _parser() -> argparse.ArgumentParser:
         help=argparse.SUPPRESS,
     )
     opencode.set_defaults(command_parser=opencode)
+
+    pi = subparsers.add_parser(
+        "pi",
+        help="run Pi with the managed local model providers",
+        allow_abbrev=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=PI_EXAMPLES,
+    )
+    pi.add_argument(
+        "--port",
+        help=(
+            "local llama.cpp router port (default: "
+            "ROCMLETE_PI_PORT or 8080)"
+        ),
+    )
+    pi.add_argument(
+        "--dwarfstar-port",
+        help=(
+            "local DwarfStar server port (default: "
+            "ROCMLETE_PI_DWARFSTAR_PORT or 8000)"
+        ),
+    )
+    pi.add_argument("--data-dir", help="persistent data directory")
+    pi_sandbox = pi.add_mutually_exclusive_group()
+    pi_sandbox.add_argument(
+        "--sandbox",
+        dest="sandbox",
+        action="store_true",
+        default=True,
+        help="confine Pi to the launch directory with bubblewrap (default)",
+    )
+    pi_sandbox.add_argument(
+        "--no-sandbox",
+        dest="sandbox",
+        action="store_false",
+        help="run Pi with normal host filesystem access",
+    )
+    pi.add_argument(
+        "pi_arguments",
+        nargs=argparse.REMAINDER,
+        help=argparse.SUPPRESS,
+    )
+    pi.set_defaults(command_parser=pi)
 
     images = subparsers.add_parser(
         "images",

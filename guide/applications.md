@@ -162,9 +162,9 @@ named by the next request. That is reasonable for a router containing only
 256K agent presets. Omit it for a mixed router so TranslateGemma and other
 bounded-task models retain their catalog-owned limits.
 
-The generated OpenCode model map describes the 256K catalog default. Keep the
-server at that default when using the launcher; a manual server override
-does not silently rewrite the client's context metadata.
+The generated agent-client model maps describe the 256K catalog default. Keep
+the server at that default when using a launcher; a manual server override
+does not silently rewrite client context metadata.
 
 ### Models, presets, and request settings
 
@@ -186,7 +186,7 @@ part of the user message.
 ### Choosing a managed Qwen preset
 
 Start with `qwen3.6-27b-mtp-q8-0` when you do not yet have workload results. It
-is the smaller general baseline. For OpenCode on a high-memory host,
+is the smaller general baseline. For agent work on a high-memory host,
 start with `qwen3.6-35b-a3b-mtp-ud-q8-k-xl`; keep the dense model as a smaller
 general assistant. Install either non-MTP control when you need to isolate the
 effect of speculative decoding:
@@ -197,7 +197,7 @@ effect of speculative decoding:
 | `qwen3.6-27b-mtp-q8-0` | Dense 27B MTP Q8_0 | General assistant and smaller baseline |
 | `qwen3.6-27b-q8-0` | Dense 27B Q8_0 | Non-MTP control for the dense model |
 | `qwen3.6-35b-a3b-ud-q8-k-xl` | Sparse 35B-A3B Dynamic Q8_K_XL | Non-MTP control for the recommended agent model |
-| `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | Matching sparse model with MTP heads | Recommended OpenCode default on a high-memory host |
+| `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | Matching sparse model with MTP heads | Recommended agent-client default on a high-memory host |
 
 Keep whichever model succeeds on representative tasks rather than choosing
 from the parameter count or quantization name alone.
@@ -218,7 +218,7 @@ MoE model can be installed independently on a high-memory host:
 | `kat-coder-v2.5-dev-q8-0` | Bartowski's plain Q8_0 conversion of Kwaipilot's public text-only checkpoint | Newer agentic-coding candidate kept separate from APEX and MTP derivatives |
 
 Both presets use their embedded tool-aware Jinja template and native 256K
-context. They appear in the OpenCode model picker after installation, but
+context. They appear in both managed client model pickers after installation, but
 neither replaces ROCmplete's Qwen3.6 default. Treat benchmark claims as leads,
 then compare tool-call correctness, task completion, repetition, wall time,
 and recovery from long sessions on the same repositories. ROCmplete does not
@@ -312,7 +312,7 @@ Use `--context 131072` or `--context 65536` when the full KV cache leaves too
 little memory for the model, runtime buffers, or other workloads. Its
 official embedded template handles developer instructions, structured tool
 calls, tool results, and reasoning turns through llama.cpp's chat-template
-path. It appears in the generated OpenCode model map and supports the same
+path. It appears in both generated client model maps and supports the same
 reasoning choices as the managed Qwen agents.
 
 ### Tool-using clients
@@ -336,23 +336,32 @@ the least ambiguous launch mode:
 ./rocmplete run llama-cpp server --router --models-max 1
 ```
 
-ROCmplete ships a PATH-friendly OpenCode launcher. It renders the current
-provider, model catalog, and guarded agents every time it starts. Install the
-recommended model and start the router first:
+ROCmplete configures but does not install the clients. Install either upstream
+package by its supported method. For Linuxbrew or Homebrew:
+
+```bash
+brew install opencode
+brew install pi-coding-agent
+```
+
+ROCmplete ships PATH-friendly OpenCode and Pi launchers. Both render the
+current provider and model catalog every time they start. Install the
+recommended model and start the router first, then choose either client:
 
 ```bash
 ./rocmplete content install llama-cpp qwen3.6
 ./rocmplete run llama-cpp server --router --models-max 1
 export PATH="$PWD/bin:$PATH"
 opencode
+# or: pi
 ```
 
 The generated provider lists every preset explicitly maintained for agent
 work, including ones not currently installed. Selecting an absent model does
-not download it; the router reports that it is unavailable. Use OpenCode's
-model picker to choose a different installed model. Pass
-`-m rocmplete/PRESET` to the same `opencode` command when selecting another
-model at startup.
+not download it; the router reports that it is unavailable. Use the client's
+model picker to choose a different installed model. OpenCode accepts `-m
+rocmplete/PRESET`. Pi accepts `--model PRESET`, with `--provider rocmplete`
+available when the provider would otherwise be ambiguous.
 
 `bin/opencode` delegates to `./rocmplete opencode`, injects the generated main
 configuration directly into the child process, and points it at the read-only
@@ -365,18 +374,26 @@ Project OpenCode configuration continues to load around the runtime settings.
 The user's normal global OpenCode configuration and state are hidden by the
 default sandbox.
 
-The PATH launcher requires bubblewrap and starts sandboxed by default. Its
-writable host paths are the launch directory and private OpenCode state below
-`DATA_DIR/apps/opencode/sandbox`. The launch directory keeps its absolute path
-inside the sandbox so OpenCode can distinguish projects and resume sessions
-without rewriting paths. Fedora's `/home` alias to `/var/home` is preserved,
-so either spelling of an absolute project path resolves consistently. Private
-state keeps sessions, logs, provider packages, model choices, and
-`tool-output` useful across launches without exposing the user's ordinary
-OpenCode history. The real home directory, SSH agent, credentials, Podman
-state, and GPU devices are not mounted. A sanitized Git author and committer
-identity is passed without mounting `.gitconfig`. External OpenCode plugins
-and skills are disabled in this mode.
+`bin/pi` delegates to `./rocmplete pi` and writes only the generated
+`models.json` inside Pi's ROCmplete-owned private state. The file uses Pi's
+`openai-completions` provider, lists the same reviewed llama.cpp presets and
+DwarfStar model, and is refreshed atomically on every launch. Pi's normal
+`~/.pi/agent` state is not read or modified. The launcher disables Pi's update
+checks, telemetry, package discovery, extensions, skills, prompts, and themes.
+It also declines project `.pi` resources by default, while ordinary
+`AGENTS.md` context still loads. Explicit Pi command-line extensions can still
+be named when needed.
+
+The PATH launchers require bubblewrap and start sandboxed by default. Their
+writable host paths are the launch directory and private per-client state
+below `DATA_DIR/apps/CLIENT/sandbox`. The launch directory keeps its absolute
+path inside the sandbox so sessions retain stable project paths. Fedora's
+`/home` alias to `/var/home` is preserved, so either spelling of an absolute
+project path resolves consistently. Private state keeps sessions and client
+preferences useful across launches without exposing ordinary host-side
+history. The real home directory, SSH agent, credentials, Podman state, and
+GPU devices are not mounted. A sanitized Git author and committer identity is
+passed without mounting `.gitconfig`.
 
 On Ubuntu, AppArmor may restrict unprivileged user namespaces to executables
 with matching profiles. The distribution bubblewrap package may be covered
@@ -386,10 +403,10 @@ That opt-out applies system-wide and reduces protection against kernel bugs
 reachable through unprivileged user namespaces, so Doctor says so alongside
 the command.
 
-System files and the resolved OpenCode installation are read-only. ROCmplete's
-TUI keymap is mounted as one read-only file at a synthetic path, so its source
-checkout does not leave a visible directory skeleton. The launcher recognizes
-Linuxbrew below `/home/linuxbrew/.linuxbrew` and mounts that prefix read-only.
+System files and the resolved client installation are read-only. OpenCode's
+TUI keymap is mounted as one read-only file at a synthetic path. The launchers
+recognize Linuxbrew below `/home/linuxbrew/.linuxbrew` and mount that prefix
+read-only.
 Networking cannot be unshared because the managed router is normally on host
 loopback. The sandbox can therefore still reach the Internet, LAN, and other
 localhost services, and it can still alter or delete anything in the writable
@@ -400,18 +417,20 @@ The launcher refuses `/`, the host home directory, or another ancestor of the
 home as the writable scope. Start it from the repository you intend to expose.
 Launching from a broader directory such as `~/src` is allowed but deliberately
 exposes every project below that directory; the launcher prints the resolved
-writable path before OpenCode starts.
+writable path before the client starts.
 
 Use the direct command for the explicit escape hatch:
 
 ```bash
 ./rocmplete opencode --no-sandbox --
+./rocmplete pi --no-sandbox --
 ```
 
-This restores ordinary OpenCode host access and should be reserved for a
+This restores ordinary host filesystem access and should be reserved for a
 toolchain or linked worktree that cannot operate inside the narrow mount set.
+It still uses ROCmplete's generated provider catalog and private client state.
 
-The generated config leaves reads and searches automatic. Build and Plan ask
+OpenCode's generated config leaves reads and searches automatic. Build and Plan ask
 before file edits, shell commands, and subagent launches. This keeps an
 explanation or review request from silently turning into implementation if a
 local model loses the task during a long session or after context compaction.
@@ -441,23 +460,31 @@ every factual conclusion from a local model is correct. A delegated report is
 evidence for the primary agent to reconcile, not automatically a reliable
 fact.
 
+Pi uses its standard coding-agent tool loop rather than ROCmplete's OpenCode
+agent modes. Project `.pi` resources are declined by default so a checkout
+cannot silently add executable extensions or settings. That is an input guard,
+not an authorization prompt for model tool calls. Pi has no built-in sandbox,
+so the bubblewrap boundary is the control that limits filesystem damage. Pass
+`--approve` only when project Pi resources are intentionally trusted.
+
 For long-context presets, ROCmplete advertises a 16K per-turn output ceiling to
-OpenCode. That leaves more of the native context available before automatic
+both clients. That leaves more of the native context available before automatic
 compaction while still accommodating the managed 8K high reasoning budget
 and a final response. This limit is per model turn, not the total session.
 
-Presets with reviewed bounded reasoning expose instant, low, medium, and high
-OpenCode variants. Press `ctrl+t` to cycle them or use `/variants` to pick one.
-Instant sends `reasoning_effort: none` and disables thinking. The other three
-are real llama.cpp thinking ceilings of 1024, 4096, and 8192 tokens, not just
-UI labels. ROCmplete uses medium when OpenCode has no selected variant, while
-an explicit per-model choice still takes precedence. A preset without reviewed
-budget support does not advertise variants.
+Presets with reviewed bounded reasoning expose disabled, low, medium, and high
+choices. OpenCode names the disabled choice `instant`; Pi names it `off`.
+OpenCode uses `ctrl+t` or `/variants`, while Pi uses `Shift+Tab`, `/model`, or
+`--thinking`. The disabled choice sends `reasoning_effort: none`. The other
+three are real llama.cpp thinking ceilings of 1024, 4096, and 8192 tokens, not
+just UI labels. ROCmplete uses medium until a per-model choice takes
+precedence. A preset without reviewed budget support does not advertise
+reasoning choices.
 
-OpenCode uses `/v1/chat/completions` and exposes its edit, patch, shell, and
-file tools as ordinary function calls. That matches llama.cpp's current tool
-adapter. Still test a complete read, edit, command, and tool-result loop before
-letting a newly added model work unattended.
+Both clients use `/v1/chat/completions` and expose their file and shell tools as
+ordinary function calls. That matches llama.cpp's current tool adapter. Still
+test a complete read, edit, command, and tool-result loop in both maintained
+clients before letting a newly added model work unattended.
 
 Use the ROCmplete preset ID as the API model ID. Configure the client with the
 preset's actual starting context rather than advertising a larger limit. For
@@ -838,12 +865,13 @@ answer; DwarfStar otherwise defaults to its normal thinking mode. Keep the
 server on loopback unless an authenticated trusted proxy protects it. An
 explicit non-loopback publication has no built-in authentication.
 
-The OpenCode launcher includes DwarfStar as a separate provider. Start the
-server, then choose it explicitly:
+Both agent launchers include DwarfStar as a separate provider. Start the
+server, then choose it explicitly in either client:
 
 ```bash
 ./rocmplete run dwarfstar server
 opencode -m dwarfstar/deepseek-v4-flash
+pi --provider dwarfstar --model deepseek-v4-flash --thinking high
 ```
 
 Its OpenCode variants are `instant` and `thinking`. Instant sends
@@ -854,7 +882,9 @@ not expose three misleading labels. It also suppresses OpenCode's inherited
 `max` label because the managed 128K server cannot activate the 384K-minimum
 Think Max mode. If the DwarfStar server uses another port, pass
 `./rocmplete opencode --dwarfstar-port PORT --` or set
-`ROCMLETE_OPENCODE_DWARFSTAR_PORT`.
+`ROCMLETE_OPENCODE_DWARFSTAR_PORT`. Pi exposes the same two behaviors as `off`
+and `high`; pass `./rocmplete pi --dwarfstar-port PORT --` or set
+`ROCMLETE_PI_DWARFSTAR_PORT` for its provider.
 
 Run the hardware-bound smoke separately after initial setup. Outside Strix
 Halo, selecting DwarfStar explicitly is also the opt-in that prevents the

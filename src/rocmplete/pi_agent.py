@@ -1,0 +1,358 @@
+"""Launch Pi against ROCmplete's managed local model servers."""
+
+from __future__ import annotations
+
+import json
+import os
+import stat
+import tempfile
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Mapping, Optional, Sequence, Tuple
+
+from .agent_models import (
+    DWARFSTAR_MODEL,
+    DWARFSTAR_PROVIDER_ID,
+    PROVIDER_ID,
+    RECOMMENDED_MODEL,
+    agent_output_limit,
+    installed_agent_presets,
+    is_agent_capable,
+)
+from .agent_sandbox import (
+    AgentSandboxPaths as PiSandboxPaths,
+    AgentSandboxPlan as PiSandboxPlan,
+    SANDBOX_HOME,
+    create_sandbox_plan as create_agent_sandbox_plan,
+    find_real_executable,
+    prepare_sandbox_paths as prepare_agent_sandbox_paths,
+    sandbox_paths as agent_sandbox_paths,
+)
+from .bundles import content_status_ready, inspect_bundle
+from .catalog import Catalog
+from .config import (
+    DWARFSTAR_DEFAULT_CONTEXT,
+    DWARFSTAR_DEFAULT_OUTPUT_TOKENS,
+)
+from .errors import LauncherError
+from .layout import validate_managed_parent
+from .project import PROJECT_ROOT
+
+
+WRAPPER_PATH = PROJECT_ROOT / "bin" / "pi"
+SANDBOX_AGENT_DIR = SANDBOX_HOME / ".local" / "share" / "pi" / "agent"
+_DEFAULT_REASONING_EFFORT = "medium"
+_REASONING_LEVELS = {
+    "off": "none",
+    "minimal": None,
+    "low": "low",
+    "medium": "medium",
+    "high": "high",
+    "xhigh": None,
+    "max": None,
+}
+_DWARFSTAR_REASONING_LEVELS = {
+    "off": "none",
+    "minimal": None,
+    "low": None,
+    "medium": None,
+    "high": "high",
+    "xhigh": None,
+    "max": None,
+}
+_COST = {
+    "input": 0,
+    "output": 0,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+}
+_CLIENT_ARGUMENTS = (
+    "--offline",
+    "--no-approve",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+)
+
+
+@dataclass(frozen=True)
+class PiLaunchPlan:
+    command: Tuple[str, ...]
+    default_provider: str
+    default_model: str
+    default_thinking: str
+    endpoint: str
+    dwarfstar_endpoint: str
+    config_content: bytes
+
+
+def _provider(
+    name: str,
+    endpoint: str,
+    models: Sequence[Mapping[str, object]],
+) -> Mapping[str, object]:
+    return {
+        "name": name,
+        "baseUrl": endpoint,
+        "api": "openai-completions",
+        # Pi requires a value before it exposes a custom provider. The local
+        # servers need no credential and authHeader keeps this literal local.
+        "apiKey": "rocmplete-local",
+        "authHeader": False,
+        "compat": {
+            "supportsDeveloperRole": False,
+            "supportsReasoningEffort": True,
+        },
+        "models": list(models),
+    }
+
+
+def render_config(
+    catalog: Catalog,
+    endpoint: str,
+    dwarfstar_endpoint: str = "http://127.0.0.1:8000/v1",
+) -> bytes:
+    models = []
+    for identifier, preset in catalog.llama_presets.items():
+        if not is_agent_capable(preset):
+            continue
+        model = {
+            "id": identifier,
+            "name": identifier,
+            "reasoning": preset.reasoning_effort_budget,
+            "input": ["text"],
+            "contextWindow": preset.default_context,
+            "maxTokens": agent_output_limit(preset.default_context),
+            "cost": _COST,
+        }
+        if preset.reasoning_effort_budget:
+            model["thinkingLevelMap"] = _REASONING_LEVELS
+        models.append(model)
+    dwarfstar_model = {
+        "id": DWARFSTAR_MODEL,
+        "name": "DeepSeek V4 Flash 0731",
+        "reasoning": True,
+        "thinkingLevelMap": _DWARFSTAR_REASONING_LEVELS,
+        "input": ["text"],
+        "contextWindow": DWARFSTAR_DEFAULT_CONTEXT,
+        "maxTokens": DWARFSTAR_DEFAULT_OUTPUT_TOKENS,
+        "cost": _COST,
+    }
+    contents = {
+        "providers": {
+            PROVIDER_ID: _provider(
+                "ROCmplete llama.cpp", endpoint, models
+            ),
+            DWARFSTAR_PROVIDER_ID: _provider(
+                "ROCmplete DwarfStar",
+                dwarfstar_endpoint,
+                (dwarfstar_model,),
+            ),
+        }
+    }
+    return (json.dumps(contents, indent=2) + "\n").encode("utf-8")
+
+
+def _default_model(catalog: Catalog, data_dir: Path) -> Tuple[str, str, str]:
+    installed = installed_agent_presets(catalog, data_dir)
+    if RECOMMENDED_MODEL in installed:
+        return PROVIDER_ID, RECOMMENDED_MODEL, _DEFAULT_REASONING_EFFORT
+    if installed:
+        preset = catalog.llama_preset(installed[0])
+        thinking = (
+            _DEFAULT_REASONING_EFFORT
+            if preset.reasoning_effort_budget
+            else "off"
+        )
+        return PROVIDER_ID, installed[0], thinking
+    dwarfstar = catalog.bundle(
+        "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
+    )
+    if all(
+        content_status_ready(status)
+        for status in inspect_bundle(catalog, dwarfstar, data_dir)
+    ):
+        return DWARFSTAR_PROVIDER_ID, DWARFSTAR_MODEL, "high"
+    raise LauncherError(
+        "no installed model is maintained for Pi"
+        "\n  llama.cpp: ./rocmplete content install llama-cpp qwen3.6"
+        "\n  DwarfStar: ./rocmplete content install dwarfstar "
+        "flash-0731-q2-imatrix"
+    )
+
+
+def create_launch_plan(
+    catalog: Catalog,
+    data_dir: Path,
+    port: int,
+    arguments: Sequence[str],
+    environ: Optional[Mapping[str, str]] = None,
+    *,
+    dwarfstar_port: int = 8000,
+) -> PiLaunchPlan:
+    env = os.environ if environ is None else environ
+    provider, model, thinking = _default_model(catalog, data_dir)
+    endpoint = "http://127.0.0.1:{}/v1".format(port)
+    dwarfstar_endpoint = "http://127.0.0.1:{}/v1".format(dwarfstar_port)
+    forwarded = tuple(arguments)
+    if forwarded[:1] == ("--",):
+        forwarded = forwarded[1:]
+    command = (
+        find_real_executable("pi", WRAPPER_PATH, env, "Pi"),
+        *_CLIENT_ARGUMENTS,
+        "--provider",
+        provider,
+        "--model",
+        model,
+        "--thinking",
+        thinking,
+        *forwarded,
+    )
+    return PiLaunchPlan(
+        command=command,
+        default_provider=provider,
+        default_model=model,
+        default_thinking=thinking,
+        endpoint=endpoint,
+        dwarfstar_endpoint=dwarfstar_endpoint,
+        config_content=render_config(catalog, endpoint, dwarfstar_endpoint),
+    )
+
+
+def sandbox_paths(data_dir: Path) -> PiSandboxPaths:
+    return agent_sandbox_paths(data_dir, "pi")
+
+
+def _agent_dir(paths: PiSandboxPaths) -> Path:
+    return paths.data / "pi" / "agent"
+
+
+def prepare_state(
+    plan: PiLaunchPlan,
+    paths: PiSandboxPaths,
+    data_dir: Path,
+) -> Path:
+    """Prepare Pi's private state and atomically refresh models.json."""
+
+    prepare_agent_sandbox_paths(paths, data_dir, "Pi")
+    agent_dir = _agent_dir(paths)
+    models = agent_dir / "models.json"
+    validate_managed_parent(models, paths.root, data_dir, "Pi model config")
+    for path in (agent_dir.parent, agent_dir):
+        try:
+            status = path.lstat()
+        except FileNotFoundError:
+            try:
+                path.mkdir(mode=0o700)
+            except OSError as error:
+                raise LauncherError(
+                    "cannot create Pi state directory {}: {}".format(
+                        path, error
+                    )
+                )
+            continue
+        except OSError as error:
+            raise LauncherError(
+                "cannot inspect Pi state directory {}: {}".format(
+                    path, error
+                )
+            )
+        if stat.S_ISLNK(status.st_mode) or not stat.S_ISDIR(status.st_mode):
+            raise LauncherError(
+                "Pi state path is not a real directory: {}".format(path)
+            )
+        try:
+            path.chmod(0o700)
+        except OSError as error:
+            raise LauncherError(
+                "cannot secure Pi state directory {}: {}".format(path, error)
+            )
+    try:
+        model_status = models.lstat()
+    except FileNotFoundError:
+        model_status = None
+    except OSError as error:
+        raise LauncherError(
+            "cannot inspect Pi model configuration {}: {}".format(
+                models, error
+            )
+        )
+    if model_status is not None:
+        if (
+            not stat.S_ISREG(model_status.st_mode)
+            or model_status.st_nlink != 1
+        ):
+            raise LauncherError(
+                "Pi model configuration is not a private regular file: "
+                "{}".format(models)
+            )
+        try:
+            if models.read_bytes() == plan.config_content:
+                models.chmod(0o600)
+                return agent_dir
+        except OSError as error:
+            raise LauncherError(
+                "cannot read Pi model configuration {}: {}".format(
+                    models, error
+                )
+            )
+
+    temporary = None
+    try:
+        descriptor, temporary = tempfile.mkstemp(
+            prefix=".models.", suffix=".tmp", dir=str(agent_dir)
+        )
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(plan.config_content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, models)
+        temporary = None
+    except OSError as error:
+        raise LauncherError(
+            "cannot write Pi model configuration {}: {}".format(models, error)
+        )
+    finally:
+        if temporary is not None:
+            try:
+                os.unlink(temporary)
+            except FileNotFoundError:
+                pass
+    return agent_dir
+
+
+def _runtime_environment(agent_dir: Path) -> Mapping[str, str]:
+    return {
+        "PI_CODING_AGENT_DIR": str(agent_dir),
+        "PI_OFFLINE": "1",
+        "PI_SKIP_VERSION_CHECK": "1",
+        "PI_TELEMETRY": "0",
+    }
+
+
+def launch_environment(
+    agent_dir: Path,
+    environ: Optional[Mapping[str, str]] = None,
+) -> Mapping[str, str]:
+    child = dict(os.environ if environ is None else environ)
+    child.update(_runtime_environment(agent_dir))
+    return child
+
+
+def create_sandbox_plan(
+    plan: PiLaunchPlan,
+    data_dir: Path,
+    workdir: Path,
+    environ: Optional[Mapping[str, str]] = None,
+) -> PiSandboxPlan:
+    return create_agent_sandbox_plan(
+        plan.command,
+        data_dir,
+        workdir,
+        "pi",
+        "Pi",
+        _runtime_environment(SANDBOX_AGENT_DIR),
+        environ,
+    )

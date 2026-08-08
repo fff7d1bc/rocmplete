@@ -341,14 +341,14 @@ def _llama_guide() -> ApplicationGuide:
                     "configure the client with that preset's actual context "
                     "limit. Qwen3 0.6B can smoke-test the protocol but is "
                     "not a dependable repository agent.",
-                    "ROCmplete's bin/opencode wrapper renders the current "
-                    "server config at launch without editing normal "
-                    "OpenCode settings. Add the checkout's bin directory "
-                    "to PATH once, then invoke opencode normally. "
-                    "OpenCode uses ordinary Chat Completions function tools, "
-                    "which includes its host-side edit and patch tools.",
-                    "The PATH launcher uses bubblewrap by default. Only the "
-                    "launch directory and private ROCmplete-owned OpenCode "
+                    "ROCmplete's bin/opencode and bin/pi wrappers render the "
+                    "current server and model config at launch without "
+                    "editing either client's normal settings. Add the "
+                    "checkout's bin directory to PATH once, then invoke "
+                    "either client normally. Both use ordinary Chat "
+                    "Completions function tools.",
+                    "The PATH launchers use bubblewrap by default. Only the "
+                    "launch directory and private ROCmplete-owned client "
                     "state are writable; the real home, credentials, SSH "
                     "agent, Podman state, and GPU devices are hidden. Host "
                     "networking remains available for the local router.",
@@ -363,11 +363,11 @@ def _llama_guide() -> ApplicationGuide:
                     "web workers. Their source material stays in separate "
                     "child sessions. Investigate also avoids OpenCode's "
                     "synthetic maximum-step continuation prompt.",
-                    "Managed reasoning presets expose instant, low, medium, "
-                    "and high thinking budgets. Instant explicitly disables "
-                    "thinking; medium is the fallback until a per-model "
-                    "choice is made. In OpenCode, press ctrl+t to cycle "
-                    "them or use /variants to pick one.",
+                    "Managed reasoning presets expose off or instant, low, "
+                    "medium, and high thinking budgets. The disabled choice "
+                    "turns thinking off; medium is the llama.cpp fallback. "
+                    "OpenCode uses ctrl+t or /variants. Pi uses Shift+Tab "
+                    "or /model.",
                 ),
                 (
                     _action(
@@ -383,6 +383,11 @@ def _llama_guide() -> ApplicationGuide:
                         "./rocmplete opencode",
                         "Start OpenCode directly; bin/opencode is the "
                         "PATH-friendly equivalent.",
+                    ),
+                    _action(
+                        "./rocmplete pi",
+                        "Start Pi directly; bin/pi is the PATH-friendly "
+                        "equivalent.",
                     ),
                 ),
                 role="info",
@@ -609,6 +614,12 @@ def _dwarfstar_guide() -> ApplicationGuide:
                         "-m dwarfstar/deepseek-v4-flash",
                         "Use the running server through ROCmplete's guarded "
                         "OpenCode launcher.",
+                    ),
+                    _action(
+                        "./rocmplete pi -- --provider dwarfstar "
+                        "--model deepseek-v4-flash --thinking high",
+                        "Use the same server through ROCmplete's guarded "
+                        "Pi launcher.",
                     ),
                     _action(
                         "./rocmplete logs dwarfstar --follow",

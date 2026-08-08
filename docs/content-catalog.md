@@ -182,8 +182,8 @@ connect it to a stable router identity:
 
 DwarfStar model files use `"target": "dwarfstar-models"`, application
 `dwarfstar`, and groups `all` and `dwarfstar`. They deliberately do not become
-llama.cpp presets or OpenCode router entries. The public DwarfStar recipe and
-runtime own the one reviewed model identity.
+llama.cpp presets or llama.cpp client-provider entries. The public DwarfStar
+recipe and runtime own the one reviewed model identity.
 
 `default_context` is ROCmplete's reviewed starting context for the preset. It
 may be the model's native context for agent-focused models or a smaller

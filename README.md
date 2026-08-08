@@ -54,8 +54,8 @@ ROCmplete tries to cover the whole path.
   rebuilds.
 - Containers are rootless, read-only, capability-free, and expose only the
   selected GPU devices. Web applications publish on loopback by default.
-- The optional OpenCode launcher adds a bubblewrap filesystem boundary around
-  local coding-agent work.
+- Optional OpenCode and Pi launchers add a bubblewrap filesystem boundary
+  around local coding-agent work.
 - `acceptance run` checks more than startup. It runs small real workloads,
   checkpoints progress, and collects visual review after unattended work.
 
@@ -71,10 +71,10 @@ settings. It reports the problem and the host-specific action when one is
 needed. The [host GPU access guide](guide/tuning.md#host-gpu-access) explains
 the SELinux, group, and udev choices.
 
-The optional sandboxed OpenCode launcher also needs bubblewrap (`bwrap`). Use
-the distribution `bubblewrap` package from `apt`, `dnf`, or `pacman` when
-possible. Doctor reports Ubuntu's AppArmor user-namespace policy when it can
-interfere with the launcher.
+The optional sandboxed agent launchers also need bubblewrap (`bwrap`). Use the
+distribution `bubblewrap` package from `apt`, `dnf`, or `pacman` when possible.
+Doctor reports Ubuntu's AppArmor user-namespace policy when it can interfere
+with a launcher.
 
 ## Quick start
 
@@ -182,7 +182,7 @@ enough GPU-mapped memory:
 ```
 
 The [DwarfStar guide](guide/applications.md#dwarfstar) covers its 128K managed
-context, memory setup, API, OpenCode provider, and bounded acceptance run.
+context, memory setup, API, agent-client providers, and bounded acceptance run.
 
 ## Everyday use
 
@@ -218,10 +218,11 @@ PATH launcher. At least one managed agent model must already be installed.
 ./rocmplete run llama-cpp server --router --models-max 1
 export PATH="$PWD/bin:$PATH"
 opencode
+# or: pi
 ```
 
-New sessions start in read-only Investigate mode. The launcher keeps the
-current directory and private OpenCode state writable while hiding the real
+OpenCode starts new sessions in read-only Investigate mode. Both launchers keep
+the current directory and private client state writable while hiding the real
 home directory, credentials, Podman state, and GPU devices. The
 [tool-using client guide](guide/applications.md#tool-using-clients) documents
 models, reasoning variants, agent modes, sandbox limits, and escape hatches.
@@ -332,7 +333,7 @@ can prefer different backends on the same GPU. The
 ## User guides
 
 - [Applications](guide/applications.md) covers ComfyUI, llama.cpp, DwarfStar,
-  managed models, APIs, OpenCode, and multi-GPU workloads.
+  managed models, APIs, OpenCode, Pi, and multi-GPU workloads.
 - [Content](guide/content.md) covers recipes, exact bundles, licenses,
   verification, resumable downloads, mirrors, imports, and workflows.
 - [Operations](guide/operations.md) covers acceptance, builds, caches, image

@@ -618,6 +618,18 @@ while Shift+Tab moves in reverse. Investigate overrides only the task policy
 with an exact allowlist of its two ROCmplete-owned read-only workers. A project
 config has higher OpenCode precedence and may override these defaults.
 
+`src/rocmplete/pi_agent.py` renders the same reviewed model set into Pi's
+`models.json` schema with the `openai-completions` API. `bin/pi` delegates to
+the host launcher, which atomically refreshes that file below
+`StorageLayout.application("pi") / "sandbox"` and points
+`PI_CODING_AGENT_DIR` at the same private state. Pi's ordinary user config is
+never modified. The launcher disables startup network checks, telemetry,
+automatic resource discovery, and project `.pi` trust while leaving normal
+`AGENTS.md` context discovery enabled. It supplies the recommended installed
+model and medium thinking as command-line defaults before forwarded Pi
+arguments, so an explicit later `--provider`, `--model`, or `--thinking`
+remains authoritative.
+
 DwarfStar is a separate provider at its own loopback endpoint, with the one
 reviewed `deepseek-v4-flash` model advertising the same 131072-token runtime
 allocation and 16000-token output ceiling as the managed server. It offers
@@ -626,18 +638,21 @@ only `instant` (`reasoning_effort: none`) and `thinking`
 high to the same normal thinking mode; Think Max needs a substantially larger
 context and is not advertised. Disabled custom entries remove OpenCode's
 inherited low, medium, high, and max variants from the picker without hiding
-reasoning output. The generated provider does not imply that the DwarfStar
-server or model is installed or running.
+reasoning output. Pi maps the same behavior to `off` and `high` while hiding
+unsupported intermediate levels. A generated provider does not imply that the
+DwarfStar server or model is installed or running.
 
-The launcher uses bubblewrap by default and refuses to fall back silently when
-`bwrap` is unavailable. It unshares user, PID, IPC, UTS, cgroup, and other
+`src/rocmplete/agent_sandbox.py` owns the common client boundary. Both
+launchers use bubblewrap by default and refuse to fall back silently when
+`bwrap` is unavailable. They unshare user, PID, IPC, UTS, cgroup, and other
 available namespaces while deliberately restoring host networking for the
-loopback model endpoints. It drops capabilities, starts a new session, and
-uses parent-death cleanup. `/usr`, `/etc`, the resolved OpenCode installation,
-and the one repository-owned TUI JSON file are read-only. The exact resolved
-working directory is the only general persistent writable mount and keeps its
-host path. This preserves OpenCode project identity, session directories, and
-absolute paths while exposing no siblings from the host filesystem. When the
+loopback model endpoints. They drop capabilities, start a new session, and use
+parent-death cleanup. `/usr`, `/etc`, and the resolved client installation are
+read-only; OpenCode's one repository-owned TUI JSON file is mounted read-only
+as well. The exact resolved working directory is the only general persistent
+writable mount and keeps its host path. This preserves project identity,
+session directories, and absolute paths while exposing no siblings from the
+host filesystem. When the
 host uses Fedora's `/home -> var/home` link, the same link is recreated in the
 otherwise empty sandbox root so login-home and canonical paths keep resolving
 to the one mounted project. The TUI file appears at a synthetic path below
@@ -648,21 +663,21 @@ broader project parents remain an explicit user-selected scope and are printed
 before launch.
 
 The child environment starts empty. Terminal and locale values, generated
-OpenCode settings, a narrow executable path, and sanitized Git author and
+client settings, a narrow executable path, and sanitized Git author and
 committer identity are added explicitly. Tokens, proxy settings, SSH and
-desktop sockets, and unrelated `ROCMLETE_*` values are not inherited.
-External OpenCode plugins and skills are disabled. The real home is absent;
-config, data, state, cache, sessions, logs, and tool output persist only below
-`StorageLayout.application("opencode") / "sandbox"`, whose owned directories
-are forced to mode `0700`. Sandbox state and the writable working directory
-must not overlap. Project configuration and `AGENTS.md` discovery remain
-available from the mounted project.
+desktop sockets, and unrelated `ROCMLETE_*` values are not inherited. The real
+home is absent; config, data, state, cache, sessions, logs, and tool output
+persist only below the client's `StorageLayout.application(CLIENT) /
+"sandbox"`, whose owned directories are forced to mode `0700`. Sandbox state
+and the writable working directory must not overlap. Project `AGENTS.md`
+discovery remains available from the mounted project.
 
-An OpenCode executable inside Linuxbrew causes its complete
+A client executable inside Linuxbrew causes its complete
 `/home/linuxbrew/.linuxbrew` prefix to be mounted read-only. Other executables
 outside `/usr` are mounted as the exact resolved file. `--no-sandbox` is an
-explicit troubleshooting escape hatch and restores the former ordinary host
-process behavior. Neither mode starts or supervises a model server.
+explicit troubleshooting escape hatch and restores ordinary host filesystem
+access while retaining generated provider settings and private client state.
+Neither mode starts or supervises a model server.
 
 Investigate is an additional primary agent selected through OpenCode's normal
 agent switcher. It inherits the selected managed model but fixes temperature
@@ -684,16 +699,16 @@ prompt, which is counterproductive for this mode. Hard tool denials are the
 mutation boundary; normal user interruption bounds an unproductive
 investigation.
 
-OpenCode reserves the advertised per-turn output limit when deciding when to
-compact a session. ROCmplete caps that allowance at 16384 tokens so a 256K
+Agent clients reserve the advertised per-turn output limit when deciding when
+to compact a session. ROCmplete caps that allowance at 16384 tokens so a 256K
 agent preset retains roughly 240K tokens for prompts, history, tools, and
-retained context. Compaction remains lossy and permission gates remain the
-hard boundary when a local model misreads a generated summary or continuation.
+retained context. Compaction remains lossy and the sandbox remains the hard
+filesystem boundary when a local model misreads generated context.
 
 This protocol choice is deliberate. llama.cpp maps ordinary function tools
-from Chat Completions, which covers OpenCode's host-side editing tools. A
-newly maintained preset still needs a complete tool-call and tool-result
-acceptance test before unattended use.
+from Chat Completions, which covers both clients' host-side tools. A newly
+maintained preset still needs a complete tool-call and tool-result acceptance
+test in each client before unattended use.
 
 Most benchmark resources are used unchanged. A small allowlisted renderer may
 derive a closely related task-specific prompt from the same pinned upstream

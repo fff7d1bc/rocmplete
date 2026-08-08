@@ -127,8 +127,8 @@ and a tool schema with a nested object, require a structured tool call, return
 the result as a tool message, and require a final answer. Repeat the exchange
 with streaming enabled. If the MTP preset fails, repeat it with
 `qwen3.6-27b-q8-0` to separate template handling from speculative decoding.
-Only after the raw API exchange passes should a read-only coding-client task
-be used as the final integration check.
+Only after the raw API exchange passes should read-only OpenCode and Pi tasks
+be used as the final integration checks.
 
 For the 35B-A3B agent-evaluation row, start the non-MTP preset first and leave
 OpenCode's edit, shell, and subagent approvals enabled. Repeat a focused
@@ -137,9 +137,10 @@ bounded delegated web investigation, a raw nested-tool round trip, and the
 concurrent nonce corruption probe before allowing a disposable edit task.
 Confirm that only the two hidden read-only workers are available to
 Investigate and that their reports return to the parent without mutation
-prompts. Test the matching MTP preset only after the non-MTP candidate passes.
-Record quality, protocol, or state-corruption failures instead of promoting
-either candidate to a default.
+prompts. Repeat the bounded repository task through Pi and verify its tool
+calls and result replay before testing the matching MTP preset. Record quality,
+protocol, or state-corruption failures instead of promoting either candidate
+to a default.
 
 For a host with two matching GPUs, add these single-workload checks:
 

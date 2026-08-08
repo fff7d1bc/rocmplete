@@ -19,7 +19,15 @@ from .agent_sandbox import (
     prepare_sandbox_paths as prepare_agent_sandbox_paths,
     sandbox_paths as agent_sandbox_paths,
 )
-from .agent_models import installed_agent_presets, is_agent_capable
+from .agent_models import (
+    DWARFSTAR_MODEL,
+    DWARFSTAR_PROVIDER_ID,
+    PROVIDER_ID,
+    RECOMMENDED_MODEL,
+    agent_output_limit,
+    installed_agent_presets,
+    is_agent_capable,
+)
 from .bundles import content_status_ready, inspect_bundle
 from .catalog import Catalog
 from .config import (
@@ -30,10 +38,6 @@ from .errors import LauncherError
 from .project import PROJECT_ROOT
 
 
-PROVIDER_ID = "rocmplete"
-DWARFSTAR_PROVIDER_ID = "dwarfstar"
-DWARFSTAR_MODEL = "deepseek-v4-flash"
-RECOMMENDED_MODEL = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
 TUI_CONFIG_PATH = PROJECT_ROOT / "resources" / "opencode-tui.json"
 WRAPPER_PATH = PROJECT_ROOT / "bin" / "opencode"
 SANDBOX_TUI_CONFIG = Path("/run/rocmplete/config/opencode-tui.json")
@@ -175,13 +179,6 @@ class OpenCodeLaunchPlan:
     tui_config: Path
 
 
-def _output_limit(context: int) -> int:
-    # OpenCode reserves the advertised output allowance before deciding when
-    # to compact. These local agent models do not need more than 16K for one
-    # tool turn, and a larger allowance would discard useful session context.
-    return min(16384, max(4096, context // 4))
-
-
 def render_config(
     catalog: Catalog,
     default_model: str,
@@ -197,7 +194,7 @@ def render_config(
             "name": identifier,
             "limit": {
                 "context": preset.default_context,
-                "output": _output_limit(preset.default_context),
+                "output": agent_output_limit(preset.default_context),
             },
         }
         if preset.reasoning_effort_budget:

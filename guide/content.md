@@ -47,7 +47,7 @@ Install interactively, or select one recipe explicitly:
 
 The `qwen3.6` recipe installs both practical MTP choices: dense 27B MTP Q8_0
 and sparse 35B-A3B MTP Dynamic Q8_K_XL. The installer prints the dense 27B MTP
-server command as its next step; the OpenCode launcher prefers the much faster
+server command as its next step; the agent launchers prefer the much faster
 sparse model on high-memory hosts. Matching dense and sparse non-MTP controls
 remain available through the exact-bundle browser.
 

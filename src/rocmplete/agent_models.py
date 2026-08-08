@@ -10,6 +10,21 @@ from .catalog import Catalog, LlamaPreset
 from .content_verification import VerificationStore
 
 
+PROVIDER_ID = "rocmplete"
+DWARFSTAR_PROVIDER_ID = "dwarfstar"
+DWARFSTAR_MODEL = "deepseek-v4-flash"
+RECOMMENDED_MODEL = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
+
+
+def agent_output_limit(context: int) -> int:
+    """Return the maintained per-turn output ceiling for agent clients."""
+
+    # Clients reserve this advertised allowance before deciding when to
+    # compact. These local models do not need more than 16K for one tool turn,
+    # and a larger allowance would discard useful session context.
+    return min(16384, max(4096, context // 4))
+
+
 def is_agent_capable(preset: LlamaPreset) -> bool:
     """Return whether a preset has passed the managed agent contract."""
 

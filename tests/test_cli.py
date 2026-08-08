@@ -1010,6 +1010,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("not a dependable repository agent", normalized)
         self.assertIn("./rocmplete opencode", text)
         self.assertIn("bin/opencode", text)
+        self.assertIn("./rocmplete pi", text)
+        self.assertIn("bin/pi", text)
         self.assertNotIn("OPENCODE_CONFIG", text)
         self.assertNotIn("OPENCODE_TUI_CONFIG", text)
         self.assertIn("TranslateGemma has one preset", normalized)
@@ -4644,7 +4646,7 @@ class CliTests(unittest.TestCase):
         )
 
     @patch("rocmplete.cli.install_artifacts", return_value=0)
-    def test_llama_content_install_leads_with_router_and_opencode(
+    def test_llama_content_install_leads_with_router_and_agent_clients(
         self, install_artifacts
     ):
         with tempfile.TemporaryDirectory() as directory:
@@ -4669,6 +4671,7 @@ class CliTests(unittest.TestCase):
             rendered,
         )
         self.assertIn("./rocmplete opencode", rendered)
+        self.assertIn("./rocmplete pi", rendered)
         self.assertNotIn("./rocmplete client", rendered)
         self.assertNotIn("run llama-cpp server --preset", rendered)
         self.assertIn(
@@ -4684,7 +4687,11 @@ class CliTests(unittest.TestCase):
             rendered.index("server --router"), rendered.index("opencode")
         )
         self.assertLess(
-            rendered.index("opencode"), rendered.index("run llama-cpp cli")
+            rendered.index("opencode"), rendered.index("./rocmplete pi")
+        )
+        self.assertLess(
+            rendered.index("./rocmplete pi"),
+            rendered.index("run llama-cpp cli"),
         )
 
     @patch("rocmplete.cli.install_artifacts")
