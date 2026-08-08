@@ -1008,9 +1008,9 @@ class CliTests(unittest.TestCase):
         )
         self.assertIn("embedded Jinja templates", normalized)
         self.assertIn("not a dependable repository agent", normalized)
-        self.assertIn("./rocmplete opencode", text)
+        self.assertIn("./rocmplete agent opencode", text)
         self.assertIn("bin/opencode", text)
-        self.assertIn("./rocmplete pi", text)
+        self.assertIn("./rocmplete agent pi", text)
         self.assertIn("bin/pi", text)
         self.assertNotIn("OPENCODE_CONFIG", text)
         self.assertNotIn("OPENCODE_TUI_CONFIG", text)
@@ -4670,8 +4670,8 @@ class CliTests(unittest.TestCase):
             "./rocmplete run llama-cpp server --router --models-max 1",
             rendered,
         )
-        self.assertIn("./rocmplete opencode", rendered)
-        self.assertIn("./rocmplete pi", rendered)
+        self.assertIn("./rocmplete agent opencode", rendered)
+        self.assertIn("./rocmplete agent pi", rendered)
         self.assertNotIn("./rocmplete client", rendered)
         self.assertNotIn("run llama-cpp server --preset", rendered)
         self.assertIn(
@@ -4687,10 +4687,11 @@ class CliTests(unittest.TestCase):
             rendered.index("server --router"), rendered.index("opencode")
         )
         self.assertLess(
-            rendered.index("opencode"), rendered.index("./rocmplete pi")
+            rendered.index("opencode"),
+            rendered.index("./rocmplete agent pi"),
         )
         self.assertLess(
-            rendered.index("./rocmplete pi"),
+            rendered.index("./rocmplete agent pi"),
             rendered.index("run llama-cpp cli"),
         )
 
@@ -5033,6 +5034,22 @@ class CliTests(unittest.TestCase):
         self.assertIn("error: choose an application", text)
         self.assertIn("./rocmplete run comfyui", text)
         self.assertIn("./rocmplete run llama-cpp server", text)
+
+    def test_agent_without_client_prints_copyable_examples(self):
+        with redirect_stderr(io.StringIO()) as output:
+            self.assertEqual(main(["agent"]), 2)
+        text = output.getvalue()
+        self.assertIn("error: choose opencode or pi", text)
+        self.assertIn("./rocmplete agent opencode", text)
+        self.assertIn("./rocmplete agent pi", text)
+
+    def test_agent_clients_are_not_top_level_commands(self):
+        for command in ("opencode", "pi"):
+            with self.subTest(command=command):
+                with redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit) as result:
+                        parse_arguments([command])
+                self.assertEqual(result.exception.code, 2)
 
     def test_acceptance_without_operation_prints_copyable_examples(self):
         with redirect_stderr(io.StringIO()) as output:

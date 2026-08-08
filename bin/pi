@@ -8,5 +8,5 @@ from pathlib import Path
 launcher = Path(__file__).resolve().parent.parent / "rocmplete"
 os.execv(
     str(launcher),
-    [str(launcher), "pi", "--", *sys.argv[1:]],
+    [str(launcher), "agent", "pi", "--", *sys.argv[1:]],
 )

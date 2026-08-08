@@ -64,7 +64,7 @@ in the same change. Important ownership boundaries are:
   agent-client model policy and bubblewrap boundary.
 - `bin/opencode`, `bin/pi`, `src/rocmplete/opencode.py`, and
   `src/rocmplete/pi_agent.py`: runtime client launch and local model-catalog
-  generation.
+  generation below the public `agent` command group.
 - `containers/common/profile.py` and application entrypoints: container-side
   profile enforcement and application policy.
 - `applications/<application>/`: application-owned dependency pins,

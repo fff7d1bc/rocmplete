@@ -592,7 +592,9 @@ The catalog must not advertise these levels for a preset whose template does
 not expose the same bounded reasoning behavior.
 
 `bin/rocmplete` is a PATH-friendly delegate to the root checkout launcher and
-resolves symlinks before locating it. `src/rocmplete/opencode.py` renders the
+resolves symlinks before locating it. The public `agent` command groups coding
+frontends as `agent opencode` and `agent pi`; their short PATH launchers retain
+the upstream command names. `src/rocmplete/opencode.py` renders the
 OpenAI-compatible llama.cpp and DwarfStar providers at launch. `bin/opencode`
 delegates to the host launcher,
 which supplies the main JSON through `OPENCODE_CONFIG_CONTENT` and points

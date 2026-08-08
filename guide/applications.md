@@ -363,10 +363,11 @@ model picker to choose a different installed model. OpenCode accepts `-m
 rocmplete/PRESET`. Pi accepts `--model PRESET`, with `--provider rocmplete`
 available when the provider would otherwise be ambiguous.
 
-`bin/opencode` delegates to `./rocmplete opencode`, injects the generated main
-configuration directly into the child process, and points it at the read-only
-TUI keymap in the checkout. It writes no integration files. Pulling a catalog
-or policy update therefore changes the next launch without an install step.
+`bin/opencode` delegates to `./rocmplete agent opencode`, injects the
+generated main configuration directly into the child process, and points it
+at the read-only TUI keymap in the checkout. It writes no integration files.
+Pulling a catalog or policy update therefore changes the next launch without
+an install step.
 The recommended MTP preset is the default when present. If it is absent, the
 launcher selects another installed agent-capable preset; `-m
 rocmplete/PRESET` still overrides that selection through OpenCode itself.
@@ -374,7 +375,7 @@ Project OpenCode configuration continues to load around the runtime settings.
 The user's normal global OpenCode configuration and state are hidden by the
 default sandbox.
 
-`bin/pi` delegates to `./rocmplete pi` and writes only the generated
+`bin/pi` delegates to `./rocmplete agent pi` and writes only the generated
 `models.json` inside Pi's ROCmplete-owned private state. The file uses Pi's
 `openai-completions` provider, lists the same reviewed llama.cpp presets and
 DwarfStar model, and is refreshed atomically on every launch. Pi's normal
@@ -422,8 +423,8 @@ writable path before the client starts.
 Use the direct command for the explicit escape hatch:
 
 ```bash
-./rocmplete opencode --no-sandbox --
-./rocmplete pi --no-sandbox --
+./rocmplete agent opencode --no-sandbox --
+./rocmplete agent pi --no-sandbox --
 ```
 
 This restores ordinary host filesystem access and should be reserved for a
@@ -881,9 +882,9 @@ same mode below its much larger Think Max context threshold, so ROCmplete does
 not expose three misleading labels. It also suppresses OpenCode's inherited
 `max` label because the managed 128K server cannot activate the 384K-minimum
 Think Max mode. If the DwarfStar server uses another port, pass
-`./rocmplete opencode --dwarfstar-port PORT --` or set
+`./rocmplete agent opencode --dwarfstar-port PORT --` or set
 `ROCMLETE_OPENCODE_DWARFSTAR_PORT`. Pi exposes the same two behaviors as `off`
-and `high`; pass `./rocmplete pi --dwarfstar-port PORT --` or set
+and `high`; pass `./rocmplete agent pi --dwarfstar-port PORT --` or set
 `ROCMLETE_PI_DWARFSTAR_PORT` for its provider.
 
 Run the hardware-bound smoke separately after initial setup. Outside Strix

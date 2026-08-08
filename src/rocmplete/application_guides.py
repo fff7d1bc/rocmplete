@@ -380,12 +380,12 @@ def _llama_guide() -> ApplicationGuide:
                         "Start one managed model for an agent client.",
                     ),
                     _action(
-                        "./rocmplete opencode",
+                        "./rocmplete agent opencode",
                         "Start OpenCode directly; bin/opencode is the "
                         "PATH-friendly equivalent.",
                     ),
                     _action(
-                        "./rocmplete pi",
+                        "./rocmplete agent pi",
                         "Start Pi directly; bin/pi is the PATH-friendly "
                         "equivalent.",
                     ),
@@ -610,13 +610,13 @@ def _dwarfstar_guide() -> ApplicationGuide:
                         "Start the API in the background.",
                     ),
                     _action(
-                        "./rocmplete opencode -- "
+                        "./rocmplete agent opencode -- "
                         "-m dwarfstar/deepseek-v4-flash",
                         "Use the running server through ROCmplete's guarded "
                         "OpenCode launcher.",
                     ),
                     _action(
-                        "./rocmplete pi -- --provider dwarfstar "
+                        "./rocmplete agent pi -- --provider dwarfstar "
                         "--model deepseek-v4-flash --thinking high",
                         "Use the same server through ROCmplete's guarded "
                         "Pi launcher.",

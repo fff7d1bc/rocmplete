@@ -52,10 +52,11 @@ Exercise user-visible composition:
 ./rocmplete run llama-cpp server --router \
   --profile cpu --listen 127.0.0.1 --dry-run
 ./rocmplete run dwarfstar server --profile strix-halo --dry-run
-./rocmplete opencode --help
-./rocmplete opencode --no-sandbox -- --help
-./rocmplete pi --help
-./rocmplete pi --no-sandbox -- --help
+./rocmplete agent --help
+./rocmplete agent opencode --help
+./rocmplete agent opencode --no-sandbox -- --help
+./rocmplete agent pi --help
+./rocmplete agent pi --no-sandbox -- --help
 ./rocmplete benchmark llama-cpp \
   --preset qwen3-0.6b-q8-0 --profile cpu --dry-run
 ./rocmplete benchmark llama-cpp \

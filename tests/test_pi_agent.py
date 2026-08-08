@@ -327,6 +327,7 @@ class PiLauncherTests(unittest.TestCase):
             self._mark_installed(data_dir, self.default_model)
             _, arguments = parse_arguments(
                 [
+                    "agent",
                     "pi",
                     "--data-dir",
                     str(data_dir),
@@ -381,6 +382,7 @@ class PiLauncherTests(unittest.TestCase):
     def test_parser_help_and_wrapper_expose_pi_launcher(self):
         _, arguments = parse_arguments(
             [
+                "agent",
                 "pi",
                 "--port",
                 "9090",
@@ -398,15 +400,19 @@ class PiLauncherTests(unittest.TestCase):
         with redirect_stdout(io.StringIO()) as output:
             with self.assertRaisesRegex(SystemExit, "0"):
                 main(["--help"])
-        self.assertIn("pi", output.getvalue())
+        self.assertIn("agent", output.getvalue())
+        self.assertNotIn("    pi", output.getvalue())
 
-        _, arguments = parse_arguments(["pi", "--no-sandbox", "--"])
+        _, arguments = parse_arguments(
+            ["agent", "pi", "--no-sandbox", "--"]
+        )
         self.assertFalse(arguments.sandbox)
         self.assertTrue(stat.S_IMODE(WRAPPER_PATH.stat().st_mode) & 0o111)
         contents = WRAPPER_PATH.read_text()
         self.assertIn('Path(__file__).resolve()', contents)
         self.assertIn(
-            '[str(launcher), "pi", "--", *sys.argv[1:]]', contents
+            '[str(launcher), "agent", "pi", "--", *sys.argv[1:]]',
+            contents,
         )
 
 

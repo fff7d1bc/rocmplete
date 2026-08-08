@@ -376,6 +376,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
             self._mark_installed(data_dir, self.default_model)
             _, arguments = parse_arguments(
                 [
+                    "agent",
                     "opencode",
                     "--data-dir",
                     str(data_dir),
@@ -425,6 +426,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
             self._mark_installed(data_dir, self.default_model)
             _, arguments = parse_arguments(
                 [
+                    "agent",
                     "opencode",
                     "--data-dir",
                     str(data_dir),
@@ -648,6 +650,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
     def test_parser_and_help_expose_launcher_instead_of_installer(self):
         _, arguments = parse_arguments(
             [
+                "agent",
                 "opencode",
                 "--port",
                 "9090",
@@ -669,10 +672,13 @@ class OpenCodeLauncherTests(unittest.TestCase):
             with self.assertRaisesRegex(SystemExit, "0"):
                 main(["--help"])
         rendered = output.getvalue()
-        self.assertIn("opencode", rendered)
+        self.assertIn("agent", rendered)
+        self.assertNotIn("    opencode", rendered)
         self.assertNotIn("integration", rendered)
 
-        _, arguments = parse_arguments(["opencode", "--no-sandbox", "--"])
+        _, arguments = parse_arguments(
+            ["agent", "opencode", "--no-sandbox", "--"]
+        )
         self.assertFalse(arguments.sandbox)
 
     def test_wrapper_is_executable_and_delegates_to_rocmplete(self):
@@ -680,7 +686,9 @@ class OpenCodeLauncherTests(unittest.TestCase):
         contents = WRAPPER_PATH.read_text()
         self.assertIn('Path(__file__).resolve()', contents)
         self.assertIn(
-            '[str(launcher), "opencode", "--", *sys.argv[1:]]', contents
+            '[str(launcher), "agent", "opencode", "--", '
+            '*sys.argv[1:]]',
+            contents,
         )
 
 

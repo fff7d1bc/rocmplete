@@ -131,6 +131,7 @@ from .build import (
 )
 from .cli_parser import (
     ACCEPTANCE_EXAMPLES,
+    AGENT_EXAMPLES,
     BENCHMARK_EXAMPLES,
     BUILD_EXAMPLES,
     BUILD_TARGET_DESCRIPTIONS,
@@ -1010,6 +1011,18 @@ def command_pi(
     except OSError as error:
         raise LauncherError("cannot start Pi: {}".format(error))
     return 0
+
+
+def command_agent(arguments: argparse.Namespace) -> int:
+    if arguments.agent_client is None:
+        return _print_incomplete_command(
+            arguments.command_parser,
+            "choose opencode or pi",
+            AGENT_EXAMPLES,
+        )
+    if arguments.agent_client == "opencode":
+        return command_opencode(arguments)
+    return command_pi(arguments)
 
 
 def _interactive_build_target() -> str:
@@ -4133,12 +4146,12 @@ def _command_content_install(
                 actions.extend(
                     (
                         (
-                            "./rocmplete opencode",
+                            "./rocmplete agent opencode",
                             "Start the guarded OpenCode client after the "
                             "router is ready.",
                         ),
                         (
-                            "./rocmplete pi",
+                            "./rocmplete agent pi",
                             "Or start the guarded Pi client against the same "
                             "router.",
                         ),
@@ -5865,10 +5878,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             return command_build(arguments)
         if arguments.command == "guide":
             return print_application_guide(arguments.application)
-        if arguments.command == "opencode":
-            return command_opencode(arguments)
-        if arguments.command == "pi":
-            return command_pi(arguments)
+        if arguments.command == "agent":
+            return command_agent(arguments)
         if arguments.command == "images":
             return command_images(arguments)
         if arguments.command == "doctor":

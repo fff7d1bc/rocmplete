@@ -142,6 +142,15 @@ Move locally built ROCmplete images between machines:
   ./rocmplete images import /backup/rocmplete-images.tar --dry-run
   ./rocmplete images import /backup/rocmplete-images.tar
 """
+AGENT_EXAMPLES = """\
+Run a supported coding agent against managed local models:
+
+  ./rocmplete agent opencode
+  ./rocmplete agent pi
+
+The PATH-friendly bin/opencode and bin/pi launchers provide the same guarded
+defaults without the ROCmplete command prefix.
+"""
 OPENCODE_EXAMPLES = """\
 Run OpenCode with the current ROCmplete model catalog:
 
@@ -151,7 +160,7 @@ Run OpenCode with the current ROCmplete model catalog:
 
 The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
-  ./rocmplete opencode --no-sandbox --
+  ./rocmplete agent opencode --no-sandbox --
 
 Forward normal OpenCode arguments through the launcher:
 
@@ -179,7 +188,7 @@ Run Pi with the current ROCmplete model catalog:
 
 The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
-  ./rocmplete pi --no-sandbox --
+  ./rocmplete agent pi --no-sandbox --
 
 Forward normal Pi arguments through the launcher:
 
@@ -697,7 +706,17 @@ def _parser() -> argparse.ArgumentParser:
         help="application to explain",
     )
 
-    opencode = subparsers.add_parser(
+    agent = subparsers.add_parser(
+        "agent",
+        help="run a coding agent with managed local model providers",
+        allow_abbrev=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=AGENT_EXAMPLES,
+    )
+    agent_clients = agent.add_subparsers(
+        dest="agent_client", metavar="CLIENT"
+    )
+    opencode = agent_clients.add_parser(
         "opencode",
         help="run OpenCode with the managed local model providers",
         allow_abbrev=False,
@@ -745,7 +764,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     opencode.set_defaults(command_parser=opencode)
 
-    pi = subparsers.add_parser(
+    pi = agent_clients.add_parser(
         "pi",
         help="run Pi with the managed local model providers",
         allow_abbrev=False,
@@ -787,6 +806,7 @@ def _parser() -> argparse.ArgumentParser:
         help=argparse.SUPPRESS,
     )
     pi.set_defaults(command_parser=pi)
+    agent.set_defaults(command_parser=agent)
 
     images = subparsers.add_parser(
         "images",
