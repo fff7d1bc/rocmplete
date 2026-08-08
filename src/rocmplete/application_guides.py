@@ -347,6 +347,11 @@ def _llama_guide() -> ApplicationGuide:
                     "checkout's bin directory to PATH once, then invoke "
                     "either client normally. Both use ordinary Chat "
                     "Completions function tools.",
+                    "Pi package commands such as install, list, and update "
+                    "keep their upstream shape and use Pi's private "
+                    "ROCmplete state. Explicitly installed user packages "
+                    "load in later sandboxed Pi sessions; review them as "
+                    "trusted executable inputs.",
                     "The PATH launchers use bubblewrap by default. Only the "
                     "launch directory and private ROCmplete-owned client "
                     "state are writable; the real home, credentials, SSH "

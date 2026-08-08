@@ -60,6 +60,10 @@ _DWARFSTAR_VARIANTS = {
 }
 _DEFAULT_AGENT = "investigate"
 _DEFAULT_REASONING_EFFORT = "medium"
+_PASSTHROUGH_COMMANDS = frozenset(
+    ("completion", "plugin", "plug", "upgrade", "uninstall")
+)
+_INFORMATION_ARGUMENTS = frozenset(("--help", "-h", "--version", "-v"))
 _REASONING_VARIANTS = {
     "instant": {"reasoningEffort": "none"},
     "low": {"reasoningEffort": "low"},
@@ -268,6 +272,24 @@ def _real_opencode(environ: Mapping[str, str]) -> str:
     return find_real_executable(
         "opencode", WRAPPER_PATH, environ, "OpenCode"
     )
+
+
+def passthrough_command(
+    arguments: Sequence[str],
+    environ: Optional[Mapping[str, str]] = None,
+) -> Optional[Tuple[str, ...]]:
+    """Return an upstream-only command that must not enter managed state."""
+
+    forwarded = tuple(arguments)
+    if forwarded[:1] == ("--",):
+        forwarded = forwarded[1:]
+    if not forwarded or (
+        forwarded[0] not in _PASSTHROUGH_COMMANDS
+        and forwarded[0] not in _INFORMATION_ARGUMENTS
+    ):
+        return None
+    env = os.environ if environ is None else environ
+    return (_real_opencode(env), *forwarded)
 
 
 def _validate_tui_config(path: Path) -> None:

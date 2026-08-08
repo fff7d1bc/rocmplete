@@ -626,11 +626,26 @@ the host launcher, which atomically refreshes that file below
 `StorageLayout.application("pi") / "sandbox"` and points
 `PI_CODING_AGENT_DIR` at the same private state. Pi's ordinary user config is
 never modified. The launcher disables startup network checks, telemetry,
-automatic resource discovery, and project `.pi` trust while leaving normal
-`AGENTS.md` context discovery enabled. It supplies the recommended installed
-model and medium thinking as command-line defaults before forwarded Pi
-arguments, so an explicit later `--provider`, `--model`, or `--thinking`
-remains authoritative.
+and project `.pi` trust while leaving normal `AGENTS.md` context discovery
+enabled. It supplies the recommended installed model and medium thinking as
+command-line defaults before forwarded Pi session arguments, so an explicit
+later `--provider`, `--model`, or `--thinking` remains authoritative.
+
+Pi recognizes package and configuration commands only when the command is its
+first argument. The launcher classifies `install`, `remove`, `uninstall`,
+`update`, `list`, `config`, and `auth` before adding session defaults, runs
+them online when requested, and points them at the same private state used by
+managed sessions. User-installed package resources therefore load on later
+launches without exposing Pi's ordinary host state. Informational `--help`,
+`--version`, and self-update requests pass directly to the real executable and
+require neither private state nor an installed model. Since bare `pi update`
+means self-update upstream, the bare, `self`, `--self`, and `--all` forms take
+this path, as does the positional `pi` alias; package-only update forms use
+the private state. OpenCode similarly
+passes information, completion, plugin, upgrade, and uninstall commands to the
+real executable without the managed environment. Its remaining subcommands
+accept global options first; a regression test preserves their position after
+the managed `--pure` option.
 
 DwarfStar is a separate provider at its own loopback endpoint, with the one
 reviewed `deepseek-v4-flash` model advertising the same 131072-token runtime

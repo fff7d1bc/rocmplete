@@ -375,15 +375,34 @@ Project OpenCode configuration continues to load around the runtime settings.
 The user's normal global OpenCode configuration and state are hidden by the
 default sandbox.
 
+Informational and installation-management commands retain their normal
+upstream behavior through the PATH launcher. The commands `opencode --help`,
+`opencode --version`, `opencode completion`, `opencode plugin`, `opencode
+upgrade`, and `opencode uninstall` bypass ROCmplete's model configuration and
+sandbox. A plugin installed this way remains disabled by the default sandbox's
+`--pure` policy; use the documented `--no-sandbox` launch only when loading
+that host-side plugin is intentional.
+
 `bin/pi` delegates to `./rocmplete agent pi` and writes only the generated
 `models.json` inside Pi's ROCmplete-owned private state. The file uses Pi's
 `openai-completions` provider, lists the same reviewed llama.cpp presets and
 DwarfStar model, and is refreshed atomically on every launch. Pi's normal
 `~/.pi/agent` state is not read or modified. The launcher disables Pi's update
-checks, telemetry, package discovery, extensions, skills, prompts, and themes.
-It also declines project `.pi` resources by default, while ordinary
-`AGENTS.md` context still loads. Explicit Pi command-line extensions can still
-be named when needed.
+checks and telemetry during managed sessions. It declines project `.pi`
+resources by default, while ordinary `AGENTS.md` context still loads.
+
+Pi's package commands keep their upstream shape through the PATH launcher.
+For example, `pi install npm:pi-code-indexer`, `pi list`, and `pi update
+--extensions` act on Pi's private ROCmplete-owned state, without requiring an
+installed model or a running server. The upstream `pi update` command updates
+Pi itself by default, so self, `--self`, and `--all` updates bypass the sandbox
+and operate on the real installation. The positional aliases are `self` and
+`pi`. An explicit package command may use the network. Installed user packages
+and their extensions, skills, prompts, and themes are available on later
+managed launches. They are trusted executable inputs with access to the
+writable project and host network inside the sandbox, so review them before
+installation. A local `pi install -l` still requires explicit project approval
+before its project resources can load.
 
 The PATH launchers require bubblewrap and start sandboxed by default. Their
 writable host paths are the launch directory and private per-client state

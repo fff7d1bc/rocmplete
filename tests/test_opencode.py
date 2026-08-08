@@ -30,6 +30,7 @@ from rocmplete.opencode import (
     create_launch_plan,
     create_sandbox_plan,
     launch_environment,
+    passthrough_command,
     prepare_sandbox_paths,
     render_config,
     sandbox_paths,
@@ -330,6 +331,63 @@ class OpenCodeLauncherTests(unittest.TestCase):
                     {"PATH": str(WRAPPER_PATH.parent)},
                 )
 
+    def test_information_and_self_management_commands_bypass_managed_state(self):
+        with tempfile.TemporaryDirectory() as directory:
+            binary_dir = Path(directory) / "bin"
+            binary_dir.mkdir()
+            executable = self._fake_opencode(binary_dir)
+            environment = {"PATH": str(binary_dir)}
+
+            for arguments in (
+                ("--help",),
+                ("--version",),
+                ("completion", "zsh"),
+                ("plugin", "example-plugin"),
+                ("plug", "example-plugin"),
+                ("upgrade",),
+                ("uninstall",),
+            ):
+                with self.subTest(arguments=arguments):
+                    self.assertEqual(
+                        passthrough_command(("--", *arguments), environment),
+                        (str(executable), *arguments),
+                    )
+            self.assertIsNone(
+                passthrough_command(("session", "--help"), environment)
+            )
+
+    @patch("rocmplete.cli.os.execvpe")
+    def test_cli_passthrough_needs_no_model_or_private_state(self, execute):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_dir = root / "data"
+            binary_dir = root / "bin"
+            binary_dir.mkdir()
+            executable = self._fake_opencode(binary_dir)
+            _, arguments = parse_arguments(
+                [
+                    "agent",
+                    "opencode",
+                    "--data-dir",
+                    str(data_dir),
+                    "--",
+                    "--version",
+                ]
+            )
+            environment = {"PATH": str(binary_dir), "TOKEN": "preserved"}
+            with patch.dict(os.environ, environment, clear=True):
+                self.assertEqual(command_opencode(arguments, self.catalog), 0)
+
+            self.assertEqual(
+                execute.call_args.args,
+                (
+                    str(executable),
+                    [str(executable), "--version"],
+                    environment,
+                ),
+            )
+            self.assertFalse(data_dir.exists())
+
     def test_child_environment_uses_inline_config_and_static_tui_file(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -382,7 +440,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
                     str(data_dir),
                     "--no-sandbox",
                     "--",
-                    "--help",
+                    "--print-logs",
                 ]
             )
             with patch.dict(
@@ -399,7 +457,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
 
             command, argv, child = execute.call_args.args
             self.assertEqual(command, str(executable))
-            self.assertEqual(argv, [str(executable), "--help"])
+            self.assertEqual(argv, [str(executable), "--print-logs"])
             self.assertEqual(
                 json.loads(child["OPENCODE_CONFIG_CONTENT"])["provider"]
                 ["rocmplete"]["options"]["baseURL"],
@@ -431,7 +489,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
                     "--data-dir",
                     str(data_dir),
                     "--",
-                    "--help",
+                    "--print-logs",
                 ]
             )
             with patch.dict(
@@ -646,6 +704,39 @@ class OpenCodeLauncherTests(unittest.TestCase):
                     {"PATH": str(binary_dir)},
                 )
             self.assertFalse(paths.root.exists())
+
+    def test_sandbox_preserves_upstream_subcommand_position(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_dir = root / "data"
+            binary_dir = root / "bin"
+            workdir = root / "project"
+            binary_dir.mkdir()
+            workdir.mkdir()
+            executable = self._fake_opencode(binary_dir)
+            bwrap = binary_dir / "bwrap"
+            bwrap.write_text("#!/bin/sh\nexit 0\n")
+            bwrap.chmod(0o755)
+            self._mark_installed(data_dir, self.default_model)
+            plan = create_launch_plan(
+                self.catalog,
+                data_dir,
+                8080,
+                ("session", "--help"),
+                {"PATH": str(binary_dir)},
+            )
+            paths = sandbox_paths(data_dir)
+            prepare_sandbox_paths(paths, data_dir)
+            sandbox = create_sandbox_plan(
+                plan,
+                data_dir,
+                workdir,
+                {"PATH": str(binary_dir)},
+            )
+            self.assertEqual(
+                sandbox.command[-4:],
+                (str(executable.resolve()), "--pure", "session", "--help"),
+            )
 
     def test_parser_and_help_expose_launcher_instead_of_installer(self):
         _, arguments = parse_arguments(

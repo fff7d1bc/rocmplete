@@ -141,6 +141,8 @@ class ApplicationGuideTests(unittest.TestCase):
         self.assertIn("bin/opencode", text)
         self.assertIn("./rocmplete agent pi", text)
         self.assertIn("bin/pi", text)
+        self.assertIn("Pi package commands such as install", normalized)
+        self.assertIn("trusted executable inputs", normalized)
         self.assertIn("content install llama-cpp qwen3.6", text)
         self.assertIn("content install llama-cpp shisa-v2.1", text)
         self.assertIn("Shisa V2.1", text)

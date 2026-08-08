@@ -147,6 +147,11 @@ class PiLauncherTests(unittest.TestCase):
             self.assertEqual(plan.command[0], str(executable))
             self.assertIn("--offline", plan.command)
             self.assertIn("--no-approve", plan.command)
+            self.assertNotIn("--no-extensions", plan.command)
+            self.assertNotIn("--no-skills", plan.command)
+            self.assertNotIn("--no-prompt-templates", plan.command)
+            self.assertNotIn("--no-themes", plan.command)
+            self.assertEqual(plan.mode, "session")
             self.assertEqual(plan.default_provider, "rocmplete")
             self.assertEqual(plan.default_model, self.default_model)
             self.assertEqual(plan.default_thinking, "medium")
@@ -196,6 +201,46 @@ class PiLauncherTests(unittest.TestCase):
                     (),
                     {"PATH": str(binary_dir)},
                 )
+
+    def test_management_commands_do_not_require_a_model_or_session_flags(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            binary_dir = root / "bin"
+            binary_dir.mkdir()
+            executable = self._fake_pi(binary_dir)
+
+            for arguments, expected_mode in (
+                (("install", "npm:pi-code-indexer"), "management"),
+                (("remove", "npm:pi-code-indexer"), "management"),
+                (("uninstall", "npm:pi-code-indexer"), "management"),
+                (("update", "--extensions"), "management"),
+                (("update", "npm:pi-code-indexer"), "management"),
+                (("list",), "management"),
+                (("config",), "management"),
+                (("auth", "check"), "management"),
+                (("--help",), "passthrough"),
+                (("--version",), "passthrough"),
+                (("update",), "passthrough"),
+                (("update", "self"), "passthrough"),
+                (("update", "pi"), "passthrough"),
+                (("update", "--self"), "passthrough"),
+                (("update", "--all"), "passthrough"),
+            ):
+                with self.subTest(arguments=arguments):
+                    plan = create_launch_plan(
+                        self.catalog,
+                        root / "empty-data",
+                        8080,
+                        ("--", *arguments),
+                        {"PATH": str(binary_dir)},
+                    )
+                    self.assertEqual(
+                        plan.command, (str(executable), *arguments)
+                    )
+                    self.assertEqual(plan.mode, expected_mode)
+                    self.assertIsNone(plan.default_provider)
+                    self.assertIsNone(plan.default_model)
+                    self.assertIsNone(plan.default_thinking)
 
     def test_launch_requires_real_pi_outside_wrapper_directory(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -285,7 +330,7 @@ class PiLauncherTests(unittest.TestCase):
                 self.catalog,
                 data_dir,
                 8080,
-                ("--help",),
+                ("--print", "ping"),
                 {"PATH": str(binary_dir)},
             )
             paths = sandbox_paths(data_dir)
@@ -310,11 +355,48 @@ class PiLauncherTests(unittest.TestCase):
             self.assertNotIn("/run/ssh-agent", command)
             self.assertIn(str(SANDBOX_AGENT_DIR), command)
             self.assertEqual(
-                command[-3:], ["--thinking", "medium", "--help"]
+                command[-4:],
+                ["--thinking", "medium", "--print", "ping"],
             )
             self.assertEqual(sandbox.environment, {"PATH": str(binary_dir)})
             self.assertEqual(sandbox.state_root, paths.root)
             self.assertIn(str(executable.resolve()), command)
+
+    def test_management_sandbox_keeps_command_first_and_allows_network(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_dir = root / "data"
+            binary_dir = root / "bin"
+            workdir = root / "project"
+            data_dir.mkdir()
+            binary_dir.mkdir()
+            workdir.mkdir()
+            executable = self._fake_pi(binary_dir)
+            bwrap = binary_dir / "bwrap"
+            bwrap.write_text("#!/bin/sh\nexit 0\n")
+            bwrap.chmod(0o755)
+            plan = create_launch_plan(
+                self.catalog,
+                data_dir,
+                8080,
+                ("install", "npm:pi-code-indexer"),
+                {"PATH": str(binary_dir)},
+            )
+            paths = sandbox_paths(data_dir)
+            prepare_state(plan, paths, data_dir)
+            sandbox = create_sandbox_plan(
+                plan,
+                data_dir,
+                workdir,
+                {"PATH": str(binary_dir)},
+            )
+            command = list(sandbox.command)
+            self.assertEqual(
+                command[-3:],
+                [str(executable.resolve()), "install", "npm:pi-code-indexer"],
+            )
+            self.assertNotIn("PI_OFFLINE", command)
+            self.assertIn(str(SANDBOX_AGENT_DIR), command)
 
     @patch("rocmplete.cli.os.execvpe")
     def test_cli_executes_pi_with_private_state_without_sandbox(self, execute):
@@ -333,7 +415,7 @@ class PiLauncherTests(unittest.TestCase):
                     str(data_dir),
                     "--no-sandbox",
                     "--",
-                    "--help",
+                    "--list-models",
                 ]
             )
             with patch.dict(
@@ -349,7 +431,7 @@ class PiLauncherTests(unittest.TestCase):
 
             command, argv, child = execute.call_args.args
             self.assertEqual(command, str(executable))
-            self.assertEqual(argv[-1], "--help")
+            self.assertEqual(argv[-1], "--list-models")
             self.assertEqual(child["PI_OFFLINE"], "1")
             self.assertEqual(child["PI_TELEMETRY"], "0")
             models = Path(child["PI_CODING_AGENT_DIR"]) / "models.json"
@@ -361,6 +443,47 @@ class PiLauncherTests(unittest.TestCase):
             self.assertEqual(
                 config["providers"]["dwarfstar"]["baseUrl"],
                 "http://127.0.0.1:8001/v1",
+            )
+
+    @patch("rocmplete.cli.os.execvpe")
+    def test_cli_executes_management_command_in_private_online_state(
+        self, execute
+    ):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_dir = root / "data"
+            binary_dir = root / "bin"
+            binary_dir.mkdir()
+            executable = self._fake_pi(binary_dir)
+            _, arguments = parse_arguments(
+                [
+                    "agent",
+                    "pi",
+                    "--data-dir",
+                    str(data_dir),
+                    "--no-sandbox",
+                    "--",
+                    "install",
+                    "npm:pi-code-indexer",
+                ]
+            )
+            with patch.dict(
+                os.environ,
+                {"PATH": str(binary_dir)},
+                clear=True,
+            ):
+                self.assertEqual(command_pi(arguments, self.catalog), 0)
+
+            command, argv, child = execute.call_args.args
+            self.assertEqual(command, str(executable))
+            self.assertEqual(
+                argv,
+                [str(executable), "install", "npm:pi-code-indexer"],
+            )
+            self.assertNotIn("PI_OFFLINE", child)
+            self.assertEqual(child["PI_TELEMETRY"], "0")
+            self.assertTrue(
+                Path(child["PI_CODING_AGENT_DIR"]).is_dir()
             )
 
     def test_launch_environment_replaces_inherited_pi_state(self):

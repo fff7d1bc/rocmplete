@@ -161,6 +161,7 @@ from .opencode import (
     create_launch_plan as create_opencode_launch_plan,
     create_sandbox_plan as create_opencode_sandbox_plan,
     launch_environment as opencode_launch_environment,
+    passthrough_command as opencode_passthrough_command,
     prepare_sandbox_paths as prepare_opencode_sandbox_paths,
     sandbox_paths as opencode_sandbox_paths,
 )
@@ -913,6 +914,15 @@ def command_opencode(
     arguments: argparse.Namespace, catalog: Optional[Catalog] = None
 ) -> int:
     env = os.environ
+    passthrough = opencode_passthrough_command(
+        arguments.opencode_arguments, env
+    )
+    if passthrough is not None:
+        try:
+            os.execvpe(passthrough[0], list(passthrough), dict(env))
+        except OSError as error:
+            raise LauncherError("cannot start OpenCode: {}".format(error))
+        return 0
     port_value = arguments.port or environment_value(
         env, "OPENCODE_PORT", "8080"
     )
@@ -982,6 +992,14 @@ def command_pi(
         env,
         dwarfstar_port=validate_port(dwarfstar_port_value),
     )
+    if plan.mode == "passthrough":
+        try:
+            os.execvpe(plan.command[0], list(plan.command), dict(env))
+        except OSError as error:
+            raise LauncherError("cannot start Pi: {}".format(error))
+        return 0
+    if plan.mode == "management":
+        data_dir = prepare_data_dir(data_dir)
     paths = pi_sandbox_paths(data_dir)
     agent_dir = prepare_pi_state(plan, paths, data_dir)
     if arguments.sandbox:
@@ -995,17 +1013,20 @@ def command_pi(
             "  Private state     {}".format(sandbox.state_root),
             file=sys.stderr,
         )
-        print(
-            "  Network           host network retained for {} and {}".format(
+        if plan.mode == "session":
+            network = "host network retained for {} and {}".format(
                 plan.endpoint, plan.dwarfstar_endpoint
-            ),
-            file=sys.stderr,
-        )
+            )
+        else:
+            network = "host network retained for explicit Pi command"
+        print("  Network           {}".format(network), file=sys.stderr)
         command = sandbox.command
         child = sandbox.environment
     else:
         command = plan.command
-        child = pi_launch_environment(agent_dir, env)
+        child = pi_launch_environment(
+            agent_dir, env, offline=plan.mode == "session"
+        )
     try:
         os.execvpe(command[0], list(command), dict(child))
     except OSError as error:

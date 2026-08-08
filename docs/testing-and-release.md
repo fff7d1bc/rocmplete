@@ -57,6 +57,9 @@ Exercise user-visible composition:
 ./rocmplete agent opencode --no-sandbox -- --help
 ./rocmplete agent pi --help
 ./rocmplete agent pi --no-sandbox -- --help
+./rocmplete agent pi -- list
+./rocmplete agent pi -- install --help
+./rocmplete agent pi -- update --extensions --help
 ./rocmplete benchmark llama-cpp \
   --preset qwen3-0.6b-q8-0 --profile cpu --dry-run
 ./rocmplete benchmark llama-cpp \

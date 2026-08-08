@@ -69,22 +69,31 @@ _COST = {
 _CLIENT_ARGUMENTS = (
     "--offline",
     "--no-approve",
-    "--no-extensions",
-    "--no-skills",
-    "--no-prompt-templates",
-    "--no-themes",
 )
+_MANAGEMENT_COMMANDS = frozenset(
+    (
+        "install",
+        "remove",
+        "uninstall",
+        "update",
+        "list",
+        "config",
+        "auth",
+    )
+)
+_INFORMATION_ARGUMENTS = frozenset(("--help", "-h", "--version", "-v"))
 
 
 @dataclass(frozen=True)
 class PiLaunchPlan:
     command: Tuple[str, ...]
-    default_provider: str
-    default_model: str
-    default_thinking: str
+    default_provider: Optional[str]
+    default_model: Optional[str]
+    default_thinking: Optional[str]
     endpoint: str
     dwarfstar_endpoint: str
     config_content: bytes
+    mode: str
 
 
 def _provider(
@@ -192,14 +201,50 @@ def create_launch_plan(
     dwarfstar_port: int = 8000,
 ) -> PiLaunchPlan:
     env = os.environ if environ is None else environ
-    provider, model, thinking = _default_model(catalog, data_dir)
     endpoint = "http://127.0.0.1:{}/v1".format(port)
     dwarfstar_endpoint = "http://127.0.0.1:{}/v1".format(dwarfstar_port)
     forwarded = tuple(arguments)
     if forwarded[:1] == ("--",):
         forwarded = forwarded[1:]
+    executable = find_real_executable("pi", WRAPPER_PATH, env, "Pi")
+    self_update = forwarded[:1] == ("update",) and (
+        len(forwarded) == 1
+        or "--self" in forwarded[1:]
+        or "--all" in forwarded[1:]
+        or forwarded[1:2] in (("self",), ("pi",))
+    )
+    if (
+        bool(forwarded) and forwarded[0] in _INFORMATION_ARGUMENTS
+    ) or self_update:
+        return PiLaunchPlan(
+            command=(executable, *forwarded),
+            default_provider=None,
+            default_model=None,
+            default_thinking=None,
+            endpoint=endpoint,
+            dwarfstar_endpoint=dwarfstar_endpoint,
+            config_content=render_config(
+                catalog, endpoint, dwarfstar_endpoint
+            ),
+            mode="passthrough",
+        )
+    if forwarded[:1] and forwarded[0] in _MANAGEMENT_COMMANDS:
+        return PiLaunchPlan(
+            command=(executable, *forwarded),
+            default_provider=None,
+            default_model=None,
+            default_thinking=None,
+            endpoint=endpoint,
+            dwarfstar_endpoint=dwarfstar_endpoint,
+            config_content=render_config(
+                catalog, endpoint, dwarfstar_endpoint
+            ),
+            mode="management",
+        )
+
+    provider, model, thinking = _default_model(catalog, data_dir)
     command = (
-        find_real_executable("pi", WRAPPER_PATH, env, "Pi"),
+        executable,
         *_CLIENT_ARGUMENTS,
         "--provider",
         provider,
@@ -217,6 +262,7 @@ def create_launch_plan(
         endpoint=endpoint,
         dwarfstar_endpoint=dwarfstar_endpoint,
         config_content=render_config(catalog, endpoint, dwarfstar_endpoint),
+        mode="session",
     )
 
 
@@ -323,21 +369,27 @@ def prepare_state(
     return agent_dir
 
 
-def _runtime_environment(agent_dir: Path) -> Mapping[str, str]:
-    return {
+def _runtime_environment(
+    agent_dir: Path, *, offline: bool = True
+) -> Mapping[str, str]:
+    environment = {
         "PI_CODING_AGENT_DIR": str(agent_dir),
-        "PI_OFFLINE": "1",
         "PI_SKIP_VERSION_CHECK": "1",
         "PI_TELEMETRY": "0",
     }
+    if offline:
+        environment["PI_OFFLINE"] = "1"
+    return environment
 
 
 def launch_environment(
     agent_dir: Path,
     environ: Optional[Mapping[str, str]] = None,
+    *,
+    offline: bool = True,
 ) -> Mapping[str, str]:
     child = dict(os.environ if environ is None else environ)
-    child.update(_runtime_environment(agent_dir))
+    child.update(_runtime_environment(agent_dir, offline=offline))
     return child
 
 
@@ -353,6 +405,8 @@ def create_sandbox_plan(
         workdir,
         "pi",
         "Pi",
-        _runtime_environment(SANDBOX_AGENT_DIR),
+        _runtime_environment(
+            SANDBOX_AGENT_DIR, offline=plan.mode == "session"
+        ),
         environ,
     )
