@@ -167,7 +167,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
         }
         for identifier, model in provider["models"].items():
             preset = self.catalog.llama_preset(identifier)
-            if preset.opencode_reasoning_budget:
+            if preset.reasoning_effort_budget:
                 self.assertTrue(model["reasoning"])
                 self.assertEqual(
                     model["options"], {"reasoningEffort": "medium"}

@@ -132,8 +132,8 @@ class CatalogTests(unittest.TestCase):
         qwen35_artifact = catalog.artifact(qwen35.artifact)
         self.assertEqual(qwen35.default_context, 262144)
         self.assertEqual(qwen35.mtp_draft_tokens, 0)
-        self.assertTrue(qwen35.opencode_agent)
-        self.assertTrue(qwen35.opencode_reasoning_budget)
+        self.assertTrue(qwen35.agent_tools)
+        self.assertTrue(qwen35.reasoning_effort_budget)
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(qwen35.bundle)),
             38451182560,
@@ -149,8 +149,8 @@ class CatalogTests(unittest.TestCase):
         qwen35_mtp_artifact = catalog.artifact(qwen35_mtp.artifact)
         self.assertEqual(qwen35_mtp.default_context, 262144)
         self.assertEqual(qwen35_mtp.mtp_draft_tokens, 3)
-        self.assertTrue(qwen35_mtp.opencode_agent)
-        self.assertTrue(qwen35_mtp.opencode_reasoning_budget)
+        self.assertTrue(qwen35_mtp.agent_tools)
+        self.assertTrue(qwen35_mtp.reasoning_effort_budget)
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(qwen35_mtp.bundle)),
             39099447584,
@@ -211,8 +211,8 @@ class CatalogTests(unittest.TestCase):
                 artifact = catalog.artifact(preset.artifact)
                 self.assertEqual(preset.default_context, 262144)
                 self.assertTrue(preset.jinja)
-                self.assertTrue(preset.opencode_agent)
-                self.assertTrue(preset.opencode_reasoning_budget)
+                self.assertTrue(preset.agent_tools)
+                self.assertTrue(preset.reasoning_effort_budget)
                 self.assertEqual(artifact.source.repository, expected[0])
                 self.assertEqual(artifact.size, expected[1])
                 self.assertEqual(artifact.sha256, expected[2])
@@ -222,8 +222,8 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(gemma.default_context, 262144)
         self.assertEqual(gemma.mtp_draft_tokens, 4)
         self.assertTrue(gemma.jinja)
-        self.assertTrue(gemma.opencode_agent)
-        self.assertTrue(gemma.opencode_reasoning_budget)
+        self.assertTrue(gemma.agent_tools)
+        self.assertTrue(gemma.reasoning_effort_budget)
         self.assertEqual(
             gemma.draft_artifact, "gemma4-31b-it-mtp-q8-gguf"
         )
@@ -306,7 +306,7 @@ class CatalogTests(unittest.TestCase):
         shisa_artifact = catalog.artifact(shisa.artifact)
         self.assertEqual(shisa.default_context, 16384)
         self.assertTrue(shisa.jinja)
-        self.assertFalse(shisa.opencode_agent)
+        self.assertFalse(shisa.agent_tools)
         self.assertEqual(
             catalog.bundle_size(shisa_bundle), 74975055328
         )
@@ -453,25 +453,25 @@ class CatalogTests(unittest.TestCase):
                 load_catalog(path)
 
         preset["jinja"] = True
-        preset["opencode_agent"] = "yes"
+        preset["agent_tools"] = "yes"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
-                LauncherError, "opencode_agent must be"
+                LauncherError, "agent_tools must be"
             ):
                 load_catalog(path)
 
-        preset["opencode_agent"] = True
-        preset["opencode_reasoning_budget"] = "yes"
+        preset["agent_tools"] = True
+        preset["reasoning_effort_budget"] = "yes"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
-                LauncherError, "opencode_reasoning_budget must be"
+                LauncherError, "reasoning_effort_budget must be"
             ):
                 load_catalog(path)
 
-        preset["opencode_agent"] = True
-        preset["opencode_reasoning_budget"] = False
+        preset["agent_tools"] = True
+        preset["reasoning_effort_budget"] = False
         preset["default_context"] = 4096
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
@@ -481,7 +481,7 @@ class CatalogTests(unittest.TestCase):
                 load_catalog(path)
 
         preset["jinja"] = True
-        preset["opencode_agent"] = True
+        preset["agent_tools"] = True
         preset["default_context"] = 32768
         preset["flash_attention"] = {"auto": "off"}
         with tempfile.TemporaryDirectory() as directory:
@@ -545,15 +545,15 @@ class CatalogTests(unittest.TestCase):
             ):
                 load_catalog(path)
 
-    def test_llama_reasoning_budget_requires_opencode_agent(self):
+    def test_llama_reasoning_budget_requires_agent_tools(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         preset = raw["llama_presets"]["qwen3-0.6b-q8-0"]
-        preset["opencode_reasoning_budget"] = True
+        preset["reasoning_effort_budget"] = True
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
                 LauncherError,
-                "opencode_reasoning_budget requires opencode_agent",
+                "reasoning_effort_budget requires agent_tools",
             ):
                 load_catalog(path)
 

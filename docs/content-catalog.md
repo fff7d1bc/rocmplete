@@ -170,8 +170,8 @@ connect it to a stable router identity:
     "mtp_draft_tokens": 4,
     "draft_artifact": "optional-draft-artifact-id",
     "jinja": true,
-    "opencode_agent": true,
-    "opencode_reasoning_budget": true,
+    "agent_tools": true,
+    "reasoning_effort_budget": true,
     "flash_attention": {
       "strix-halo": "off",
       "strix-point": "off"
@@ -211,20 +211,20 @@ hardware detection before applying this policy. These narrow fields must be
 rendered for both single-model and router startup; do not replace them with a
 generic arguments list.
 
-`opencode_agent` is an optional, explicit compatibility decision. Set it only
+`agent_tools` is an optional, explicit compatibility decision. Set it only
 when the model, pinned GGUF template, and llama.cpp policy are maintained for
-ROCmplete's reviewed OpenCode function-tool contract. It requires
+ROCmplete's reviewed Chat Completions function-tool contract. It requires
 `jinja: true` and a `default_context` of at least 16384. Do not use it as an
 installation selector or a statement about general model quality. After
-changing preset IDs, contexts, templates, or this flag, regenerate the
-OpenCode configuration and accept a complete function-tool round trip on
-target hardware.
+changing preset IDs, contexts, templates, or this flag, regenerate every
+maintained agent-client configuration and accept a complete function-tool
+round trip with each client on target hardware.
 
-`opencode_reasoning_budget` is an optional, narrower compatibility decision
-and requires `opencode_agent`. Set it only for presets whose reviewed template
+`reasoning_effort_budget` is an optional, narrower compatibility decision
+and requires `agent_tools`. Set it only for presets whose reviewed template
 uses llama.cpp's thinking-token budget. ROCmplete's pinned server patch maps
-OpenCode instant to no thinking and low, medium, and high to 1024, 4096, and
-8192 tokens. These labels are budget choices, not model-native effort modes.
+client effort labels to the project's enforced thinking-token ceilings. These
+labels are budget choices, not model-native effort modes.
 Keep the catalog descriptions, patch values, generated model metadata, and
 target-hardware Chat Completions tests in sync.
 

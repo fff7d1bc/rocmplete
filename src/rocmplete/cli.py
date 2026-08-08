@@ -4074,7 +4074,7 @@ def _command_content_install(
                         "Start the managed API router for installed presets.",
                     )
                 )
-            if any(preset.opencode_agent for preset in presets):
+            if any(preset.agent_tools for preset in presets):
                 actions.append(
                     (
                         "./rocmplete opencode",

@@ -213,7 +213,7 @@ def render_config(
                 "output": _output_limit(preset.default_context),
             },
         }
-        if preset.opencode_reasoning_budget:
+        if preset.reasoning_effort_budget:
             model["reasoning"] = True
             # OpenCode merges an explicitly selected variant over these model
             # options. Keep a useful fallback without overriding a choice the

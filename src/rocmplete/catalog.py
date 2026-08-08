@@ -125,8 +125,8 @@ class LlamaPreset:
     mtp_draft_tokens: int = 0
     draft_artifact: str = ""
     jinja: bool = False
-    opencode_agent: bool = False
-    opencode_reasoning_budget: bool = False
+    agent_tools: bool = False
+    reasoning_effort_budget: bool = False
     chat_template: str = ""
     flash_attention: Mapping[str, str] = field(default_factory=dict)
 
@@ -746,8 +746,8 @@ def _load_llama_preset(
         "mtp_draft_tokens",
         "draft_artifact",
         "jinja",
-        "opencode_agent",
-        "opencode_reasoning_budget",
+        "agent_tools",
+        "reasoning_effort_budget",
         "chat_template",
         "flash_attention",
     }
@@ -799,30 +799,30 @@ def _load_llama_preset(
         raise LauncherError(
             "llama.cpp preset {} jinja must be a boolean".format(identifier)
         )
-    opencode_agent = data.get("opencode_agent", False)
-    if not isinstance(opencode_agent, bool):
+    agent_tools = data.get("agent_tools", False)
+    if not isinstance(agent_tools, bool):
         raise LauncherError(
-            "llama.cpp preset {} opencode_agent must be a boolean".format(
+            "llama.cpp preset {} agent_tools must be a boolean".format(
                 identifier
             )
         )
-    if opencode_agent and (not jinja or default_context < 16384):
+    if agent_tools and (not jinja or default_context < 16384):
         raise LauncherError(
-            "llama.cpp preset {} opencode_agent requires Jinja and at least "
+            "llama.cpp preset {} agent_tools requires Jinja and at least "
             "16384 context tokens".format(identifier)
         )
-    opencode_reasoning_budget = data.get(
-        "opencode_reasoning_budget", False
+    reasoning_effort_budget = data.get(
+        "reasoning_effort_budget", False
     )
-    if not isinstance(opencode_reasoning_budget, bool):
+    if not isinstance(reasoning_effort_budget, bool):
         raise LauncherError(
-            "llama.cpp preset {} opencode_reasoning_budget must be a "
+            "llama.cpp preset {} reasoning_effort_budget must be a "
             "boolean".format(identifier)
         )
-    if opencode_reasoning_budget and not opencode_agent:
+    if reasoning_effort_budget and not agent_tools:
         raise LauncherError(
-            "llama.cpp preset {} opencode_reasoning_budget requires "
-            "opencode_agent".format(identifier)
+            "llama.cpp preset {} reasoning_effort_budget requires "
+            "agent_tools".format(identifier)
         )
     chat_template = data.get("chat_template", "")
     # Keep this closed set aligned with the image files and the entrypoint's
@@ -873,8 +873,8 @@ def _load_llama_preset(
         mtp_draft_tokens=mtp_draft_tokens,
         draft_artifact=draft_artifact,
         jinja=jinja,
-        opencode_agent=opencode_agent,
-        opencode_reasoning_budget=opencode_reasoning_budget,
+        agent_tools=agent_tools,
+        reasoning_effort_budget=reasoning_effort_budget,
         chat_template=chat_template,
         flash_attention=flash_attention,
     )

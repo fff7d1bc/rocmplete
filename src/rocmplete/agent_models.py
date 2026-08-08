@@ -1,4 +1,4 @@
-"""Managed llama.cpp presets suitable for the OpenCode launcher."""
+"""Managed llama.cpp presets suitable for tool-using agent harnesses."""
 
 from __future__ import annotations
 
@@ -14,8 +14,8 @@ def is_agent_capable(preset: LlamaPreset) -> bool:
     """Return whether a preset has passed the managed agent contract."""
 
     # Do not infer tool-use suitability from model size or Jinja alone. This
-    # claim records a reviewed OpenCode function-tool contract.
-    return preset.opencode_agent
+    # claim records a reviewed Chat Completions function-tool contract.
+    return preset.agent_tools
 
 
 def installed_presets(catalog: Catalog, data_dir: Path) -> Tuple[str, ...]:

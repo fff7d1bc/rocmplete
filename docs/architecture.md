@@ -578,11 +578,11 @@ tmpfs router copy that injects offline and resolved-profile policy into each
 model section without modifying the mounted source. The router is upstream
 llama-server; ROCmplete does not implement a routing daemon.
 
-`opencode_agent` is a reviewed compatibility claim, not an inference from
-model size or Jinja alone. It requires Jinja and at least a 16384-token managed
-context. Each model still needs an end-to-end OpenCode function-tool
+`agent_tools` is a reviewed compatibility claim, not an inference from model
+size or Jinja alone. It requires Jinja and at least a 16384-token managed
+context. Each maintained client still needs an end-to-end function-tool
 acceptance test.
-`opencode_reasoning_budget` is the narrower model claim behind OpenCode's
+`reasoning_effort_budget` is the narrower model claim behind agent-client
 reasoning selectors. The pinned llama.cpp server otherwise ignores `low`,
 `medium`, and `high` effort values for these models. A fail-closed source
 patch maps those values to 1024, 4096, and 8192
@@ -599,7 +599,7 @@ which supplies the main JSON through `OPENCODE_CONFIG_CONTENT` and points
 `OPENCODE_TUI_CONFIG` at the repository-owned read-only keymap. No integration
 file is installed in the user's config directory. The model map contains only
 the reviewed agent set and advertises each preset's managed starting context.
-Presets with `opencode_reasoning_budget` also advertise OpenCode instant, low,
+Presets with `reasoning_effort_budget` also advertise OpenCode instant, low,
 medium, and high variants backed by the same server-side behavior. The
 instant variant sends `none`; the remaining variants use the bounded ceilings.
 The model-level fallback is medium. OpenCode merges an explicitly selected

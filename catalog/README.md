@@ -28,10 +28,10 @@ media. Use `./rocmplete content list --bundles` for the current exact inventory.
   stable router model ID and a conservative `default_context`. A preset may
   additionally own constrained MTP, embedded Jinja or project-owned
   chat-template policy, profile-specific Flash Attention policy, and one
-  verified draft GGUF from the same bundle. `opencode_agent` records the
-  smaller reviewed set maintained for OpenCode agent use.
-  `opencode_reasoning_budget` records presets whose OpenCode reasoning
-  selectors are backed by enforced llama.cpp thinking-token ceilings.
+  verified draft GGUF from the same bundle. `agent_tools` records the smaller
+  reviewed set maintained for function-tool agent clients.
+  `reasoning_effort_budget` records presets whose client reasoning selectors
+  are backed by enforced llama.cpp thinking-token ceilings.
 
 The loader rejects unsafe paths, malformed revisions and hashes, missing
 references, repeated bundle content, unknown groups, and destination

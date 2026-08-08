@@ -2426,24 +2426,24 @@
       "artifact": "ornith-1.0-35b-q8-gguf",
       "default_context": 262144,
       "jinja": true,
-      "opencode_agent": true,
-      "opencode_reasoning_budget": true
+      "agent_tools": true,
+      "reasoning_effort_budget": true
     },
     "kat-coder-v2.5-dev-q8-0": {
       "bundle": "llama-kat-coder-v2.5-dev-q8-0",
       "artifact": "kat-coder-v2.5-dev-q8-gguf",
       "default_context": 262144,
       "jinja": true,
-      "opencode_agent": true,
-      "opencode_reasoning_budget": true
+      "agent_tools": true,
+      "reasoning_effort_budget": true
     },
     "qwen3.6-35b-a3b-ud-q8-k-xl": {
       "bundle": "llama-qwen3.6-35b-a3b-ud-q8-k-xl",
       "artifact": "qwen3.6-35b-a3b-ud-q8-k-xl-gguf",
       "default_context": 262144,
       "jinja": true,
-      "opencode_agent": true,
-      "opencode_reasoning_budget": true
+      "agent_tools": true,
+      "reasoning_effort_budget": true
     },
     "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": {
       "bundle": "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
@@ -2451,16 +2451,16 @@
       "default_context": 262144,
       "mtp_draft_tokens": 3,
       "jinja": true,
-      "opencode_agent": true,
-      "opencode_reasoning_budget": true
+      "agent_tools": true,
+      "reasoning_effort_budget": true
     },
     "qwen3.6-27b-q8-0": {
       "bundle": "llama-qwen3.6-27b-q8-0",
       "artifact": "qwen3.6-27b-q8-0-gguf",
       "default_context": 262144,
       "jinja": true,
-      "opencode_agent": true,
-      "opencode_reasoning_budget": true
+      "agent_tools": true,
+      "reasoning_effort_budget": true
     },
     "qwen3.6-27b-mtp-q8-0": {
       "bundle": "llama-qwen3.6-27b-mtp-q8-0",
@@ -2468,8 +2468,8 @@
       "default_context": 262144,
       "mtp_draft_tokens": 2,
       "jinja": true,
-      "opencode_agent": true,
-      "opencode_reasoning_budget": true
+      "agent_tools": true,
+      "reasoning_effort_budget": true
     },
     "gemma4-31b-it-q8-0-mtp": {
       "bundle": "llama-gemma4-31b-it-q8-0-mtp",
@@ -2478,15 +2478,15 @@
       "default_context": 262144,
       "mtp_draft_tokens": 4,
       "jinja": true,
-      "opencode_agent": true,
-      "opencode_reasoning_budget": true
+      "agent_tools": true,
+      "reasoning_effort_budget": true
     },
     "laguna-s-2.1-q4-k-m": {
       "bundle": "llama-laguna-s-2.1-q4-k-m",
       "artifact": "laguna-s-2.1-q4-k-m-gguf",
       "default_context": 262144,
       "jinja": true,
-      "opencode_agent": true,
+      "agent_tools": true,
       "flash_attention": {
         "strix-halo": "off",
         "strix-point": "off"
