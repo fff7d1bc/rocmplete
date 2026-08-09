@@ -25,6 +25,7 @@ from .agent_models import (
     PROVIDER_ID,
     RECOMMENDED_MODEL,
     agent_output_limit,
+    agent_sampling_parameters,
     installed_agent_presets,
     is_agent_capable,
 )
@@ -81,10 +82,15 @@ _PERMISSIONS = {
     "bash": "ask",
     "task": "ask",
 }
+# The OpenAI-compatible provider applies raw model options after OpenCode's
+# standard generation fields. Repeat this managed agent override in provider
+# options so a model's reviewed coding default cannot replace it.
+_DETERMINISTIC_AGENT_OPTIONS = {"temperature": 0.0}
 _INVESTIGATE_AGENT = {
     "description": "Read-only evidence-based investigation",
     "mode": "primary",
     "temperature": 0.0,
+    "options": _DETERMINISTIC_AGENT_OPTIONS,
     "permission": {
         "*": "deny",
         "read": _READ_PERMISSION,
@@ -127,6 +133,7 @@ _INVESTIGATE_LOCAL_AGENT = {
     "mode": "subagent",
     "hidden": True,
     "temperature": 0.0,
+    "options": _DETERMINISTIC_AGENT_OPTIONS,
     "permission": {
         "*": "deny",
         "read": _READ_PERMISSION,
@@ -150,6 +157,7 @@ _INVESTIGATE_WEB_AGENT = {
     "mode": "subagent",
     "hidden": True,
     "temperature": 0.0,
+    "options": _DETERMINISTIC_AGENT_OPTIONS,
     "permission": {
         "*": "deny",
         "webfetch": "allow",
@@ -201,15 +209,15 @@ def render_config(
                 "output": agent_output_limit(preset.default_context),
             },
         }
+        options = dict(agent_sampling_parameters(identifier))
         if preset.reasoning_effort_budget:
             model["reasoning"] = True
             # OpenCode merges an explicitly selected variant over these model
             # options. Keep a useful fallback without overriding a choice the
             # user has already made for this model.
-            model["options"] = {
-                "reasoningEffort": _DEFAULT_REASONING_EFFORT,
-            }
+            options["reasoningEffort"] = _DEFAULT_REASONING_EFFORT
             model["variants"] = _REASONING_VARIANTS
+        model["options"] = options
         models[identifier] = model
     contents = {
         "$schema": _CONFIG_SCHEMA,

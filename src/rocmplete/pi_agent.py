@@ -16,6 +16,7 @@ from .agent_models import (
     PROVIDER_ID,
     RECOMMENDED_MODEL,
     agent_output_limit,
+    agent_sampling_parameters,
     installed_agent_presets,
     is_agent_capable,
 )
@@ -134,6 +135,7 @@ def render_config(
             "contextWindow": preset.default_context,
             "maxTokens": agent_output_limit(preset.default_context),
             "cost": _COST,
+            "samplingParams": agent_sampling_parameters(identifier),
         }
         if preset.reasoning_effort_budget:
             model["thinkingLevelMap"] = _REASONING_LEVELS

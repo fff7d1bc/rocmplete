@@ -277,6 +277,10 @@ persona or summarization instruction does not need a catalog preset. Do not
 add a hardware profile for task tuning either. In ROCmplete, profiles describe
 GPUs such as Strix Halo or RDNA 4.
 
+The managed OpenCode and Pi launchers are coding-task callers, so their
+generated model entries apply reviewed model-family sampling defaults. That
+does not change direct API requests, terminal mode, or the server defaults.
+
 For a quick human check without an API client, run the model directly in a
 terminal:
 
@@ -367,6 +371,39 @@ model picker to choose a different installed model. OpenCode accepts `-m
 rocmplete/PRESET`. Pi accepts `--model PRESET`, with `--provider rocmplete`
 available when the provider would otherwise be ambiguous. Maki accepts `-m
 rocmplete/PRESET` and exposes the same entries through `/model`.
+
+OpenCode and Pi use these llama.cpp request defaults for coding turns:
+
+| Model family | Temperature | Top-p | Top-k | Min-p | Presence penalty | Repeat penalty |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Qwen3.6 27B and 35B-A3B | 0.6 | 0.95 | 20 | 0 | 0 | 1 |
+| Ornith 1.0 35B | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
+| KAT-Coder V2.5 Dev | 1.0 | 0.95 | 20 | 0 | 1.5 | 1 |
+| Gemma 4 31B IT | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
+| Laguna S 2.1 | 1.0 | 1.0 | 20 | 0 | 0 | 1 |
+
+The sources are Qwen's precise-coding recommendation for
+[Qwen3.6 27B](https://huggingface.co/Qwen/Qwen3.6-27B/blob/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9/README.md)
+and
+[35B-A3B](https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md),
+Ornith's
+[generation configuration](https://huggingface.co/deepreinforce-ai/Ornith-1.0-35B/blob/5df2ed3f675c7beaa490328cc70bb573b65fb660/generation_config.json),
+KAT-Coder's
+[agent API example](https://huggingface.co/Kwaipilot/KAT-Coder-V2.5-Dev/blob/7be56fe773e72b6f5ca93c1ae45d828ddb893922/README.md),
+Gemma 4's
+[standardized sampling guidance](https://huggingface.co/google/gemma-4-31B-it/blob/842da3794eaa0b77d5f08bae87a17459d91ff475/README.md),
+and Laguna's
+[generation configuration](https://huggingface.co/poolside/Laguna-S-2.1/blob/00af5a51782109b587a3b3bbf11875e566036fa7/generation_config.json).
+Neutral values make parameters omitted by an upstream configuration explicit
+and disable llama.cpp's otherwise nonzero min-p default. The upstream name
+`repetition_penalty` is sent to llama.cpp as `repeat_penalty`.
+
+These are client defaults, not locks. OpenCode model options or an agent's
+provider options and Pi per-request sampling parameters can override them.
+OpenCode's managed Investigate agents still force temperature zero. The tested
+Maki 0.4.5 dynamic-provider schema cannot express per-model sampling fields,
+so managed Maki sessions currently inherit llama.cpp's sampler defaults;
+ROCmplete does not emit fields that Maki would silently ignore.
 
 `bin/opencode` delegates to `./rocmplete agent opencode`, injects the
 generated main configuration directly into the child process, and points it

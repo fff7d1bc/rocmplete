@@ -631,6 +631,13 @@ enabled. It supplies the recommended installed model and medium thinking as
 command-line defaults before forwarded Pi session arguments, so an explicit
 later `--provider`, `--model`, or `--thinking` remains authoritative.
 
+`src/rocmplete/agent_models.py` also owns reviewed coding-task sampling policy
+for every maintained llama.cpp agent preset. OpenCode receives those values as
+per-model request options and Pi receives them as `samplingParams`; explicit
+OpenCode provider options or Pi request settings remain higher-precedence
+caller policy. Catalog presets and server startup remain free of task sampling
+so ordinary API and terminal workloads do not inherit coding defaults.
+
 Pi recognizes package and configuration commands only when the command is its
 first argument. The launcher classifies `install`, `remove`, `uninstall`,
 `update`, `list`, `config`, and `auth` before adding session defaults, runs
@@ -660,6 +667,11 @@ scripts are refreshed atomically and reject links or multiply linked files.
 Maki update, rollback, migration, and informational commands pass through to
 the real executable. Other management commands use the private state without
 requiring an installed model.
+The tested Maki 0.4.5 dynamic-provider model schema cannot express per-model
+request sampling parameters, and its llama.cpp adapter does not provide a
+request-body hook. The generated provider therefore does not publish fields
+Maki would ignore; Maki requests retain llama.cpp's defaults until upstream
+exposes a clean model or request setting.
 
 DwarfStar is a separate provider at its own loopback endpoint, with the one
 reviewed `deepseek-v4-flash` model advertising the same 131072-token runtime

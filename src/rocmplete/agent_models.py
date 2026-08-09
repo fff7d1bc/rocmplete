@@ -3,17 +3,69 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Tuple
+from typing import Mapping, Tuple
 
 from .bundles import content_status_ready, inspect_bundle
 from .catalog import Catalog, LlamaPreset
 from .content_verification import VerificationStore
+from .errors import LauncherError
 
 
 PROVIDER_ID = "rocmplete"
 DWARFSTAR_PROVIDER_ID = "dwarfstar"
 DWARFSTAR_MODEL = "deepseek-v4-flash"
 RECOMMENDED_MODEL = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
+
+
+# Agent sampling is caller policy, not model runtime policy, so it stays out of
+# the catalog presets. Values use llama.cpp's Chat Completions field names;
+# notably, upstream repetition_penalty maps to repeat_penalty here.
+_QWEN36_PRECISE_CODING = {
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 0.0,
+    "repeat_penalty": 1.0,
+}
+_AGENT_SAMPLING_PARAMETERS = {
+    "ornith-1.0-35b-q8-0": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0,
+    },
+    "kat-coder-v2.5-dev-q8-0": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repeat_penalty": 1.0,
+    },
+    "qwen3.6-35b-a3b-ud-q8-k-xl": _QWEN36_PRECISE_CODING,
+    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": _QWEN36_PRECISE_CODING,
+    "qwen3.6-27b-q8-0": _QWEN36_PRECISE_CODING,
+    "qwen3.6-27b-mtp-q8-0": _QWEN36_PRECISE_CODING,
+    "gemma4-31b-it-q8-0-mtp": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 64,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0,
+    },
+    "laguna-s-2.1-q4-k-m": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0,
+    },
+}
 
 
 def agent_output_limit(context: int) -> int:
@@ -31,6 +83,19 @@ def is_agent_capable(preset: LlamaPreset) -> bool:
     # Do not infer tool-use suitability from model size or Jinja alone. This
     # claim records a reviewed Chat Completions function-tool contract.
     return preset.agent_tools
+
+
+def agent_sampling_parameters(identifier: str) -> Mapping[str, object]:
+    """Return reviewed llama.cpp request defaults for a coding-agent model."""
+
+    try:
+        return dict(_AGENT_SAMPLING_PARAMETERS[identifier])
+    except KeyError as error:
+        raise LauncherError(
+            "llama.cpp agent preset {} has no reviewed sampling policy".format(
+                identifier
+            )
+        ) from error
 
 
 def installed_presets(catalog: Catalog, data_dir: Path) -> Tuple[str, ...]:

@@ -221,6 +221,10 @@ def _llama_guide() -> ApplicationGuide:
                     "settings, GPU backend, or hardware profile. Put task "
                     "instructions and temperature in each API request or in "
                     "the client that owns the conversation.",
+                    "ROCmplete's managed OpenCode and Pi configurations are "
+                    "coding clients, so they apply reviewed per-model "
+                    "sampling defaults. Direct API requests, terminal mode, "
+                    "and Maki keep their own request behavior.",
                     "The qwen3.6 recipe installs dense 27B MTP Q8_0 and sparse "
                     "35B-A3B MTP Dynamic Q8_K_XL together. Its printed next "
                     "step starts dense 27B MTP as the general baseline.",

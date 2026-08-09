@@ -228,6 +228,14 @@ labels are budget choices, not model-native effort modes.
 Keep the catalog descriptions, patch values, generated model metadata, and
 target-hardware Chat Completions tests in sync.
 
+Agent sampling remains caller policy rather than a catalog preset field.
+`src/rocmplete/agent_models.py` owns the reviewed coding defaults used by
+generated clients. Adding `agent_tools` therefore also requires an
+authoritative upstream sampling audit and an explicit policy entry. Keep
+client-specific serialization in `opencode.py`, `pi_agent.py`, or another
+client integration; do not move the tuple into server startup or encode it in
+a bundle variant.
+
 For a split GGUF, put every shard in the same bundle and reference the first
 `00001-of-N` shard from the preset. Preset inspection validates the complete
 bundle before llama.cpp starts, while llama.cpp discovers the remaining

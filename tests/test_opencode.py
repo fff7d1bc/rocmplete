@@ -8,6 +8,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
+from rocmplete.agent_models import agent_sampling_parameters
 from rocmplete.bundles import artifact_path
 from rocmplete.catalog import load_catalog
 from rocmplete.cli import command_opencode, main
@@ -107,6 +108,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
         investigate = config["agent"]["investigate"]
         self.assertEqual(investigate["mode"], "primary")
         self.assertEqual(investigate["temperature"], 0.0)
+        self.assertEqual(investigate["options"], {"temperature": 0.0})
         self.assertEqual(
             investigate["permission"],
             {
@@ -135,10 +137,14 @@ class OpenCodeLauncherTests(unittest.TestCase):
         local = config["agent"]["investigate-local"]
         self.assertEqual(local["mode"], "subagent")
         self.assertTrue(local["hidden"])
+        self.assertEqual(local["temperature"], 0.0)
+        self.assertEqual(local["options"], {"temperature": 0.0})
         self.assertNotIn("task", local["permission"])
         web = config["agent"]["investigate-web"]
         self.assertEqual(web["mode"], "subagent")
         self.assertTrue(web["hidden"])
+        self.assertEqual(web["temperature"], 0.0)
+        self.assertEqual(web["options"], {"temperature": 0.0})
         self.assertEqual(
             web["permission"],
             {"*": "deny", "webfetch": "allow", "websearch": "allow"},
@@ -168,15 +174,14 @@ class OpenCodeLauncherTests(unittest.TestCase):
         }
         for identifier, model in provider["models"].items():
             preset = self.catalog.llama_preset(identifier)
+            expected_options = dict(agent_sampling_parameters(identifier))
             if preset.reasoning_effort_budget:
                 self.assertTrue(model["reasoning"])
-                self.assertEqual(
-                    model["options"], {"reasoningEffort": "medium"}
-                )
+                expected_options["reasoningEffort"] = "medium"
                 self.assertEqual(model["variants"], expected_variants)
             else:
-                self.assertNotIn("options", model)
                 self.assertNotIn("variants", model)
+            self.assertEqual(model["options"], expected_options)
 
         dwarfstar = config["provider"][DWARFSTAR_PROVIDER_ID]
         self.assertEqual(dwarfstar["npm"], "@ai-sdk/openai-compatible")
