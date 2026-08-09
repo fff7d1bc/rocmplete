@@ -1609,8 +1609,9 @@ def _print_rdna35_memory_guidance(
         print(
             "  {}".format(
                 style(
-                    "sudo grubby --update-kernel=ALL "
-                    "--remove-args='{}' --args='{}'".format(
+                    "sudo grubby --update-kernel=ALL \\\n"
+                    "    --remove-args='{}' \\\n"
+                    "    --args='{}'".format(
                         parameter_names,
                         " ".join(parameters),
                     ),

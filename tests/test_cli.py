@@ -1980,10 +1980,10 @@ class CliTests(unittest.TestCase):
                 )
         text = output.getvalue()
         self.assertIn(
-            "sudo grubby --update-kernel=ALL "
-            "--remove-args='amdgpu.gttsize ttm.pages_limit "
-            "ttm.page_pool_size' "
-            "--args='amdgpu.gttsize=114688 "
+            "  sudo grubby --update-kernel=ALL \\\n"
+            "    --remove-args='amdgpu.gttsize ttm.pages_limit "
+            "ttm.page_pool_size' \\\n"
+            "    --args='amdgpu.gttsize=114688 "
             "ttm.pages_limit=29360128 "
             "ttm.page_pool_size=29360128'",
             text,
