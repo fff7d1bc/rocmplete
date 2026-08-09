@@ -34,6 +34,7 @@ passed.
 | Host | GPU target | Workloads exercised |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 27B llama.cpp MTP/tool and ROCm/Vulkan paths |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -62,8 +63,8 @@ ROCmplete tries to cover the whole path.
 ## Requirements
 
 The host needs rootless Podman and Python 3.12 or newer. The field-tested hosts
-above use SteamOS 3.8, Fedora Kinoite 44, and Ubuntu 26.04. A minimal
-installation may not include Podman yet.
+above use SteamOS 3.8, Fedora 44 in conventional and Kinoite deployments, and
+Ubuntu 26.04. A minimal installation may not include Podman yet.
 
 GPU use needs read/write access to `/dev/kfd` and the selected
 `/dev/dri/renderD*` nodes. Run Doctor before changing permissions or kernel

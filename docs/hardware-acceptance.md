@@ -22,8 +22,65 @@ this document.
 | Host | Architecture | Observed workload scope |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets; DwarfStar generation was about 3.9 tokens/s |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 27B MTP tool protocol and fixed ROCm/Vulkan llama.cpp benchmarks |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
+
+### Fedora 44 Strix Halo observation (2026-08-09)
+
+This field observation used kernel `7.1.7-200.fc44.x86_64`, profile
+`strix-halo`, and `/dev/dri/renderD128`. The final bounded DwarfStar smoke used
+source commit `a333de2`, DwarfStar image
+`localhost/rocmplete:dwarfstar-ubuntu26.04-rocm7.14-d250a7c-r4` (image ID
+`531fdef3be07c78825c573a3b2ceb333ab6b47245158f65894150fe3a54e902d`),
+and the managed DeepSeek V4 Flash 0731 Q2 imatrix bundle. The llama.cpp tests
+used image `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-ddd4ec1-r14`
+(image ID
+`e3459ab8f0d7f96d3b846ebd90b29f8fd5187a7eb7689226cf69877c1ba8fd29`).
+
+The host used the general 112 GiB TTM/GTT configuration:
+`amdgpu.gttsize=114688`, `ttm.pages_limit=29360128`, and
+`ttm.page_pool_size=29360128`. IOMMU remained enabled; the kernel command line
+did not contain `amd_iommu=off`. Doctor passed the GPU operation and exact
+device-isolation probes with enforcing SELinux and `container_use_devices`
+enabled.
+
+Observed results:
+
+- The committed 4K DwarfStar smoke loaded 80.76 GiB of model spans in 18.106
+  seconds, planned 81.18 GiB, passed its exact direct-answer check, and measured
+  33.87 prompt tokens/s and 15.68 generated tokens/s. Its retained result is
+  `apps/acceptance/results/20260809T191506Z-79592f44.json`, with the adjacent
+  Markdown report.
+- The managed 131072-context DwarfStar server planned 83.80 GiB. Direct-answer
+  and normal-thinking requests passed, a two-turn continuation reused 78
+  cached tokens, and a 640-token direct decode completed at 15.78 tokens/s.
+  The receipt stayed current across runtime, explicit stop removed the
+  container, and the kernel recorded no GPU reset, page fault, ring timeout,
+  device-loss, or OOM event. This was a manual exploratory run, not a formal
+  matrix `PASS`; the engine-reported memory plan was not an independently
+  measured peak.
+- The managed Qwen3.6 27B Q8_0 MTP server ran at its 262144-token context and
+  completed nested tool-call/result round trips in both streaming and
+  non-streaming modes. A fixed three-repetition pp512/tg128 comparison on the
+  non-MTP model measured 343.40/7.82 tokens/s with ROCm and 254.60/7.84
+  tokens/s with Vulkan. ROCm prompt processing was 34.9% faster; decode was
+  effectively tied. Results are retained as
+  `apps/llama-cpp/benchmarks/20260809T184312Z-f70ab4d7.json`,
+  `20260809T184422Z-3a1edea5.json`, and
+  `20260809T184422Z-backend-comparison-860c0bbf.json` below the same benchmark
+  directory.
+
+Two host-specific failures were also useful. The first shared SELinux mount of
+the newly installed DwarfStar file normalized its label after verification,
+changing ctime and making the durable receipt stale. Commit `a333de2` now
+applies the complete shared container label before hashing; a subsequent mount
+left the receipt current. Also, a detached rootless container launched from an
+SSH-only session received SIGINT and exited with status 130 when that host's
+last login-scoped user manager stopped. Keeping the session active through the
+explicit stop passed; a persistent remote service needs the host's user-manager
+lingering policy handled separately. Neither failure was a GPU reset or model
+inference crash.
 
 ## Automated bounded smoke
 
