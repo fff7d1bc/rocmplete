@@ -18,6 +18,9 @@ from .errors import LauncherError
 MANAGED_CONTAINER_LABEL = "io.github.fff7d1bc.rocmplete.managed"
 MANAGED_APPLICATION_LABEL = "io.github.fff7d1bc.rocmplete.application"
 MANAGED_ROLE_LABEL = "io.github.fff7d1bc.rocmplete.role"
+SELINUX_CONTAINER_DEVICE_COMMAND = (
+    "sudo setsebool -P container_use_devices 1"
+)
 
 
 def command_exists(command: str) -> bool:
@@ -79,8 +82,9 @@ def require_container_device_access() -> None:
     if selinux_container_device_access() is False:
         raise LauncherError(
             "SELinux blocks GPU memory mapping for containers because "
-            "container_use_devices is off; run "
-            "'sudo setsebool -P container_use_devices 1' and retry"
+            "container_use_devices is off; run {!r} and retry".format(
+                SELINUX_CONTAINER_DEVICE_COMMAND
+            )
         )
 
 

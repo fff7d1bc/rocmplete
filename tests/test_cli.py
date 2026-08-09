@@ -1560,13 +1560,61 @@ class CliTests(unittest.TestCase):
     )
     def test_doctor_reports_disabled_selinux_device_policy(self, device_access):
         with redirect_stdout(io.StringIO()) as output:
-            _print_doctor_selinux_device_policy()
+            self.assertIs(_print_doctor_selinux_device_policy(), False)
         text = output.getvalue()
         self.assertIn("SELinux", text)
         self.assertIn("container_use_devices is off", text)
         self.assertIn(
-            "sudo setsebool -P container_use_devices 1",
+            "\nHost action: administrator access is required:\n"
+            "  sudo setsebool -P container_use_devices 1\n",
             text,
+        )
+
+    def test_doctor_reports_selinux_host_action_once_before_failing(self):
+        with tempfile.TemporaryDirectory() as directory, ExitStack() as stack:
+            stack.enter_context(
+                patch("rocmplete.cli.podman.require_rootless")
+            )
+            stack.enter_context(
+                patch(
+                    "rocmplete.cli.podman.capture",
+                    return_value="podman version test",
+                )
+            )
+            stack.enter_context(
+                patch("rocmplete.cli.podman.image_exists", return_value=True)
+            )
+            stack.enter_context(
+                patch(
+                    "rocmplete.cli.podman.selinux_container_device_access",
+                    return_value=False,
+                )
+            )
+            stack.enter_context(patch("rocmplete.cli._print_doctor_devices"))
+            stack.enter_context(
+                patch("rocmplete.cli._print_doctor_apparmor_userns_policy")
+            )
+            stack.enter_context(
+                patch("rocmplete.cli._read_ttm_state", return_value=None)
+            )
+            output = io.StringIO()
+            errors = io.StringIO()
+            with redirect_stdout(output), redirect_stderr(errors):
+                self.assertEqual(
+                    main(["doctor", "--data-dir", directory]),
+                    1,
+                )
+
+        command = "sudo setsebool -P container_use_devices 1"
+        self.assertEqual(output.getvalue().count(command), 1)
+        self.assertNotIn(command, errors.getvalue())
+        self.assertIn(
+            "Host action: administrator access is required:",
+            output.getvalue(),
+        )
+        self.assertIn(
+            "apply the reported Host action and retry",
+            errors.getvalue(),
         )
 
     def test_doctor_omits_unavailable_apparmor_userns_policy(self):

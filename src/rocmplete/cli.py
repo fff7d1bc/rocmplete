@@ -1719,23 +1719,30 @@ def _print_doctor_devices(
         )
 
 
-def _print_doctor_selinux_device_policy() -> None:
+def _print_doctor_selinux_device_policy() -> Optional[bool]:
     allowed = podman.selinux_container_device_access()
     if allowed is None:
-        return
+        return None
     state = "allowed" if allowed else "blocked; container_use_devices is off"
     _print_doctor_field(
         "SELinux",
         style(state, "success" if allowed else "error"),
     )
     if not allowed:
-        _print_doctor_field(
-            "Host action",
-            style(
-                "sudo setsebool -P container_use_devices 1",
-                "command",
+        print(
+            "\n{} administrator access is required:".format(
+                style("Host action:", "heading")
             ),
         )
+        print(
+            "  {}".format(
+                style(
+                    podman.SELINUX_CONTAINER_DEVICE_COMMAND,
+                    "command",
+                )
+            )
+        )
+    return allowed
 
 
 def _print_doctor_apparmor_userns_policy(
@@ -1851,7 +1858,7 @@ def command_doctor(arguments: argparse.Namespace) -> int:
     _print_doctor_apparmor_userns_policy()
     _print_doctor_section("GPU access")
     _print_doctor_devices()
-    _print_doctor_selinux_device_policy()
+    selinux_device_access = _print_doctor_selinux_device_policy()
 
     ttm_state = _read_ttm_state()
 
@@ -1883,6 +1890,13 @@ def command_doctor(arguments: argparse.Namespace) -> int:
         )
         next_step("./rocmplete build base")
         return 0
+
+    if selinux_device_access is False:
+        raise LauncherError(
+            "SELinux blocks GPU memory mapping for containers because "
+            "container_use_devices is off; apply the reported Host action "
+            "and retry"
+        )
 
     render_nodes = select_render_nodes(
         requested_render_nodes(arguments.render_node, env)
