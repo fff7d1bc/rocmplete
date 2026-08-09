@@ -46,7 +46,7 @@ finished. The public contribution path and baseline checks are summarized in
    git diff --check
    ```
 
-5. Use the guide matching the task:
+5. Use the guide or dated research record matching the task:
 
    - [Routine upgrade scan and execution checklist](routine-upgrade-runbook.md)
    - [Upgrading dependencies and upstream applications](upgrading.md)
@@ -54,6 +54,8 @@ finished. The public contribution path and baseline checks are summarized in
    - [Adding applications, commands, modes, or hardware profiles](extending.md)
    - [Testing, release checks, and routine housekeeping](testing-and-release.md)
    - [Target-hardware acceptance matrix](hardware-acceptance.md)
+   - [DeepSeek V4 Flash llama.cpp feasibility
+     snapshot](deepseek-v4-flash-llama-cpp-feasibility.md)
 
 ## Sources of truth
 
