@@ -95,6 +95,13 @@ def fake_catalog(artifact):
 
 
 class BundleTests(unittest.TestCase):
+    def setUp(self):
+        self.shared_label_patcher = patch(
+            "rocmplete.bundles.podman.prepare_shared_content_label"
+        )
+        self.shared_label = self.shared_label_patcher.start()
+        self.addCleanup(self.shared_label_patcher.stop)
+
     def test_content_install_lock_serializes_one_data_root(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -417,6 +424,48 @@ class BundleTests(unittest.TestCase):
                 ):
                     install_artifacts((artifact,), data_dir, "unused")
             self.assertEqual(destination.read_bytes(), b"evil!")
+
+    def test_existing_model_is_labeled_before_hash_and_receipt(self):
+        contents = b"good!"
+        artifact = fake_artifact(contents)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            destination = artifact_path(data_dir, artifact)
+            destination.parent.mkdir(parents=True)
+            destination.write_bytes(contents)
+
+            def relabel(path):
+                self.assertEqual(path, destination)
+                path.write_bytes(b"evil!")
+
+            with patch(
+                "rocmplete.bundles.podman.prepare_shared_content_label",
+                side_effect=relabel,
+            ), redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(
+                    LauncherError, "SHA-256 mismatch for installed content"
+                ):
+                    install_artifacts((artifact,), data_dir, "unused")
+
+    def test_staged_model_is_labeled_before_hash(self):
+        contents = b"good!"
+        artifact = fake_artifact(contents)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            staged = artifact_payload_path(data_dir, artifact)
+            staged.parent.mkdir(parents=True)
+            staged.write_bytes(contents)
+
+            def relabel(path):
+                self.assertEqual(path, staged)
+                path.write_bytes(b"evil!")
+
+            with patch(
+                "rocmplete.bundles.podman.prepare_shared_content_label",
+                side_effect=relabel,
+            ), redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(LauncherError, "SHA-256 mismatch"):
+                    install_artifacts((artifact,), data_dir, "unused")
 
     def test_staged_payload_changed_after_hash_is_not_receipted(self):
         contents = b"good!"

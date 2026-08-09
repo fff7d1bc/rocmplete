@@ -2,6 +2,7 @@ import io
 import signal
 import subprocess
 import unittest
+from pathlib import Path
 from unittest.mock import Mock, call, mock_open, patch
 
 from rocmplete import podman
@@ -83,6 +84,50 @@ class PodmanAdapterTests(unittest.TestCase):
             podman.shared_selinux_volume_suffix(),
             ":rw,z",
         )
+
+    @patch("rocmplete.podman.shutil.which")
+    @patch("rocmplete.podman.subprocess.run")
+    def test_shared_content_label_matches_runtime_mount(self, run, which):
+        which.side_effect = lambda command: "/usr/bin/{}".format(command)
+        run.side_effect = [
+            Mock(returncode=0, stdout="Enforcing\n"),
+            Mock(returncode=0, stderr=""),
+        ]
+
+        podman.prepare_shared_content_label(Path("/data/model.gguf"))
+
+        self.assertEqual(
+            run.call_args_list,
+            [
+                call(
+                    ["/usr/bin/getenforce"],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    check=False,
+                ),
+                call(
+                    [
+                        "/usr/bin/chcon",
+                        "--no-dereference",
+                        "system_u:object_r:container_file_t:s0",
+                        "--",
+                        "/data/model.gguf",
+                    ],
+                    text=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                ),
+            ],
+        )
+
+    @patch("rocmplete.podman.shutil.which", return_value=None)
+    @patch("rocmplete.podman.subprocess.run")
+    def test_shared_content_label_is_skipped_without_selinux(self, run, which):
+        podman.prepare_shared_content_label(Path("/data/model.gguf"))
+
+        run.assert_not_called()
 
     @patch("rocmplete.podman.subprocess.run")
     def test_managed_download_query_filters_exact_owned_prefix(self, run):

@@ -10,6 +10,7 @@ import sys
 import time
 import uuid
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Callable, List, Optional
 
 from .errors import LauncherError
@@ -18,6 +19,7 @@ from .errors import LauncherError
 MANAGED_CONTAINER_LABEL = "io.github.fff7d1bc.rocmplete.managed"
 MANAGED_APPLICATION_LABEL = "io.github.fff7d1bc.rocmplete.application"
 MANAGED_ROLE_LABEL = "io.github.fff7d1bc.rocmplete.role"
+SHARED_CONTENT_SELINUX_CONTEXT = "system_u:object_r:container_file_t:s0"
 SELINUX_CONTAINER_DEVICE_COMMAND = (
     "sudo setsebool -P container_use_devices 1"
 )
@@ -581,3 +583,37 @@ def selinux_volume_suffix() -> str:
 def shared_selinux_volume_suffix() -> str:
     """Writable suffix for persistent storage reused by many containers."""
     return selinux_volume_suffix().replace(",Z", ",z")
+
+
+def prepare_shared_content_label(path: Path) -> None:
+    """Apply the label expected by a later shared read-only bind mount."""
+    if selinux_volume_suffix() != ":rw,Z":
+        return
+    chcon = shutil.which("chcon")
+    if chcon is None:
+        raise LauncherError(
+            "cannot prepare shared SELinux label for {}: chcon is not "
+            "installed".format(path)
+        )
+    result = subprocess.run(
+        [
+            chcon,
+            "--no-dereference",
+            SHARED_CONTENT_SELINUX_CONTEXT,
+            "--",
+            str(path),
+        ],
+        text=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.strip() or "exit status {}".format(
+            result.returncode
+        )
+        raise LauncherError(
+            "cannot prepare shared SELinux label for {}: {}".format(
+                path, detail
+            )
+        )

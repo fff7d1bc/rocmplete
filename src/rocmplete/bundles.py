@@ -52,6 +52,9 @@ class _DownloadTarget:
 _REDIRECTED_PROGRESS_PERCENT = 5
 _REDIRECTED_PROGRESS_SECONDS = 60.0
 _TERMINAL_PROGRESS_SECONDS = 1.0
+_SHARED_CONTENT_TARGETS = frozenset(
+    ("models", "llama-models", "dwarfstar-models")
+)
 
 
 def _content_lock_directory() -> Path:
@@ -781,6 +784,11 @@ def _artifact_root(data_dir: Path, artifact: Artifact) -> Path:
 
 def artifact_path(data_dir: Path, artifact: Artifact) -> Path:
     return _artifact_root(data_dir, artifact) / Path(artifact.destination)
+
+
+def _prepare_runtime_label(artifact: Artifact, path: Path) -> None:
+    if artifact.target in _SHARED_CONTENT_TARGETS:
+        podman.prepare_shared_content_label(path)
 
 
 def inspect_bundle(
@@ -1685,6 +1693,7 @@ def install_artifacts(
     ]
     for status in unverified:
         artifact = status.artifact
+        _prepare_runtime_label(artifact, status.path)
         print(
             "\n{} SHA-256 for existing {} ({})".format(
                 style("Verifying", "heading"),
@@ -1917,6 +1926,7 @@ def install_artifacts(
                     payload
                 )
             )
+        _prepare_runtime_label(artifact, payload)
         print(
             "\n{} SHA-256 for {} ({})".format(
                 style("Verifying", "heading"),

@@ -147,10 +147,13 @@ document the explicit user migration: move the old file aside, run
 
 Runtime readiness also requires a current entry in
 `content/.rocmplete/verification.json`. The installer creates that receipt only
-after hashing the complete file. Its filesystem identity fields invalidate the
-receipt after replacement or mutation, including a same-size change. Existing
-same-sized content without a receipt is hashed in place by `content install`;
-dry runs report this as verification work without reading or writing the file.
+after preparing the shared runtime SELinux label, where applicable, and hashing
+the complete file. Labeling before hashing prevents the first container mount
+from invalidating the receipt through a ctime-only change. The receipt's
+filesystem identity fields still invalidate it after replacement or mutation,
+including a same-size change. Existing same-sized content without a receipt is
+prepared, hashed in place, and recorded by `content install`; dry runs report
+this as verification work without reading or writing the file.
 
 If the artifact filename appears in curated workflow metadata, update
 `_MODEL_SOURCES` and, if necessary, `_MODEL_ALIASES` in
