@@ -272,6 +272,10 @@ Exercise both allowlisted strategies: embedded and separate-draft
 `draft-mtp`, plus separate-draft `draft-dflash`. Re-run representative
 generation with and without speculative decoding: regressions can affect
 speed, memory, or committed output even when startup succeeds.
+For presets with `context_override_architectures`, also confirm that
+`--override-kv` remains valid in direct launches and router INI sections, that
+`--fit off` retains its meaning, and that the target and draft architecture
+keys have not changed.
 Inspect `llama-bench --help`, `--list-devices`, and JSON output as well.
 Changes to option names, backend device names, result shape, or progress
 streams require coordinated updates to

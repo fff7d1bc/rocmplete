@@ -978,6 +978,8 @@ class RuntimeCommandTests(unittest.TestCase):
                 managed_draft="muse/dflash.gguf",
                 speculative_type="draft-dflash",
                 draft_tokens=15,
+                context_override_architectures=("muse-glimmer", "dflash"),
+                context=262144,
             ),
             ":rw,Z",
         )
@@ -985,6 +987,14 @@ class RuntimeCommandTests(unittest.TestCase):
             "ROCMLETE_LLAMA_SPECULATIVE_TYPE=draft-dflash", command
         )
         self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=15", command)
+        self.assertIn(
+            "ROCMLETE_LLAMA_CONTEXT_OVERRIDE="
+            "muse-glimmer.context_length=int:262144,"
+            "dflash.context_length=int:262144",
+            command,
+        )
+        self.assertIn("--ctx-size", command)
+        self.assertIn("262144", command)
         self.assertNotIn("--spec-type", command)
 
     def test_llama_managed_model_policy_is_constrained_by_environment(self):

@@ -1,5 +1,5 @@
 {
-  "schema_version": 19,
+  "schema_version": 20,
   "agreements": {
     "ltx-2-community-license": {
       "name": "LTX-2 Community License",
@@ -2554,6 +2554,19 @@
       "default_context": 131072,
       "speculative_type": "draft-dflash",
       "draft_tokens": 15,
+      "jinja": true
+    },
+    "muse-glimmer-30b-ud-q8-k-xl-dflash-256k": {
+      "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
+      "artifact": "muse-glimmer-30b-ud-q8-k-xl-gguf",
+      "draft_artifact": "muse-glimmer-30b-dflash-kquant-gguf",
+      "default_context": 262144,
+      "speculative_type": "draft-dflash",
+      "draft_tokens": 15,
+      "context_override_architectures": [
+        "muse-glimmer",
+        "dflash"
+      ],
       "jinja": true
     },
     "hy-mt1.5-7b-q8-0": {

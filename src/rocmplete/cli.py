@@ -3313,6 +3313,14 @@ def _llama_speculation_policy(preset: LlamaPreset) -> str:
     )
 
 
+def _llama_context_policy(preset: LlamaPreset) -> str:
+    if not preset.context_override_architectures:
+        return "model metadata"
+    return "forced for {}; automatic fitting disabled".format(
+        ", ".join(preset.context_override_architectures)
+    )
+
+
 def _llama_flash_attention_policy(preset: LlamaPreset) -> str:
     policies = [
         "{}={}".format(profile, preset.flash_attention[profile])
@@ -3353,6 +3361,7 @@ def _print_llama_model_details(
                         "Default context",
                         "{} tokens".format(preset.default_context),
                     ),
+                    ("Context policy", _llama_context_policy(preset)),
                     ("Template", _llama_template_policy(preset)),
                     (
                         "Speculation",
@@ -5536,6 +5545,22 @@ def _render_llama_router_preset(
             "model = /content/models/{}".format(destination),
             "c = {}".format(preset.default_context),
         ]
+        if preset.context_override_architectures:
+            section.extend(
+                [
+                    "fit = off",
+                    "override-kv = {}".format(
+                        ",".join(
+                            "{}.context_length=int:{}".format(
+                                architecture, preset.default_context
+                            )
+                            for architecture in (
+                                preset.context_override_architectures
+                            )
+                        )
+                    ),
+                ]
+            )
         if preset.jinja:
             section.append("jinja = true")
         if preset.chat_template:
@@ -5660,6 +5685,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
     managed_draft = ""
     speculative_type = ""
     draft_tokens = 0
+    context_override_architectures = ()
     jinja = False
     chat_template = ""
     profile_flash_attention = {}
@@ -5679,11 +5705,19 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
             ).destination
         speculative_type = preset.speculative_type
         draft_tokens = preset.draft_tokens
+        context_override_architectures = (
+            preset.context_override_architectures
+        )
         jinja = preset.jinja
         chat_template = preset.chat_template
         profile_flash_attention = preset.flash_attention
         if context is None:
             context = preset.default_context
+        if preset.context_override_architectures and context == 0:
+            raise LauncherError(
+                "--context 0 cannot disable the managed context metadata "
+                "override for preset '{}'".format(preset.identifier)
+            )
     elif arguments.router:
         contents, router_models = _render_llama_router_preset(
             catalog, data_dir
@@ -5729,6 +5763,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         managed_draft=managed_draft,
         speculative_type=speculative_type,
         draft_tokens=draft_tokens,
+        context_override_architectures=context_override_architectures,
         jinja=jinja,
         chat_template=chat_template,
         profile_flash_attention=profile_flash_attention,

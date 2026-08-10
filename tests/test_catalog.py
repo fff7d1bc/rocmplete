@@ -88,7 +88,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(len(catalog.bundles), 50)
         self.assertEqual(len(catalog.artifacts), 65)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 14)
+        self.assertEqual(len(catalog.llama_presets), 15)
         self.assertFalse(
             [
                 artifact.identifier
@@ -251,6 +251,9 @@ class CatalogTests(unittest.TestCase):
         muse_base = catalog.llama_preset(
             "muse-glimmer-30b-ud-q8-k-xl"
         )
+        muse_256k = catalog.llama_preset(
+            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+        )
         muse_artifact = catalog.artifact(muse.artifact)
         muse_draft = catalog.artifact(muse.draft_artifact)
         self.assertEqual(muse.default_context, 131072)
@@ -260,6 +263,15 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(muse_base.bundle, muse.bundle)
         self.assertEqual(muse.speculative_type, "draft-dflash")
         self.assertEqual(muse.draft_tokens, 15)
+        self.assertEqual(muse.context_override_architectures, ())
+        self.assertEqual(muse_256k.artifact, muse.artifact)
+        self.assertEqual(muse_256k.draft_artifact, muse.draft_artifact)
+        self.assertEqual(muse_256k.bundle, muse.bundle)
+        self.assertEqual(muse_256k.default_context, 262144)
+        self.assertEqual(
+            muse_256k.context_override_architectures,
+            ("muse-glimmer", "dflash"),
+        )
         self.assertTrue(muse.jinja)
         self.assertFalse(muse.agent_tools)
         self.assertEqual(
@@ -496,6 +508,22 @@ class CatalogTests(unittest.TestCase):
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
                 LauncherError, "draft_tokens requires speculative_type"
+            ):
+                load_catalog(path)
+
+    def test_llama_context_override_architectures_are_strict(self):
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"][
+            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+        ]
+        preset["context_override_architectures"] = [
+            "muse-glimmer",
+            "dflash.context_length=int:1",
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "contain GGUF architecture names"
             ):
                 load_catalog(path)
 

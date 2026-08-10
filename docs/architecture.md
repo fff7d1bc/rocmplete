@@ -539,7 +539,7 @@ destination roots are therefore required not to overlap.
 
 ## Catalog and workflow trust chain
 
-`catalog/catalog.json` is schema version 19. The loader in
+`catalog/catalog.json` is schema version 20. The loader in
 `src/rocmplete/catalog.py` rejects malformed identifiers, unsafe paths,
 non-full revisions, invalid hashes, duplicate destinations, unknown
 references, and incomplete bundle/benchmark relationships.
@@ -566,18 +566,22 @@ or memory-constrained workloads may deliberately start smaller. A preset
 can select one of the allowlisted `draft-mtp` or `draft-dflash` strategies
 with a strategy-specific bounded token count. A different draft GGUF must
 belong to that same bundle. MTP may instead use tensors embedded in the target
-GGUF, while DFlash always requires the separate draft artifact. Presets can
-also explicitly enable Jinja, select a project-owned chat template from a
-closed allowlist, and select `on`, `off`, or `auto` Flash Attention behavior
-for a concrete GPU profile. Managed templates are copied into the image and
-never read from host content. The launcher renders only installed presets into
-a private atomic INI, rejects partial managed content, and mounts both that
-exact file and the model partition read-only. Single-model startup passes the
-same catalog-owned policy through narrow environment fields that the
-entrypoint validates before constructing llama.cpp arguments. The entrypoint
-derives a tmpfs router copy that injects offline and resolved-profile policy
-into each model section without modifying the mounted source. The router is
-upstream llama-server; ROCmplete does not implement a routing daemon.
+GGUF, while DFlash always requires the separate draft artifact. A preset may
+name exact GGUF architecture prefixes whose `context_length` metadata is
+overridden to that launch's selected context. Presence of this narrow policy
+also disables llama.cpp automatic fitting; it does not expose general metadata
+or argument overrides. Presets can additionally enable Jinja, select a
+project-owned chat template from a closed allowlist, and select `on`, `off`,
+or `auto` Flash Attention behavior for a concrete GPU profile. Managed
+templates are copied into the image and never read from host content. The
+launcher renders only installed presets into a private atomic INI, rejects
+partial managed content, and mounts both that exact file and the model
+partition read-only. Single-model startup passes the same catalog-owned policy
+through narrow environment fields that the entrypoint validates before
+constructing llama.cpp arguments. The entrypoint derives a tmpfs router copy
+that injects offline and resolved-profile policy into each model section
+without modifying the mounted source. The router is upstream llama-server;
+ROCmplete does not implement a routing daemon.
 
 `agent_tools` is a reviewed compatibility claim, not an inference from model
 size or Jinja alone. It requires Jinja and at least a 16384-token managed

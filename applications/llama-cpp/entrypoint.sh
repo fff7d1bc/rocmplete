@@ -13,6 +13,7 @@ model="${ROCMLETE_LLAMA_MODEL:-}"
 draft_model="${ROCMLETE_LLAMA_DRAFT_MODEL:-}"
 speculative_type="${ROCMLETE_LLAMA_SPECULATIVE_TYPE:-}"
 draft_tokens="${ROCMLETE_LLAMA_DRAFT_TOKENS:-0}"
+context_override="${ROCMLETE_LLAMA_CONTEXT_OVERRIDE:-}"
 jinja="${ROCMLETE_LLAMA_JINJA:-0}"
 chat_template="${ROCMLETE_LLAMA_CHAT_TEMPLATE:-}"
 flash_attn_rdna4="${ROCMLETE_LLAMA_FLASH_ATTN_RDNA4:-}"
@@ -74,6 +75,10 @@ if [[ -n "$draft_model" ]]; then
     [[ -f "$draft_model" ]] ||
         die "draft model is not a regular file: $draft_model"
 fi
+if [[ -n "$context_override" ]]; then
+    [[ "$context_override" =~ ^[a-z0-9][a-z0-9_-]*\.context_length=int:[1-9][0-9]*(,[a-z0-9][a-z0-9_-]*\.context_length=int:[1-9][0-9]*)*$ ]] ||
+        die "invalid managed llama.cpp context override"
+fi
 case "$flash_attn_strix_halo" in
     ""|on|off|auto) ;;
     *) die "invalid Strix Halo Flash Attention setting '$flash_attn_strix_halo'" ;;
@@ -107,6 +112,9 @@ profile_args=()
 bench_profile_args=()
 speculative_args=()
 model_policy_args=()
+if [[ "$router" == 0 && -n "$context_override" ]]; then
+    model_policy_args+=(--fit off --override-kv "$context_override")
+fi
 if [[ "$router" == 0 && "$jinja" == 1 ]]; then
     model_policy_args+=(--jinja)
 fi
@@ -238,6 +246,9 @@ else
         if [[ -n "$draft_model" ]]; then
             printf '  draft model:   %s\n' "$draft_model"
         fi
+    fi
+    if [[ -n "$context_override" ]]; then
+        printf '  context policy: forced metadata; automatic fitting off\n'
     fi
 fi
 if [[ "$mode" == server ]]; then

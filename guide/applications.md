@@ -793,11 +793,29 @@ approximately 31.60 GiB in total:
 ```
 
 The DFlash preset is the recipe default. It starts at the model's 131072-token
-trained context and allows up to fifteen draft tokens, matching the draft's
+declared context and allows up to fifteen draft tokens, matching the draft's
 16-token block. The same installed bundle also exposes
 `muse-glimmer-30b-ud-q8-k-xl` as a non-speculative control. This makes it
 possible to compare output, draft acceptance, wall time, and memory without
 changing the target GGUF.
+
+The bundle also exposes an experimental forced-window policy without another
+download:
+
+```bash
+./rocmplete run llama-cpp server \
+  --preset muse-glimmer-30b-ud-q8-k-xl-dflash-256k
+```
+
+That preset sets both `muse-glimmer.context_length` and
+`dflash.context_length` to 262144 and disables llama.cpp automatic fitting.
+Meta's pinned configuration declares 131072 positions and describes the
+release as 131072+, while its DFlash table declares a 131072-token sequence
+length. Treat 256K as forced extrapolation until retrieval, quality, memory,
+and draft acceptance pass beyond 128K. The 128K DFlash preset therefore
+remains the recipe default. `--context 0` is intentionally refused for the
+forced preset; a positive override such as `--context 196608` applies to both
+target and draft metadata.
 
 Initial `gfx1151` feasibility testing with the pinned llama.cpp source loaded
 both presets at 128K, preserved byte-identical greedy output in a controlled
@@ -809,11 +827,10 @@ about 2.4 GiB more resident memory than the base server in that test. A
 56,057-token synthetic prompt completed without a runtime fault but did not
 retrieve the answer within its output limit.
 
-The current llama.cpp runtime caps the model at 131072 tokens even if a larger
-`--context` is requested. The GGUF template supports the raw Chat Completions
-tool-call and tool-result protocol, but the preset is not advertised to the
-managed OpenCode, Pi, or Maki clients until all three complete their own
-acceptance. Direct API callers own sampling; the [pinned upstream model card](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/f84ecc3a0ea984a4c04542a84269e3d065350a6e/README.md)
+The GGUF template supports the raw Chat Completions tool-call and tool-result
+protocol, but the presets are not advertised to the managed OpenCode, Pi, or
+Maki clients until all three complete their own acceptance. Direct API callers
+own sampling; the [pinned upstream model card](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/f84ecc3a0ea984a4c04542a84269e3d065350a6e/README.md)
 starts from temperature 1.0, top-p 0.95, and top-k 64.
 
 ### Laguna S 2.1

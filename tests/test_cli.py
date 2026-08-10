@@ -19,6 +19,7 @@ from rocmplete.cli import (
     _exact_categories,
     _interactive_build_target,
     _interactive_content_target,
+    _llama_context_policy,
     _llama_flash_attention_policy,
     _llama_speculation_policy,
     _llama_template_policy,
@@ -2648,6 +2649,7 @@ class CliTests(unittest.TestCase):
             (
                 "muse-glimmer-30b-ud-q8-k-xl",
                 "muse-glimmer-30b-ud-q8-k-xl-dflash",
+                "muse-glimmer-30b-ud-q8-k-xl-dflash-256k",
             ),
         )
         base_section = contents.split(
@@ -2656,7 +2658,18 @@ class CliTests(unittest.TestCase):
             "[muse-glimmer-30b-ud-q8-k-xl-dflash]", 1
         )[0]
         self.assertNotIn("spec-type", base_section)
+        extended_section = contents.split(
+            "[muse-glimmer-30b-ud-q8-k-xl-dflash-256k]", 1
+        )[1]
         self.assertIn("c = 131072", contents)
+        self.assertIn("c = 262144", extended_section)
+        self.assertIn("fit = off", extended_section)
+        self.assertIn(
+            "override-kv = "
+            "muse-glimmer.context_length=int:262144,"
+            "dflash.context_length=int:262144",
+            extended_section,
+        )
         self.assertIn("jinja = true", contents)
         self.assertIn("spec-type = draft-dflash", contents)
         self.assertIn("spec-draft-n-max = 15", contents)
@@ -2843,6 +2856,98 @@ class CliTests(unittest.TestCase):
         self.assertIn(
             "ROCMLETE_LLAMA_FLASH_ATTN_STRIX_POINT=off", command
         )
+
+    def test_llama_forced_context_preset_dry_run_maps_override(self):
+        catalog = load_catalog()
+        preset = catalog.llama_preset(
+            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+        )
+        bundle = catalog.bundle(preset.bundle)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            for identifier in bundle.artifacts:
+                artifact = catalog.artifact(identifier)
+                path = (
+                    data_dir
+                    / "content"
+                    / "llama-cpp"
+                    / "models"
+                    / artifact.destination
+                )
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with path.open("wb") as handle:
+                    handle.truncate(artifact.size)
+                _record_managed_file(data_dir, path, artifact)
+            _, arguments = parse_arguments(
+                [
+                    "run",
+                    "llama-cpp",
+                    "server",
+                    "--preset",
+                    preset.identifier,
+                    "--profile",
+                    "cpu",
+                    "--data-dir",
+                    str(data_dir),
+                    "--dry-run",
+                ]
+            )
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(command_run(arguments), 0)
+            _, zero_context = parse_arguments(
+                [
+                    "run",
+                    "llama-cpp",
+                    "server",
+                    "--preset",
+                    preset.identifier,
+                    "--profile",
+                    "cpu",
+                    "--context",
+                    "0",
+                    "--data-dir",
+                    str(data_dir),
+                    "--dry-run",
+                ]
+            )
+            with self.assertRaisesRegex(
+                LauncherError, "cannot disable the managed context"
+            ):
+                command_run(zero_context)
+            _, smaller_context = parse_arguments(
+                [
+                    "run",
+                    "llama-cpp",
+                    "server",
+                    "--preset",
+                    preset.identifier,
+                    "--profile",
+                    "cpu",
+                    "--context",
+                    "196608",
+                    "--data-dir",
+                    str(data_dir),
+                    "--dry-run",
+                ]
+            )
+            with redirect_stdout(io.StringIO()) as smaller_output:
+                self.assertEqual(command_run(smaller_context), 0)
+        command = output.getvalue()
+        self.assertIn(
+            "ROCMLETE_LLAMA_CONTEXT_OVERRIDE="
+            "muse-glimmer.context_length=int:262144,"
+            "dflash.context_length=int:262144",
+            command,
+        )
+        self.assertIn("--ctx-size 262144", command)
+        self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
+        self.assertIn(
+            "ROCMLETE_LLAMA_CONTEXT_OVERRIDE="
+            "muse-glimmer.context_length=int:196608,"
+            "dflash.context_length=int:196608",
+            smaller_output.getvalue(),
+        )
+        self.assertIn("--ctx-size 196608", smaller_output.getvalue())
 
     def test_llama_mtp_preset_dry_run_maps_target_and_draft(self):
         catalog = load_catalog()
@@ -4062,6 +4167,9 @@ class CliTests(unittest.TestCase):
         dflash = catalog.llama_preset(
             "muse-glimmer-30b-ud-q8-k-xl-dflash"
         )
+        dflash_256k = catalog.llama_preset(
+            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+        )
         laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
         translate = catalog.llama_preset("translategemma-27b-it-q8-0")
 
@@ -4077,6 +4185,13 @@ class CliTests(unittest.TestCase):
             _llama_speculation_policy(dflash),
             "DFlash, 15 draft tokens; draft "
             "muse-glimmer-30b-dflash-kquant-gguf",
+        )
+        self.assertEqual(
+            _llama_context_policy(dflash), "model metadata"
+        )
+        self.assertEqual(
+            _llama_context_policy(dflash_256k),
+            "forced for muse-glimmer, dflash; automatic fitting disabled",
         )
         self.assertEqual(
             _llama_flash_attention_policy(laguna),

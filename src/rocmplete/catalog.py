@@ -15,6 +15,7 @@ from .project import PROJECT_ROOT
 
 DEFAULT_CATALOG_PATH = PROJECT_ROOT / "catalog" / "catalog.json"
 _IDENTIFIER = re.compile(r"[a-z0-9][a-z0-9._-]*")
+_GGUF_ARCHITECTURE = re.compile(r"[a-z0-9][a-z0-9_-]*")
 _REVISION = re.compile(r"[0-9a-f]{40}")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _CatalogEntry = TypeVar("_CatalogEntry")
@@ -125,6 +126,9 @@ class LlamaPreset:
     speculative_type: str = ""
     draft_tokens: int = 0
     draft_artifact: str = ""
+    context_override_architectures: Tuple[str, ...] = field(
+        default_factory=tuple
+    )
     jinja: bool = False
     agent_tools: bool = False
     reasoning_effort_budget: bool = False
@@ -747,6 +751,7 @@ def _load_llama_preset(
         "speculative_type",
         "draft_tokens",
         "draft_artifact",
+        "context_override_architectures",
         "jinja",
         "agent_tools",
         "reasoning_effort_budget",
@@ -828,6 +833,29 @@ def _load_llama_preset(
                 identifier
             )
         )
+    context_override_value = data.get(
+        "context_override_architectures", []
+    )
+    if not isinstance(context_override_value, list):
+        raise LauncherError(
+            "llama.cpp preset {} context_override_architectures must be "
+            "an array".format(identifier)
+        )
+    context_override_architectures = []
+    for value in context_override_value:
+        if not isinstance(value, str) or not _GGUF_ARCHITECTURE.fullmatch(
+            value
+        ):
+            raise LauncherError(
+                "llama.cpp preset {} context_override_architectures must "
+                "contain GGUF architecture names".format(identifier)
+            )
+        if value in context_override_architectures:
+            raise LauncherError(
+                "llama.cpp preset {} context_override_architectures must "
+                "not contain duplicates".format(identifier)
+            )
+        context_override_architectures.append(value)
     jinja = data.get("jinja", False)
     if not isinstance(jinja, bool):
         raise LauncherError(
@@ -907,6 +935,9 @@ def _load_llama_preset(
         speculative_type=speculative_type,
         draft_tokens=draft_tokens,
         draft_artifact=draft_artifact,
+        context_override_architectures=tuple(
+            context_override_architectures
+        ),
         jinja=jinja,
         agent_tools=agent_tools,
         reasoning_effort_budget=reasoning_effort_budget,
@@ -1094,7 +1125,7 @@ def _validate_catalog(catalog: Catalog) -> None:
 
 def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
     raw = _read_json_object(path, "catalog")
-    if not isinstance(raw, dict) or raw.get("schema_version") != 19:
+    if not isinstance(raw, dict) or raw.get("schema_version") != 20:
         raise LauncherError("unsupported or invalid catalog schema")
     allowed = {
         "schema_version",

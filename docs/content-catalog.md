@@ -173,6 +173,7 @@ connect it to a stable router identity:
     "speculative_type": "draft-mtp",
     "draft_tokens": 4,
     "draft_artifact": "optional-draft-artifact-id",
+    "context_override_architectures": ["target-architecture"],
     "jinja": true,
     "agent_tools": true,
     "reasoning_effort_budget": true,
@@ -203,6 +204,16 @@ different `.gguf` artifact in the same bundle. Omit it only when an MTP target
 GGUF contains its own prediction heads; DFlash requires the separate draft
 artifact. These fields intentionally do not accept arbitrary llama.cpp
 arguments.
+
+`context_override_architectures` is an optional built-in-catalog list of exact
+GGUF architecture prefixes. When present, ROCmplete sets each architecture's
+`context_length` metadata to the selected launch context and disables
+llama.cpp automatic fitting. This is a narrow mechanism for reviewed model
+releases whose advertised extended window exceeds their GGUF metadata; it is
+not a general metadata-override surface. Keep the ordinary metadata-backed
+preset as a control and require long-context hardware acceptance before making
+an override the recipe default. `--context 0` is rejected for such a preset
+because it would silently discard the managed override.
 
 `jinja` is an optional boolean that enables llama.cpp's Jinja chat-template
 engine for a preset. `chat_template` selects one project-owned template from
@@ -256,10 +267,11 @@ managed installs.
 
 The public llama.cpp recipes are the paired `qwen3.6` selection, the separate
 high-memory `ornith` and `kat-coder` families, the explicitly experimental
-`laguna-s-2.1`, the separate `muse-glimmer` family with its default DFlash
-draft, the high-memory Japanese and English `shisa-v2.1` family, and the
-focused `translation-hy` and `translation-gemma` choices. Shisa stays a model
-family rather than another generic translation role. The Qwen recipe
+`laguna-s-2.1`, the separate `muse-glimmer` family with its default 128K
+DFlash policy and experimental forced-256K preset, the high-memory Japanese
+and English `shisa-v2.1` family, and the focused `translation-hy` and
+`translation-gemma` choices. Shisa stays a model family rather than another
+generic translation role. The Qwen recipe
 deliberately installs the dense 27B MTP and sparse 35B-A3B MTP choices
 together. Ornith, KAT-Coder, and Muse Glimmer remain separate because they are
 unrelated model families. Non-MTP Qwen controls, the smoke-test model, and

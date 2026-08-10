@@ -201,6 +201,14 @@ preset-arguments collection: every new optimized policy needs an explicit
 schema, validation, runtime mapping, router rendering, and hardware
 acceptance.
 
+When an upstream release explicitly advertises a window beyond the GGUF
+target or draft metadata, `context_override_architectures` may name only the
+affected GGUF architecture prefixes. Its presence maps the selected context to
+those `context_length` keys and disables llama.cpp fitting. Preserve a normal
+metadata-backed control preset, document the upstream ambiguity, and do not
+promote the override until retrieval, quality, memory, and speculative
+acceptance have been measured beyond the declared window.
+
 For models that require Jinja or have a measured Flash Attention difference
 between GPU classes, use the explicit `jinja` boolean and `flash_attention`
 profile map. Only `rdna4`, `strix-halo`, and `strix-point` keys and `on`,

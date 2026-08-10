@@ -61,7 +61,8 @@ its ROCmplete directory, bundle, preset, and pinned source retain the identity.
 The `muse-glimmer` recipe installs the 30B Dynamic Q8_K_XL target and its
 separate official DFlash draft. Its next-step command selects DFlash by
 default; the matching non-speculative preset remains available as a managed
-control without downloading the target model twice.
+control, and an experimental forced-256K DFlash preset reuses both files.
+Switching among the three policies downloads nothing twice.
 
 If a recipe is not specific enough, choose the exact-bundle browser in the
 guided installer. It narrows the catalog by application and task before

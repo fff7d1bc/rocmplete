@@ -160,13 +160,17 @@ changing the default:
 
 Muse Glimmer is a separate 30B family with a managed 128K context and an
 official DFlash draft. Its recipe starts the accelerated preset by default
-and also installs a non-speculative control:
+and also installs a non-speculative control plus an experimental forced-256K
+DFlash policy without duplicating model content:
 
 ```bash
 ./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete run llama-cpp server \
   --preset muse-glimmer-30b-ud-q8-k-xl-dflash
 ```
+
+Use `muse-glimmer-30b-ud-q8-k-xl-dflash-256k` only for long-context
+acceptance; Meta's released target and draft metadata declare 128K.
 
 For Japanese and English translation on a high-memory host, the separate
 Shisa V2.1 recipe installs the 70B Q8_0 model and requires acknowledgment of

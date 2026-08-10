@@ -231,6 +231,12 @@ partition, and no speculative arguments appear for ordinary presets. CPU
 startup validates argument shape only; it is not a correctness or performance
 result for speculative decoding.
 
+A context-metadata override additionally requires single-model and router
+inspection for the exact `override-kv` values and disabled fitting. Hardware
+acceptance must exercise prompts beyond the GGUF-declared window and compare
+retrieval, output quality, memory, and speculative acceptance with the normal
+metadata-backed preset. Successful allocation alone is not acceptance.
+
 ### Tier 5: GPU diagnostics
 
 On each target host, use the finite

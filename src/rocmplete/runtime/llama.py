@@ -34,6 +34,9 @@ class LlamaOptions:
     managed_draft: str = ""
     speculative_type: str = ""
     draft_tokens: int = 0
+    context_override_architectures: Sequence[str] = field(
+        default_factory=tuple
+    )
     jinja: bool = False
     chat_template: str = ""
     profile_flash_attention: Mapping[str, str] = field(default_factory=dict)
@@ -115,6 +118,14 @@ def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
         ),
         "--env", "ROCMLETE_LLAMA_DRAFT_TOKENS={}".format(
             options.draft_tokens
+        ),
+        "--env", "ROCMLETE_LLAMA_CONTEXT_OVERRIDE={}".format(
+            ",".join(
+                "{}.context_length=int:{}".format(
+                    architecture, options.context
+                )
+                for architecture in options.context_override_architectures
+            )
         ),
         "--env", "ROCMLETE_LLAMA_JINJA={}".format(
             "1" if options.jinja else "0"
