@@ -80,7 +80,7 @@ class PiLauncherTests(unittest.TestCase):
             },
         )
         models = {model["id"]: model for model in provider["models"]}
-        self.assertEqual(len(models), 8)
+        self.assertEqual(len(models), 11)
         self.assertNotIn("qwen3-0.6b-q8-0", models)
         self.assertNotIn("translategemma-27b-it-q8-0", models)
         self.assertEqual(
@@ -103,6 +103,10 @@ class PiLauncherTests(unittest.TestCase):
         self.assertNotIn(
             "thinkingLevelMap", models["laguna-s-2.1-q4-k-m"]
         )
+        muse = models["muse-glimmer-30b-ud-q8-k-xl-dflash-256k"]
+        self.assertEqual(muse["contextWindow"], 262144)
+        self.assertFalse(muse["reasoning"])
+        self.assertNotIn("thinkingLevelMap", muse)
         for identifier, model in models.items():
             self.assertEqual(
                 model["samplingParams"],

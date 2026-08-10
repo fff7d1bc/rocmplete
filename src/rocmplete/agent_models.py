@@ -28,6 +28,14 @@ _QWEN36_PRECISE_CODING = {
     "presence_penalty": 0.0,
     "repeat_penalty": 1.0,
 }
+_MUSE_GLIMMER_CODING = {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 64,
+    "min_p": 0.0,
+    "presence_penalty": 0.0,
+    "repeat_penalty": 1.0,
+}
 _AGENT_SAMPLING_PARAMETERS = {
     "ornith-1.0-35b-q8-0": {
         "temperature": 1.0,
@@ -65,6 +73,9 @@ _AGENT_SAMPLING_PARAMETERS = {
         "presence_penalty": 0.0,
         "repeat_penalty": 1.0,
     },
+    "muse-glimmer-30b-ud-q8-k-xl": _MUSE_GLIMMER_CODING,
+    "muse-glimmer-30b-ud-q8-k-xl-dflash": _MUSE_GLIMMER_CODING,
+    "muse-glimmer-30b-ud-q8-k-xl-dflash-256k": _MUSE_GLIMMER_CODING,
 }
 
 

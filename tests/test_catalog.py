@@ -272,8 +272,11 @@ class CatalogTests(unittest.TestCase):
             muse_256k.context_override_architectures,
             ("muse-glimmer", "dflash"),
         )
-        self.assertTrue(muse.jinja)
-        self.assertFalse(muse.agent_tools)
+        for preset in (muse_base, muse, muse_256k):
+            with self.subTest(preset=preset.identifier):
+                self.assertTrue(preset.jinja)
+                self.assertTrue(preset.agent_tools)
+                self.assertFalse(preset.reasoning_effort_budget)
         self.assertEqual(
             muse_artifact.source.repository,
             "unsloth/Muse-Glimmer-30B-GGUF",

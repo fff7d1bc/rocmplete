@@ -321,12 +321,12 @@ reasoning choices as the managed Qwen agents.
 
 ### Tool-using clients
 
-Managed Qwen and Gemma 4 agent presets enable llama.cpp's Jinja engine and use
-the chat template embedded in their pinned GGUF. This is required for
-structured OpenAI-style tool calls. The pinned Unsloth Qwen3.6 templates
-include their developer-role and tool-calling fixes. Gemma 4 uses
-Google's canonical tool-calling template. ROCmplete does not replace them with
-a generic one.
+Managed Qwen, Gemma 4, and Muse Glimmer agent presets enable llama.cpp's Jinja
+engine and use the chat template embedded in their pinned GGUF. This is
+required for structured OpenAI-style tool calls. The pinned Unsloth Qwen3.6
+templates include their developer-role and tool-calling fixes. Gemma 4 uses
+Google's canonical tool-calling template, and Muse retains Meta's tool and
+reasoning framing. ROCmplete does not replace them with a generic one.
 
 The Qwen3 0.6B preset follows the same protocol and is useful for a cheap API
 smoke test, but it is too small to treat as a dependable repository agent.
@@ -381,6 +381,7 @@ OpenCode and Pi use these llama.cpp request defaults for coding turns:
 | KAT-Coder V2.5 Dev | 1.0 | 0.95 | 20 | 0 | 1.5 | 1 |
 | Gemma 4 31B IT | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 | Laguna S 2.1 | 1.0 | 1.0 | 20 | 0 | 0 | 1 |
+| Muse Glimmer 30B | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 
 The sources are Qwen's precise-coding recommendation for
 [Qwen3.6 27B](https://huggingface.co/Qwen/Qwen3.6-27B/blob/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9/README.md)
@@ -392,8 +393,10 @@ KAT-Coder's
 [agent API example](https://huggingface.co/Kwaipilot/KAT-Coder-V2.5-Dev/blob/7be56fe773e72b6f5ca93c1ae45d828ddb893922/README.md),
 Gemma 4's
 [standardized sampling guidance](https://huggingface.co/google/gemma-4-31B-it/blob/842da3794eaa0b77d5f08bae87a17459d91ff475/README.md),
-and Laguna's
-[generation configuration](https://huggingface.co/poolside/Laguna-S-2.1/blob/00af5a51782109b587a3b3bbf11875e566036fa7/generation_config.json).
+Laguna's
+[generation configuration](https://huggingface.co/poolside/Laguna-S-2.1/blob/00af5a51782109b587a3b3bbf11875e566036fa7/generation_config.json),
+and Muse Glimmer's
+[model card](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/f84ecc3a0ea984a4c04542a84269e3d065350a6e/README.md).
 Neutral values make parameters omitted by an upstream configuration explicit
 and disable llama.cpp's otherwise nonzero min-p default. The upstream name
 `repetition_penalty` is sent to llama.cpp as `repeat_penalty`.
@@ -827,11 +830,25 @@ about 2.4 GiB more resident memory than the base server in that test. A
 56,057-token synthetic prompt completed without a runtime fault but did not
 retrieve the answer within its output limit.
 
-The GGUF template supports the raw Chat Completions tool-call and tool-result
-protocol, but the presets are not advertised to the managed OpenCode, Pi, or
-Maki clients until all three complete their own acceptance. Direct API callers
-own sampling; the [pinned upstream model card](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/f84ecc3a0ea984a4c04542a84269e3d065350a6e/README.md)
-starts from temperature 1.0, top-p 0.95, and top-k 64.
+The base, 128K DFlash, and forced-256K DFlash presets are advertised to the
+managed OpenCode, Pi, and Maki clients. OpenCode and Pi use the pinned upstream
+model card's temperature 1.0, top-p 0.95, and top-k 64 defaults; Maki retains
+the server sampler defaults because its dynamic-provider schema cannot express
+per-model sampling. A five-turn OpenCode investigation on `gfx1151` completed
+structured tool calls, tool-result replay, recovery from an unproductive
+lookup, and the requested exact final answer with the 128K DFlash preset. Pi
+and Maki receive the same OpenAI-compatible function-tool protocol and
+generated model metadata but have not had a Muse-specific live acceptance
+run, so test them before granting unattended write access.
+
+Meta additionally recommends a `Reasoning strength: high` system instruction
+for coding and agentic workloads. This is prompt-level model guidance, not
+llama.cpp's bounded `reasoning_effort` token-budget mechanism. ROCmplete
+therefore does not advertise the Qwen-style reasoning selector for Muse; the
+active client's agent or project instructions remain the place to add that
+guidance. The forced-256K entry is intentionally available for pre-release
+field testing, but its long-context quality and DFlash acceptance remain
+experimental as described above.
 
 ### Laguna S 2.1
 

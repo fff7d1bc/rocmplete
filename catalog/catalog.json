@@ -2545,7 +2545,8 @@
       "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
       "artifact": "muse-glimmer-30b-ud-q8-k-xl-gguf",
       "default_context": 131072,
-      "jinja": true
+      "jinja": true,
+      "agent_tools": true
     },
     "muse-glimmer-30b-ud-q8-k-xl-dflash": {
       "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
@@ -2554,7 +2555,8 @@
       "default_context": 131072,
       "speculative_type": "draft-dflash",
       "draft_tokens": 15,
-      "jinja": true
+      "jinja": true,
+      "agent_tools": true
     },
     "muse-glimmer-30b-ud-q8-k-xl-dflash-256k": {
       "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
@@ -2567,7 +2569,8 @@
         "muse-glimmer",
         "dflash"
       ],
-      "jinja": true
+      "jinja": true,
+      "agent_tools": true
     },
     "hy-mt1.5-7b-q8-0": {
       "bundle": "llama-hy-mt1.5-7b-q8-0",

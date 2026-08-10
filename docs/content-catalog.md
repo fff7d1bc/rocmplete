@@ -234,7 +234,12 @@ ROCmplete's reviewed Chat Completions function-tool contract. It requires
 installation selector or a statement about general model quality. After
 changing preset IDs, contexts, templates, or this flag, regenerate every
 maintained agent-client configuration and accept a complete function-tool
-round trip with each client on target hardware.
+round trip through at least one maintained client on target hardware. Record
+which client supplied that evidence and which remain provisional. Before a
+newly exposed model receives unattended write access through another client,
+repeat the end-to-end loop there as well. Sibling presets may share protocol
+evidence when they use the byte-identical target and chat template; keep
+unaccepted context or speculative-decoding behavior explicitly experimental.
 
 `reasoning_effort_budget` is an optional, narrower compatibility decision
 and requires `agent_tools`. Set it only for presets whose reviewed template

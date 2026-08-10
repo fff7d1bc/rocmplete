@@ -22,7 +22,7 @@ this document.
 | Host | Architecture | Observed workload scope |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets; DwarfStar generation was about 3.9 tokens/s |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 27B MTP tool protocol and fixed ROCm/Vulkan llama.cpp benchmarks |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 27B MTP tool protocol and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer 30B DFlash at 128K with an OpenCode tool loop |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -70,6 +70,17 @@ Observed results:
   `20260809T184422Z-3a1edea5.json`, and
   `20260809T184422Z-backend-comparison-860c0bbf.json` below the same benchmark
   directory.
+- A later manual Muse Glimmer run used source commit `9de3587`, llama.cpp
+  commit `62bf73d25c53b8161f8a22894d4f90c4aebbd7d0`, image
+  `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r15`, and the
+  managed 128K DFlash arguments. OpenCode 1.18.15 completed a five-turn
+  read-only repository task with structured grep and read calls, replayed
+  their results, recovered from one lookup that found no files, and returned
+  the requested catalog schema and llama.cpp pin exactly. DFlash accepted
+  20.5% to 40.7% of proposed tokens across the turns, with reported generation
+  rates of roughly 20 to 35 tokens/s. This accepts the representative
+  OpenCode tool contract at 128K; Pi, Maki, and forced-256K agent behavior
+  remain provisional.
 
 Two host-specific failures were also useful. The first shared SELinux mount of
 the newly installed DwarfStar file normalized its label after verification,
@@ -199,6 +210,14 @@ prompts. Repeat the bounded repository task through Pi and Maki and verify
 their tool calls and result replay before testing the matching MTP preset.
 Record quality, protocol, or state-corruption failures instead of promoting
 either candidate to a default.
+
+For the Muse row, use the 128K DFlash preset for a complete managed OpenCode
+tool loop, then repeat the task with the non-speculative control when behavior
+or output is suspect. Exercise the forced-256K preset with prompts extending
+beyond 128K and inspect retrieval quality, tool selection, draft acceptance,
+latency, and memory rather than treating successful startup as acceptance.
+The shared agent catalog exposes Muse to Pi and Maki provisionally; complete a
+live tool-call/result loop in each before allowing unattended writes.
 
 For a host with two matching GPUs, add these single-workload checks:
 

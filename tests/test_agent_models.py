@@ -54,6 +54,30 @@ class AgentModelPolicyTests(unittest.TestCase):
                 1.0,
             ),
             "laguna-s-2.1-q4-k-m": (1.0, 1.0, 20, 0.0, 0.0, 1.0),
+            "muse-glimmer-30b-ud-q8-k-xl": (
+                1.0,
+                0.95,
+                64,
+                0.0,
+                0.0,
+                1.0,
+            ),
+            "muse-glimmer-30b-ud-q8-k-xl-dflash": (
+                1.0,
+                0.95,
+                64,
+                0.0,
+                0.0,
+                1.0,
+            ),
+            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k": (
+                1.0,
+                0.95,
+                64,
+                0.0,
+                0.0,
+                1.0,
+            ),
         }
         actual = {}
         for identifier, preset in self.catalog.llama_presets.items():

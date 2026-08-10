@@ -585,8 +585,15 @@ ROCmplete does not implement a routing daemon.
 
 `agent_tools` is a reviewed compatibility claim, not an inference from model
 size or Jinja alone. It requires Jinja and at least a 16384-token managed
-context. Each maintained client still needs an end-to-end function-tool
-acceptance test.
+context. One maintained client must complete an end-to-end function-tool
+acceptance test on target hardware before promotion, and every generated
+client configuration remains covered by schema and serialization tests.
+Other clients may then expose the shared OpenAI-compatible contract
+provisionally, but each still needs its own live loop before unattended write
+access is considered accepted. Sibling presets with the byte-identical target
+and template may share this protocol evidence, while their distinct context
+or speculative-decoding policies retain separate runtime acceptance.
+
 `reasoning_effort_budget` is the narrower model claim behind agent-client
 reasoning selectors. The pinned llama.cpp server otherwise ignores `low`,
 `medium`, and `high` effort values for these models. A fail-closed source
