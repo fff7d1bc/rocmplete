@@ -979,6 +979,7 @@ class RuntimeCommandTests(unittest.TestCase):
                 speculative_type="draft-dflash",
                 draft_tokens=15,
                 context_override_architectures=("muse-glimmer", "dflash"),
+                reasoning_preserve=True,
                 context=262144,
             ),
             ":rw,Z",
@@ -988,6 +989,9 @@ class RuntimeCommandTests(unittest.TestCase):
         )
         self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=15", command)
         self.assertIn(
+            "ROCMLETE_LLAMA_REASONING_PRESERVE=1", command
+        )
+        self.assertIn(
             "ROCMLETE_LLAMA_CONTEXT_OVERRIDE="
             "muse-glimmer.context_length=int:262144,"
             "dflash.context_length=int:262144",
@@ -996,6 +1000,20 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn("--ctx-size", command)
         self.assertIn("262144", command)
         self.assertNotIn("--spec-type", command)
+
+    def test_llama_entrypoint_maps_reasoning_preserve_to_llama_cpp(self):
+        entrypoint = (
+            Path(__file__).resolve().parents[1]
+            / "applications"
+            / "llama-cpp"
+            / "entrypoint.sh"
+        ).read_text()
+        self.assertIn(
+            'case "$reasoning_preserve" in', entrypoint
+        )
+        self.assertIn(
+            "model_policy_args+=(--reasoning-preserve)", entrypoint
+        )
 
     def test_llama_managed_model_policy_is_constrained_by_environment(self):
         command = llama_command(

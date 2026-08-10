@@ -246,13 +246,13 @@ class CatalogTests(unittest.TestCase):
             33150364000,
         )
         muse = catalog.llama_preset(
-            "muse-glimmer-30b-ud-q8-k-xl-dflash"
+            "muse-glimmer-30b-kquant-dynamic-dflash"
         )
         muse_base = catalog.llama_preset(
-            "muse-glimmer-30b-ud-q8-k-xl"
+            "muse-glimmer-30b-kquant-dynamic"
         )
         muse_256k = catalog.llama_preset(
-            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+            "muse-glimmer-30b-kquant-dynamic-dflash-256k"
         )
         muse_artifact = catalog.artifact(muse.artifact)
         muse_draft = catalog.artifact(muse.draft_artifact)
@@ -277,14 +277,23 @@ class CatalogTests(unittest.TestCase):
                 self.assertTrue(preset.jinja)
                 self.assertTrue(preset.agent_tools)
                 self.assertFalse(preset.reasoning_effort_budget)
+                self.assertTrue(preset.reasoning_preserve)
         self.assertEqual(
             muse_artifact.source.repository,
-            "unsloth/Muse-Glimmer-30B-GGUF",
+            "meta-models/Muse-Glimmer-30B-GGUF",
         )
-        self.assertEqual(muse_artifact.size, 32300651040)
+        self.assertEqual(
+            muse_artifact.source.revision,
+            "93769bc7ab5ad1e9cd22d857e3138cf5d977ae81",
+        )
+        self.assertEqual(
+            muse_artifact.source.path,
+            "muse-glimmer-30B-kquant-dynamic.gguf",
+        )
+        self.assertEqual(muse_artifact.size, 19653957984)
         self.assertEqual(
             muse_artifact.sha256,
-            "e63bf23b7710ecdea2579e4b1de58980c4a2b446e8ecf48b782cfcefd2e31770",
+            "513109c8319115f69eb09fb7b118c97c8167d15bc014fd7670d2e30489bf106c",
         )
         self.assertEqual(
             muse_draft.source.repository,
@@ -297,7 +306,7 @@ class CatalogTests(unittest.TestCase):
         )
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(muse.bundle)),
-            33931856352,
+            21285163296,
         )
         qwen_presets = (
             llama,
@@ -493,7 +502,7 @@ class CatalogTests(unittest.TestCase):
     def test_llama_dflash_requires_a_separate_draft_artifact(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         preset = raw["llama_presets"][
-            "muse-glimmer-30b-ud-q8-k-xl-dflash"
+            "muse-glimmer-30b-kquant-dynamic-dflash"
         ]
         del preset["draft_artifact"]
         with tempfile.TemporaryDirectory() as directory:
@@ -517,7 +526,7 @@ class CatalogTests(unittest.TestCase):
     def test_llama_context_override_architectures_are_strict(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         preset = raw["llama_presets"][
-            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+            "muse-glimmer-30b-kquant-dynamic-dflash-256k"
         ]
         preset["context_override_architectures"] = [
             "muse-glimmer",
@@ -568,8 +577,16 @@ class CatalogTests(unittest.TestCase):
             ):
                 load_catalog(path)
 
-        preset["agent_tools"] = True
         preset["reasoning_effort_budget"] = False
+        preset["reasoning_preserve"] = "yes"
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "reasoning_preserve must be"
+            ):
+                load_catalog(path)
+
+        preset["reasoning_preserve"] = False
         preset["default_context"] = 4096
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
@@ -652,6 +669,18 @@ class CatalogTests(unittest.TestCase):
             with self.assertRaisesRegex(
                 LauncherError,
                 "reasoning_effort_budget requires agent_tools",
+            ):
+                load_catalog(path)
+
+    def test_llama_reasoning_preserve_requires_agent_tools(self):
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"]["qwen3-0.6b-q8-0"]
+        preset["reasoning_preserve"] = True
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError,
+                "reasoning_preserve requires agent_tools",
             ):
                 load_catalog(path)
 

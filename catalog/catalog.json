@@ -1,5 +1,5 @@
 {
-  "schema_version": 20,
+  "schema_version": 21,
   "agreements": {
     "ltx-2-community-license": {
       "name": "LTX-2 Community License",
@@ -1113,21 +1113,21 @@
         "openmdw-1.1"
       ]
     },
-    "muse-glimmer-30b-ud-q8-k-xl-gguf": {
-      "description": "Muse Glimmer 30B Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
+    "muse-glimmer-30b-kquant-dynamic-gguf": {
+      "description": "Official Muse Glimmer 30B dynamic K-quant GGUF for llama.cpp",
       "source": {
-        "repository": "unsloth/Muse-Glimmer-30B-GGUF",
-        "revision": "c3ac2ebf47426591b4c6d408103c8c15a1e2afd6",
-        "path": "Muse-Glimmer-30B-UD-Q8_K_XL.gguf"
+        "repository": "meta-models/Muse-Glimmer-30B-GGUF",
+        "revision": "93769bc7ab5ad1e9cd22d857e3138cf5d977ae81",
+        "path": "muse-glimmer-30B-kquant-dynamic.gguf"
       },
-      "destination": "muse-glimmer-30b/Muse-Glimmer-30B-UD-Q8_K_XL.gguf",
+      "destination": "muse-glimmer-30b/muse-glimmer-30B-kquant-dynamic.gguf",
       "target": "llama-models",
-      "size": 32300651040,
-      "sha256": "e63bf23b7710ecdea2579e4b1de58980c4a2b446e8ecf48b782cfcefd2e31770",
+      "size": 19653957984,
+      "sha256": "513109c8319115f69eb09fb7b118c97c8167d15bc014fd7670d2e30489bf106c",
       "license": {
         "spdx": "Apache-2.0",
         "status": "verified",
-        "url": "https://huggingface.co/unsloth/Muse-Glimmer-30B-GGUF/blob/c3ac2ebf47426591b4c6d408103c8c15a1e2afd6/README.md"
+        "url": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md"
       }
     },
     "muse-glimmer-30b-dflash-kquant-gguf": {
@@ -1919,11 +1919,11 @@
         "llama"
       ]
     },
-    "llama-muse-glimmer-30b-ud-q8-k-xl-dflash": {
-      "description": "Muse Glimmer 30B Unsloth Dynamic Q8_K_XL llama.cpp model with official DFlash draft",
+    "llama-muse-glimmer-30b-kquant-dynamic-dflash": {
+      "description": "Official Muse Glimmer 30B dynamic K-quant llama.cpp model with DFlash draft",
       "application": "llama-cpp",
       "artifacts": [
-        "muse-glimmer-30b-ud-q8-k-xl-gguf",
+        "muse-glimmer-30b-kquant-dynamic-gguf",
         "muse-glimmer-30b-dflash-kquant-gguf"
       ],
       "groups": [
@@ -2541,26 +2541,28 @@
         "strix-point": "off"
       }
     },
-    "muse-glimmer-30b-ud-q8-k-xl": {
-      "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
-      "artifact": "muse-glimmer-30b-ud-q8-k-xl-gguf",
+    "muse-glimmer-30b-kquant-dynamic": {
+      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+      "artifact": "muse-glimmer-30b-kquant-dynamic-gguf",
       "default_context": 131072,
       "jinja": true,
-      "agent_tools": true
+      "agent_tools": true,
+      "reasoning_preserve": true
     },
-    "muse-glimmer-30b-ud-q8-k-xl-dflash": {
-      "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
-      "artifact": "muse-glimmer-30b-ud-q8-k-xl-gguf",
+    "muse-glimmer-30b-kquant-dynamic-dflash": {
+      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+      "artifact": "muse-glimmer-30b-kquant-dynamic-gguf",
       "draft_artifact": "muse-glimmer-30b-dflash-kquant-gguf",
       "default_context": 131072,
       "speculative_type": "draft-dflash",
       "draft_tokens": 15,
       "jinja": true,
-      "agent_tools": true
+      "agent_tools": true,
+      "reasoning_preserve": true
     },
-    "muse-glimmer-30b-ud-q8-k-xl-dflash-256k": {
-      "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
-      "artifact": "muse-glimmer-30b-ud-q8-k-xl-gguf",
+    "muse-glimmer-30b-kquant-dynamic-dflash-256k": {
+      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+      "artifact": "muse-glimmer-30b-kquant-dynamic-gguf",
       "draft_artifact": "muse-glimmer-30b-dflash-kquant-gguf",
       "default_context": 262144,
       "speculative_type": "draft-dflash",
@@ -2570,7 +2572,8 @@
         "dflash"
       ],
       "jinja": true,
-      "agent_tools": true
+      "agent_tools": true,
+      "reasoning_preserve": true
     },
     "hy-mt1.5-7b-q8-0": {
       "bundle": "llama-hy-mt1.5-7b-q8-0",

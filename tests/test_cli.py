@@ -2623,7 +2623,7 @@ class CliTests(unittest.TestCase):
     def test_llama_router_renders_preset_owned_dflash_settings(self):
         catalog = load_catalog()
         preset = catalog.llama_preset(
-            "muse-glimmer-30b-ud-q8-k-xl-dflash"
+            "muse-glimmer-30b-kquant-dynamic-dflash"
         )
         bundle = catalog.bundle(preset.bundle)
         with tempfile.TemporaryDirectory() as directory:
@@ -2647,19 +2647,19 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             installed,
             (
-                "muse-glimmer-30b-ud-q8-k-xl",
-                "muse-glimmer-30b-ud-q8-k-xl-dflash",
-                "muse-glimmer-30b-ud-q8-k-xl-dflash-256k",
+                "muse-glimmer-30b-kquant-dynamic",
+                "muse-glimmer-30b-kquant-dynamic-dflash",
+                "muse-glimmer-30b-kquant-dynamic-dflash-256k",
             ),
         )
         base_section = contents.split(
-            "[muse-glimmer-30b-ud-q8-k-xl]", 1
+            "[muse-glimmer-30b-kquant-dynamic]", 1
         )[1].split(
-            "[muse-glimmer-30b-ud-q8-k-xl-dflash]", 1
+            "[muse-glimmer-30b-kquant-dynamic-dflash]", 1
         )[0]
         self.assertNotIn("spec-type", base_section)
         extended_section = contents.split(
-            "[muse-glimmer-30b-ud-q8-k-xl-dflash-256k]", 1
+            "[muse-glimmer-30b-kquant-dynamic-dflash-256k]", 1
         )[1]
         self.assertIn("c = 131072", contents)
         self.assertIn("c = 262144", extended_section)
@@ -2671,6 +2671,7 @@ class CliTests(unittest.TestCase):
             extended_section,
         )
         self.assertIn("jinja = true", contents)
+        self.assertEqual(contents.count("reasoning-preserve = true"), 3)
         self.assertIn("spec-type = draft-dflash", contents)
         self.assertIn("spec-draft-n-max = 15", contents)
         self.assertIn(
@@ -2851,6 +2852,9 @@ class CliTests(unittest.TestCase):
         self.assertIn("--ctx-size 262144", command)
         self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
         self.assertIn(
+            "ROCMLETE_LLAMA_REASONING_PRESERVE=0", command
+        )
+        self.assertIn(
             "ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO=off", command
         )
         self.assertIn(
@@ -2860,7 +2864,7 @@ class CliTests(unittest.TestCase):
     def test_llama_forced_context_preset_dry_run_maps_override(self):
         catalog = load_catalog()
         preset = catalog.llama_preset(
-            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+            "muse-glimmer-30b-kquant-dynamic-dflash-256k"
         )
         bundle = catalog.bundle(preset.bundle)
         with tempfile.TemporaryDirectory() as directory:
@@ -2941,6 +2945,9 @@ class CliTests(unittest.TestCase):
         )
         self.assertIn("--ctx-size 262144", command)
         self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
+        self.assertIn(
+            "ROCMLETE_LLAMA_REASONING_PRESERVE=1", command
+        )
         self.assertIn(
             "ROCMLETE_LLAMA_CONTEXT_OVERRIDE="
             "muse-glimmer.context_length=int:196608,"
@@ -3222,7 +3229,7 @@ class CliTests(unittest.TestCase):
         for preset, speculative_type in (
             ("qwen3.6-35b-a3b-mtp-ud-q8-k-xl", "draft-mtp"),
             (
-                "muse-glimmer-30b-ud-q8-k-xl-dflash",
+                "muse-glimmer-30b-kquant-dynamic-dflash",
                 "draft-dflash",
             ),
         ):
@@ -4165,10 +4172,10 @@ class CliTests(unittest.TestCase):
             "gemma4-31b-it-q8-0-mtp"
         )
         dflash = catalog.llama_preset(
-            "muse-glimmer-30b-ud-q8-k-xl-dflash"
+            "muse-glimmer-30b-kquant-dynamic-dflash"
         )
         dflash_256k = catalog.llama_preset(
-            "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+            "muse-glimmer-30b-kquant-dynamic-dflash-256k"
         )
         laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
         translate = catalog.llama_preset("translategemma-27b-it-q8-0")
@@ -4735,7 +4742,7 @@ class CliTests(unittest.TestCase):
             (
                 "llama-cpp",
                 "muse-glimmer",
-            ): ("llama-muse-glimmer-30b-ud-q8-k-xl-dflash",),
+            ): ("llama-muse-glimmer-30b-kquant-dynamic-dflash",),
             (
                 "llama-cpp",
                 "translation-hy",

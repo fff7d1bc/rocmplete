@@ -588,6 +588,11 @@ size or Jinja alone. It requires Jinja and at least a 16384-token managed
 context. One maintained client must complete an end-to-end function-tool
 acceptance test on target hardware before promotion, and every generated
 client configuration remains covered by schema and serialization tests.
+The narrower `reasoning_effort_budget` and `reasoning_preserve` policies both
+require `agent_tools`, but remain independent. The first advertises the
+project's patched client-selectable thinking-token budgets; the second maps
+direct and router startup to llama.cpp's reasoning-history preservation. A
+model can require one without supporting the other.
 Other clients may then expose the shared OpenAI-compatible contract
 provisionally, but each still needs its own live loop before unattended write
 access is considered accepted. Sibling presets with the byte-identical target

@@ -15,6 +15,7 @@ speculative_type="${ROCMLETE_LLAMA_SPECULATIVE_TYPE:-}"
 draft_tokens="${ROCMLETE_LLAMA_DRAFT_TOKENS:-0}"
 context_override="${ROCMLETE_LLAMA_CONTEXT_OVERRIDE:-}"
 jinja="${ROCMLETE_LLAMA_JINJA:-0}"
+reasoning_preserve="${ROCMLETE_LLAMA_REASONING_PRESERVE:-0}"
 chat_template="${ROCMLETE_LLAMA_CHAT_TEMPLATE:-}"
 flash_attn_rdna4="${ROCMLETE_LLAMA_FLASH_ATTN_RDNA4:-}"
 flash_attn_strix_halo="${ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO:-}"
@@ -43,6 +44,10 @@ esac
 case "$jinja" in
     0|1) ;;
     *) die "invalid llama.cpp Jinja setting '$jinja'" ;;
+esac
+case "$reasoning_preserve" in
+    0|1) ;;
+    *) die "invalid llama.cpp reasoning-preserve setting '$reasoning_preserve'" ;;
 esac
 # This mirrors the host catalog allowlist so neither boundary accepts paths.
 case "$chat_template" in
@@ -117,6 +122,9 @@ if [[ "$router" == 0 && -n "$context_override" ]]; then
 fi
 if [[ "$router" == 0 && "$jinja" == 1 ]]; then
     model_policy_args+=(--jinja)
+fi
+if [[ "$router" == 0 && "$reasoning_preserve" == 1 ]]; then
+    model_policy_args+=(--reasoning-preserve)
 fi
 if [[ "$router" == 0 && -n "$chat_template" ]]; then
     chat_template_path="/usr/local/share/rocmplete/llama-chat-templates/${chat_template}.jinja"

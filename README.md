@@ -34,7 +34,7 @@ passed.
 | Host | GPU target | Workloads exercised |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 27B llama.cpp MTP/tool and ROCm/Vulkan paths; Muse Glimmer 30B DFlash at 128K with an OpenCode tool loop |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 27B llama.cpp MTP/tool and ROCm/Vulkan paths; Muse Glimmer quant, DFlash, context, and Maki/OpenCode agent probes |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -158,19 +158,22 @@ changing the default:
 ./rocmplete content install llama-cpp kat-coder
 ```
 
-Muse Glimmer is a separate 30B family with a managed 128K context and an
-official DFlash draft. Its recipe starts the accelerated preset by default
-and also installs a non-speculative control plus an experimental forced-256K
-DFlash policy without duplicating model content:
+Muse Glimmer is a separate 30B family using Meta's official dynamic K-quant
+target and DFlash draft. Its recipe starts the 128K accelerated preset by
+default and also installs a non-speculative control plus an experimental
+forced-256K DFlash policy without duplicating model content:
 
 ```bash
 ./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-ud-q8-k-xl-dflash
+  --preset muse-glimmer-30b-kquant-dynamic-dflash
 ```
 
-Use `muse-glimmer-30b-ud-q8-k-xl-dflash-256k` only for long-context
-acceptance; Meta's released target and draft metadata declare 128K.
+Use `muse-glimmer-30b-kquant-dynamic-dflash-256k` only for long-context
+acceptance; Meta's released target and draft metadata declare 128K. The
+managed agent clients expose all three presets and llama.cpp preserves Muse's
+parsed reasoning across turns, but task depth still depends on the client
+scaffold and prompt.
 
 For Japanese and English translation on a high-memory host, the separate
 Shisa V2.1 recipe installs the 70B Q8_0 model and requires acknowledgment of

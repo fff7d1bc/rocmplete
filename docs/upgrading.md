@@ -276,6 +276,11 @@ For presets with `context_override_architectures`, also confirm that
 `--override-kv` remains valid in direct launches and router INI sections, that
 `--fit off` retains its meaning, and that the target and draft architecture
 keys have not changed.
+For presets with `reasoning_preserve`, confirm that `llama-server` and
+`llama-cli` still expose `--reasoning-preserve`, that router INI accepts
+`reasoning-preserve = true`, and that a multi-turn tool exchange retains the
+intended reasoning history. Do not replace this with or infer support for the
+separate reasoning-effort budget patch.
 Inspect `llama-bench --help`, `--list-devices`, and JSON output as well.
 Changes to option names, backend device names, result shape, or progress
 streams require coordinated updates to

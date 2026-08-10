@@ -249,6 +249,13 @@ labels are budget choices, not model-native effort modes.
 Keep the catalog descriptions, patch values, generated model metadata, and
 target-hardware Chat Completions tests in sync.
 
+`reasoning_preserve` is a separate optional boolean and also requires
+`agent_tools`. It maps a reviewed preset to llama.cpp's
+`--reasoning-preserve` server policy in both direct and router modes. Use it
+when the model's multi-turn template should retain parsed reasoning; it does
+not imply that the model accepts a client-selectable reasoning-effort budget.
+Keep this distinction visible in agent metadata and user documentation.
+
 Agent sampling remains caller policy rather than a catalog preset field.
 `src/rocmplete/agent_models.py` owns the reviewed coding defaults used by
 generated clients. Adding `agent_tools` therefore also requires an

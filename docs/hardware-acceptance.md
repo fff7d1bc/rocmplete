@@ -22,7 +22,7 @@ this document.
 | Host | Architecture | Observed workload scope |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets; DwarfStar generation was about 3.9 tokens/s |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 27B MTP tool protocol and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer 30B DFlash at 128K with an OpenCode tool loop |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 27B MTP tool protocol and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer quant, DFlash, context, and Maki/OpenCode agent probes |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -73,14 +73,35 @@ Observed results:
 - A later manual Muse Glimmer run used source commit `9de3587`, llama.cpp
   commit `62bf73d25c53b8161f8a22894d4f90c4aebbd7d0`, image
   `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r15`, and the
-  managed 128K DFlash arguments. OpenCode 1.18.15 completed a five-turn
+  then-managed Unsloth Q8 target through preset
+  `muse-glimmer-30b-ud-q8-k-xl-dflash` at 128K. OpenCode 1.18.15 completed a five-turn
   read-only repository task with structured grep and read calls, replayed
   their results, recovered from one lookup that found no files, and returned
   the requested catalog schema and llama.cpp pin exactly. DFlash accepted
   20.5% to 40.7% of proposed tokens across the turns, with reported generation
   rates of roughly 20 to 35 tokens/s. This accepts the representative
-  OpenCode tool contract at 128K; Pi, Maki, and forced-256K agent behavior
-  remain provisional.
+  OpenCode tool contract for those historical bytes at 128K.
+- A 2026-08-10 comparison at source commit `6d59816` used the same llama.cpp
+  commit and host to compare Meta's official dynamic K-quant, the former
+  Unsloth Q8, and an Unsloth BF16 GGUF. Fixed pp512/tg128 results were
+  341.17/10.32, 376.80/7.35, and 483.19/4.11 tokens/s respectively. Fresh
+  128K DFlash servers used about 30.64 GB for K-quant and 66.77 GB for BF16.
+  Maki completed broad, structured repository tasks with official K-quant at
+  128K, Q8 at 128K and forced 256K, and BF16 at 128K. No run produced a GPU
+  reset, OOM, or device loss. This selected K-quant for the catalog but did
+  not mark the formal Muse matrix row `PASS`; immutable inputs, tool counts,
+  fixture failures, and caveats are recorded in
+  [the feasibility snapshot](muse-glimmer-llama-cpp-agent-feasibility.md).
+- The candidate integration image
+  `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r16` (image ID
+  `15aa29c45b41f011f5edacd9f5fb761db26eae488d447453414e2d1b2a9e07a3`)
+  subsequently loaded the verified official K-quant and DFlash files through
+  the managed 128K preset. Direct startup included `--reasoning-preserve`, a
+  bounded request returned exact content `OK`, and router startup accepted
+  `reasoning-preserve = true` in all three Muse sections, loaded the 128K
+  DFlash section on demand, and returned exact content `ROUTER_OK`. Both
+  containers stopped cleanly. This verifies the new wiring, but remains a
+  field observation rather than a formal matrix `PASS`.
 
 Two host-specific failures were also useful. The first shared SELinux mount of
 the newly installed DwarfStar file normalized its label after verification,
@@ -170,7 +191,7 @@ local source image.
 | llama.cpp Qwen tool protocol | `qwen3.6-35b-a3b-mtp-ud-q8-k-xl`, complete nested tool round trip | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp 35B-A3B agent evaluation | `qwen3.6-35b-a3b-ud-q8-k-xl` first, then `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp coding/agent | `llama-laguna-s-2.1-q4-k-m`, 256K context | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
-| llama.cpp Muse DFlash | `muse-glimmer-30b-ud-q8-k-xl-dflash` against `muse-glimmer-30b-ud-q8-k-xl` at 128K, then forced `muse-glimmer-30b-ud-q8-k-xl-dflash-256k` beyond 128K | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
+| llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-dflash` against `muse-glimmer-30b-kquant-dynamic` at 128K, then forced `muse-glimmer-30b-kquant-dynamic-dflash-256k` beyond 128K | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
 
 DwarfStar remains experimental after the bounded smoke. Before promoting it,
@@ -216,8 +237,13 @@ tool loop, then repeat the task with the non-speculative control when behavior
 or output is suspect. Exercise the forced-256K preset with prompts extending
 beyond 128K and inspect retrieval quality, tool selection, draft acceptance,
 latency, and memory rather than treating successful startup as acceptance.
-The shared agent catalog exposes Muse to Pi and Maki provisionally; complete a
-live tool-call/result loop in each before allowing unattended writes.
+Maki has completed substantial live repository tasks and is the strongest
+validated scaffold for the official target. OpenCode and Pi remain exposed
+through the same reviewed function-tool contract, but depth is sensitive to
+their scaffold and prompt. Complete the intended live task in each client
+before allowing unattended writes. Confirm `reasoning-preserve = true` in
+router mode or `--reasoning-preserve` in direct-server startup; do not confuse
+that history policy with a client-selectable reasoning-effort budget.
 
 For a host with two matching GPUs, add these single-workload checks:
 

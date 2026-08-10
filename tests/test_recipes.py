@@ -63,11 +63,11 @@ class ContentRecipeTests(unittest.TestCase):
         self.assertEqual(
             muse.next_command,
             "./rocmplete run llama-cpp server "
-            "--preset muse-glimmer-30b-ud-q8-k-xl-dflash",
+            "--preset muse-glimmer-30b-kquant-dynamic-dflash",
         )
         self.assertEqual(
             muse.bundles,
-            ("llama-muse-glimmer-30b-ud-q8-k-xl-dflash",),
+            ("llama-muse-glimmer-30b-kquant-dynamic-dflash",),
         )
         self.assertEqual(
             hy.next_command,

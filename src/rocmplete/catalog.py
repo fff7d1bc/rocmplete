@@ -132,6 +132,7 @@ class LlamaPreset:
     jinja: bool = False
     agent_tools: bool = False
     reasoning_effort_budget: bool = False
+    reasoning_preserve: bool = False
     chat_template: str = ""
     flash_attention: Mapping[str, str] = field(default_factory=dict)
 
@@ -755,6 +756,7 @@ def _load_llama_preset(
         "jinja",
         "agent_tools",
         "reasoning_effort_budget",
+        "reasoning_preserve",
         "chat_template",
         "flash_attention",
     }
@@ -886,6 +888,17 @@ def _load_llama_preset(
             "llama.cpp preset {} reasoning_effort_budget requires "
             "agent_tools".format(identifier)
         )
+    reasoning_preserve = data.get("reasoning_preserve", False)
+    if not isinstance(reasoning_preserve, bool):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_preserve must be a "
+            "boolean".format(identifier)
+        )
+    if reasoning_preserve and not agent_tools:
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_preserve requires "
+            "agent_tools".format(identifier)
+        )
     chat_template = data.get("chat_template", "")
     # Keep this closed set aligned with the image files and the entrypoint's
     # independent validation; the catalog must not become a path loader.
@@ -941,6 +954,7 @@ def _load_llama_preset(
         jinja=jinja,
         agent_tools=agent_tools,
         reasoning_effort_budget=reasoning_effort_budget,
+        reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
         flash_attention=flash_attention,
     )
@@ -1125,7 +1139,7 @@ def _validate_catalog(catalog: Catalog) -> None:
 
 def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
     raw = _read_json_object(path, "catalog")
-    if not isinstance(raw, dict) or raw.get("schema_version") != 20:
+    if not isinstance(raw, dict) or raw.get("schema_version") != 21:
         raise LauncherError("unsupported or invalid catalog schema")
     allowed = {
         "schema_version",

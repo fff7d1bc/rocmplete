@@ -785,20 +785,20 @@ measurements as described in the Qwen section.
 ### Muse Glimmer and DFlash
 
 Muse Glimmer is a separate 30B model family rather than another Qwen variant.
-The recipe installs [Unsloth's Dynamic Q8_K_XL target](https://huggingface.co/unsloth/Muse-Glimmer-30B-GGUF/blob/c3ac2ebf47426591b4c6d408103c8c15a1e2afd6/README.md)
-plus [Meta's official DFlash k-quant draft](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md),
-approximately 31.60 GiB in total:
+The recipe installs [Meta's official dynamic K-quant target and DFlash
+draft](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md),
+approximately 19.82 GiB in total:
 
 ```bash
 ./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-ud-q8-k-xl-dflash
+  --preset muse-glimmer-30b-kquant-dynamic-dflash
 ```
 
-The DFlash preset is the recipe default. It starts at the model's 131072-token
-declared context and allows up to fifteen draft tokens, matching the draft's
-16-token block. The same installed bundle also exposes
-`muse-glimmer-30b-ud-q8-k-xl` as a non-speculative control. This makes it
+The DFlash preset is the recipe default. It starts at 131072 tokens and allows
+up to fifteen draft tokens, matching the draft's 16-token block. The same
+installed bundle also exposes
+`muse-glimmer-30b-kquant-dynamic` as a non-speculative control. This makes it
 possible to compare output, draft acceptance, wall time, and memory without
 changing the target GGUF.
 
@@ -807,48 +807,49 @@ download:
 
 ```bash
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-ud-q8-k-xl-dflash-256k
+  --preset muse-glimmer-30b-kquant-dynamic-dflash-256k
 ```
 
 That preset sets both `muse-glimmer.context_length` and
 `dflash.context_length` to 262144 and disables llama.cpp automatic fitting.
-Meta's pinned configuration declares 131072 positions and describes the
-release as 131072+, while its DFlash table declares a 131072-token sequence
-length. Treat 256K as forced extrapolation until retrieval, quality, memory,
-and draft acceptance pass beyond 128K. The 128K DFlash preset therefore
-remains the recipe default. `--context 0` is intentionally refused for the
-forced preset; a positive override such as `--context 196608` applies to both
-target and draft metadata.
+Meta's pinned target and DFlash metadata declare 131072 tokens. Treat 256K as
+forced extrapolation until retrieval, quality, memory, and draft acceptance
+pass beyond 128K. The 128K DFlash preset therefore remains the recipe default.
+`--context 0` is intentionally refused for the forced preset; a positive
+override such as `--context 196608` applies to both target and draft metadata.
 
-Initial `gfx1151` feasibility testing with the pinned llama.cpp source loaded
-both presets at 128K, preserved byte-identical greedy output in a controlled
-request, and improved decode throughput by roughly 2.4× on a mixed 512-token
-workload and 4.7× on a short greedy path. Those are workload-specific
-observations, not a cross-hardware performance promise. The DFlash server used
-about 2.4 GiB more resident memory than the base server in that test. A
-31,054-token needle-retrieval prompt succeeded; a highly repetitive
-56,057-token synthetic prompt completed without a runtime fault but did not
-retrieve the answer within its output limit.
+On one `gfx1151` host, a fixed pp512/tg128 ROCm benchmark measured the
+official K-quant at 341.17 prompt and 10.32 generated tokens/s. The previously
+managed Unsloth Q8 target measured 376.80 and 7.35 tokens/s, while a 51.90 GiB
+BF16 conversion measured 483.19 and 4.11 tokens/s. The K-quant also started a
+fresh 128K DFlash server in 14.0 seconds at about 30.64 GB of container memory,
+versus 37.5 seconds and 66.77 GB for BF16. These are one-host observations,
+not cross-hardware promises. The complete immutable inputs and caveats are in
+the [maintainer feasibility record](../docs/muse-glimmer-llama-cpp-agent-feasibility.md).
 
 The base, 128K DFlash, and forced-256K DFlash presets are advertised to the
 managed OpenCode, Pi, and Maki clients. OpenCode and Pi use the pinned upstream
-model card's temperature 1.0, top-p 0.95, and top-k 64 defaults; Maki retains
-the server sampler defaults because its dynamic-provider schema cannot express
-per-model sampling. A five-turn OpenCode investigation on `gfx1151` completed
-structured tool calls, tool-result replay, recovery from an unproductive
-lookup, and the requested exact final answer with the 128K DFlash preset. Pi
-and Maki receive the same OpenAI-compatible function-tool protocol and
-generated model metadata but have not had a Muse-specific live acceptance
-run, so test them before granting unattended write access.
+temperature 1.0, top-p 0.95, and top-k 64 defaults; Maki retains the server
+sampler defaults because its dynamic-provider schema cannot express per-model
+sampling. Live Maki tasks completed substantial repository reviews with the
+official K-quant at 128K, the former Q8 target at both 128K and forced 256K,
+and BF16 at 128K. An earlier short OpenCode answer was a completed shallow
+turn, not a server crash: repository-review depth remains sensitive to the
+client scaffold and prompt. Test the actual workflow before granting
+unattended write access.
 
-Meta additionally recommends a `Reasoning strength: high` system instruction
-for coding and agentic workloads. This is prompt-level model guidance, not
-llama.cpp's bounded `reasoning_effort` token-budget mechanism. ROCmplete
-therefore does not advertise the Qwen-style reasoning selector for Muse; the
-active client's agent or project instructions remain the place to add that
-guidance. The forced-256K entry is intentionally available for pre-release
-field testing, but its long-context quality and DFlash acceptance remain
-experimental as described above.
+All three presets enable llama.cpp reasoning preservation so parsed reasoning
+remains available to multi-turn history. This is separate from a bounded
+reasoning-effort selector: Muse does not advertise the Qwen-style effort
+variants. Meta's `Reasoning strength: high` guidance is still a prompt-level
+instruction owned by the active agent or project scaffold.
+
+ROCmplete previously installed
+`Muse-Glimmer-30B-UD-Q8_K_XL.gguf` for this recipe. Upgrading the catalog does
+not delete persistent model content. After the official replacement installs
+and verifies successfully, remove the obsolete file manually if it is no
+longer needed. The forced-256K entry remains available for pre-release field
+testing, but its long-context quality and DFlash acceptance are experimental.
 
 ### Laguna S 2.1
 

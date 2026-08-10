@@ -75,11 +75,10 @@ revisions recorded in `catalog/catalog.json`.
   artifact. ROCmplete therefore records the GGUF as `NOASSERTION`, preserves
   the upstream OpenMDW lineage, and requires both terms acceptance and
   unverified-artifact acknowledgment. ROCmplete does not redistribute it.
-- Muse Glimmer 30B Dynamic Q8_K_XL is downloaded from one full pinned
-  Unsloth GGUF revision, and its DFlash k-quant draft is downloaded from one
-  full pinned Meta GGUF revision. Both repositories declare Apache-2.0.
-  ROCmplete records both files' exact sizes and SHA-256 hashes and does not
-  redistribute them.
+- Muse Glimmer 30B dynamic K-quant and its DFlash k-quant draft are downloaded
+  together from one full pinned Meta GGUF revision. The repository declares
+  Apache-2.0. ROCmplete records both files' exact sizes and SHA-256 hashes and
+  does not redistribute them.
 - Tencent's official HY-MT1.5 7B Q8_0 GGUF is downloaded from one full pinned
   revision under the Tencent HY Community License. That license excludes the
   EU, United Kingdom, and South Korea from its territory. ROCmplete requires

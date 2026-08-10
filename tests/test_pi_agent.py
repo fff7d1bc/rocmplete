@@ -103,7 +103,7 @@ class PiLauncherTests(unittest.TestCase):
         self.assertNotIn(
             "thinkingLevelMap", models["laguna-s-2.1-q4-k-m"]
         )
-        muse = models["muse-glimmer-30b-ud-q8-k-xl-dflash-256k"]
+        muse = models["muse-glimmer-30b-kquant-dynamic-dflash-256k"]
         self.assertEqual(muse["contextWindow"], 262144)
         self.assertFalse(muse["reasoning"])
         self.assertNotIn("thinkingLevelMap", muse)

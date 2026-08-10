@@ -38,6 +38,7 @@ class LlamaOptions:
         default_factory=tuple
     )
     jinja: bool = False
+    reasoning_preserve: bool = False
     chat_template: str = ""
     profile_flash_attention: Mapping[str, str] = field(default_factory=dict)
     router_preset: Optional[Path] = None
@@ -129,6 +130,9 @@ def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
         ),
         "--env", "ROCMLETE_LLAMA_JINJA={}".format(
             "1" if options.jinja else "0"
+        ),
+        "--env", "ROCMLETE_LLAMA_REASONING_PRESERVE={}".format(
+            "1" if options.reasoning_preserve else "0"
         ),
         "--env", "ROCMLETE_LLAMA_CHAT_TEMPLATE={}".format(
             options.chat_template

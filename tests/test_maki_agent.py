@@ -115,7 +115,7 @@ class MakiLauncherTests(unittest.TestCase):
                 by_id["laguna-s-2.1-q4-k-m"]["supports_thinking"]
             )
             muse = by_id[
-                "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+                "muse-glimmer-30b-kquant-dynamic-dflash-256k"
             ]
             self.assertEqual(muse["context_window"], 262144)
             self.assertFalse(muse["supports_thinking"])

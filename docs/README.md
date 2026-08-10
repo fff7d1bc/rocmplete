@@ -56,6 +56,8 @@ finished. The public contribution path and baseline checks are summarized in
    - [Target-hardware acceptance matrix](hardware-acceptance.md)
    - [DeepSeek V4 Flash llama.cpp feasibility
      snapshot](deepseek-v4-flash-llama-cpp-feasibility.md)
+   - [Muse Glimmer llama.cpp agent feasibility
+     snapshot](muse-glimmer-llama-cpp-agent-feasibility.md)
 
 ## Sources of truth
 

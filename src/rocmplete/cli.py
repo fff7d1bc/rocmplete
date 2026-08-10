@@ -5563,6 +5563,8 @@ def _render_llama_router_preset(
             )
         if preset.jinja:
             section.append("jinja = true")
+        if preset.reasoning_preserve:
+            section.append("reasoning-preserve = true")
         if preset.chat_template:
             section.extend(
                 [
@@ -5687,6 +5689,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
     draft_tokens = 0
     context_override_architectures = ()
     jinja = False
+    reasoning_preserve = False
     chat_template = ""
     profile_flash_attention = {}
     display_model = str(model) if model is not None else ""
@@ -5709,6 +5712,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
             preset.context_override_architectures
         )
         jinja = preset.jinja
+        reasoning_preserve = preset.reasoning_preserve
         chat_template = preset.chat_template
         profile_flash_attention = preset.flash_attention
         if context is None:
@@ -5765,6 +5769,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         draft_tokens=draft_tokens,
         context_override_architectures=context_override_architectures,
         jinja=jinja,
+        reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
         profile_flash_attention=profile_flash_attention,
         router_preset=router_preset,

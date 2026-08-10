@@ -164,7 +164,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
         self.assertIn("kat-coder-v2.5-dev-q8-0", provider["models"])
         self.assertEqual(
             provider["models"][
-                "muse-glimmer-30b-ud-q8-k-xl-dflash-256k"
+                "muse-glimmer-30b-kquant-dynamic-dflash-256k"
             ]["limit"],
             {"context": 262144, "output": 16384},
         )
