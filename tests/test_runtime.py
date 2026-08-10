@@ -939,7 +939,9 @@ class RuntimeCommandTests(unittest.TestCase):
             command[-3:], ["--prompt", "hello", "--single-turn"]
         )
 
-    def test_llama_managed_mtp_preset_is_constrained_by_environment(self):
+    def test_llama_managed_speculative_preset_is_constrained_by_environment(
+        self,
+    ):
         command = llama_command(
             LlamaOptions(
                 image="localhost/llama",
@@ -948,7 +950,8 @@ class RuntimeCommandTests(unittest.TestCase):
                 data_dir=Path("/data/rocmplete"),
                 managed_model="gemma/model.gguf",
                 managed_draft="gemma/draft.gguf",
-                mtp_draft_tokens=4,
+                speculative_type="draft-mtp",
+                draft_tokens=4,
             ),
             ":rw,Z",
         )
@@ -960,7 +963,28 @@ class RuntimeCommandTests(unittest.TestCase):
             "ROCMLETE_LLAMA_DRAFT_MODEL=/content/models/gemma/draft.gguf",
             command,
         )
-        self.assertIn("ROCMLETE_LLAMA_MTP_DRAFT_TOKENS=4", command)
+        self.assertIn("ROCMLETE_LLAMA_SPECULATIVE_TYPE=draft-mtp", command)
+        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=4", command)
+        self.assertNotIn("--spec-type", command)
+
+    def test_llama_managed_dflash_uses_the_same_closed_environment(self):
+        command = llama_command(
+            LlamaOptions(
+                image="localhost/llama",
+                profile="cpu",
+                mode="server",
+                data_dir=Path("/data/rocmplete"),
+                managed_model="muse/model.gguf",
+                managed_draft="muse/dflash.gguf",
+                speculative_type="draft-dflash",
+                draft_tokens=15,
+            ),
+            ":rw,Z",
+        )
+        self.assertIn(
+            "ROCMLETE_LLAMA_SPECULATIVE_TYPE=draft-dflash", command
+        )
+        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=15", command)
         self.assertNotIn("--spec-type", command)
 
     def test_llama_managed_model_policy_is_constrained_by_environment(self):

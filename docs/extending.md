@@ -192,12 +192,14 @@ is the pinned upstream implementation. Keep generated INI input catalog-only,
 atomic, and mounted as one exact read-only file; do not expose arbitrary
 user-supplied presets through the managed router.
 
-For MTP, use the preset schema's bounded `mtp_draft_tokens` field. Set
-`draft_artifact` only when llama.cpp needs a separate draft GGUF, and include
-that artifact in the same bundle as the target. Embedded-MTP GGUFs omit it.
-Do not add a generic preset-arguments collection: every new optimized policy
-needs an explicit schema, validation, runtime mapping, router rendering, and
-hardware acceptance.
+For speculative decoding, use the preset schema's closed
+`speculative_type` and bounded `draft_tokens` fields. `draft-mtp` accepts up
+to eight draft tokens and may use embedded prediction heads;
+`draft-dflash` accepts up to fifteen and requires `draft_artifact`. Include a
+separate draft GGUF in the same bundle as the target. Do not add a generic
+preset-arguments collection: every new optimized policy needs an explicit
+schema, validation, runtime mapping, router rendering, and hardware
+acceptance.
 
 For models that require Jinja or have a measured Flash Attention difference
 between GPU classes, use the explicit `jinja` boolean and `flash_attention`

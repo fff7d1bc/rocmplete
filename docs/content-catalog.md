@@ -170,7 +170,8 @@ connect it to a stable router identity:
     "bundle": "llama-bundle-id",
     "artifact": "llama-artifact-id",
     "default_context": 4096,
-    "mtp_draft_tokens": 4,
+    "speculative_type": "draft-mtp",
+    "draft_tokens": 4,
     "draft_artifact": "optional-draft-artifact-id",
     "jinja": true,
     "agent_tools": true,
@@ -195,12 +196,13 @@ A user can override it for one launch with `--context`; the preset keeps the
 repeatable, tested starting point.
 
 The referenced artifact must belong to that bundle and end in `.gguf`.
-`mtp_draft_tokens` is optional and constrained to zero through eight. A
-positive value enables only llama.cpp's `draft-mtp` speculative decoder. An
-optional `draft_artifact` must be a different `.gguf` artifact in the same
-bundle and is valid only with a positive token count. Omit it for a target
-GGUF with embedded MTP tensors. These fields intentionally do not accept
-arbitrary llama.cpp arguments.
+`speculative_type` is optional and accepts only `draft-mtp` or
+`draft-dflash`. The matching positive `draft_tokens` value is limited to
+eight for MTP and fifteen for DFlash. An optional `draft_artifact` must be a
+different `.gguf` artifact in the same bundle. Omit it only when an MTP target
+GGUF contains its own prediction heads; DFlash requires the separate draft
+artifact. These fields intentionally do not accept arbitrary llama.cpp
+arguments.
 
 `jinja` is an optional boolean that enables llama.cpp's Jinja chat-template
 engine for a preset. `chat_template` selects one project-owned template from
@@ -254,13 +256,13 @@ managed installs.
 
 The public llama.cpp recipes are the paired `qwen3.6` selection, the separate
 high-memory `ornith` and `kat-coder` families, the explicitly experimental
-`laguna-s-2.1`, the high-memory Japanese and English `shisa-v2.1` family, and
-the focused `translation-hy` and `translation-gemma` choices. Shisa stays a
-model family rather than another generic translation role. The Qwen recipe
+`laguna-s-2.1`, the separate `muse-glimmer` family with its default DFlash
+draft, the high-memory Japanese and English `shisa-v2.1` family, and the
+focused `translation-hy` and `translation-gemma` choices. Shisa stays a model
+family rather than another generic translation role. The Qwen recipe
 deliberately installs the dense 27B MTP and sparse 35B-A3B MTP choices
-together. Ornith and KAT-Coder remain separate because they are unrelated
-model families; both use faithful Q8 controls while excluding community APEX
-and grafted-MTP derivatives. Non-MTP Qwen controls, the smoke-test model, and
+together. Ornith, KAT-Coder, and Muse Glimmer remain separate because they are
+unrelated model families. Non-MTP Qwen controls, the smoke-test model, and
 other deliberately large models remain exact bundles and presets rather than
 multiplying beginner choices.
 The mandatory internal `all` and `llama` tags still support the literal global

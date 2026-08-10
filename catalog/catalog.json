@@ -1,5 +1,5 @@
 {
-  "schema_version": 18,
+  "schema_version": 19,
   "agreements": {
     "ltx-2-community-license": {
       "name": "LTX-2 Community License",
@@ -1113,6 +1113,40 @@
         "openmdw-1.1"
       ]
     },
+    "muse-glimmer-30b-ud-q8-k-xl-gguf": {
+      "description": "Muse Glimmer 30B Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
+      "source": {
+        "repository": "unsloth/Muse-Glimmer-30B-GGUF",
+        "revision": "c3ac2ebf47426591b4c6d408103c8c15a1e2afd6",
+        "path": "Muse-Glimmer-30B-UD-Q8_K_XL.gguf"
+      },
+      "destination": "muse-glimmer-30b/Muse-Glimmer-30B-UD-Q8_K_XL.gguf",
+      "target": "llama-models",
+      "size": 32300651040,
+      "sha256": "e63bf23b7710ecdea2579e4b1de58980c4a2b446e8ecf48b782cfcefd2e31770",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Muse-Glimmer-30B-GGUF/blob/c3ac2ebf47426591b4c6d408103c8c15a1e2afd6/README.md"
+      }
+    },
+    "muse-glimmer-30b-dflash-kquant-gguf": {
+      "description": "Official Muse Glimmer 30B DFlash k-quant draft GGUF for llama.cpp",
+      "source": {
+        "repository": "meta-models/Muse-Glimmer-30B-GGUF",
+        "revision": "93769bc7ab5ad1e9cd22d857e3138cf5d977ae81",
+        "path": "dflash-kquant.gguf"
+      },
+      "destination": "muse-glimmer-30b/dflash-kquant.gguf",
+      "target": "llama-models",
+      "size": 1631205312,
+      "sha256": "27d9a805fa29b943cfb6ad4843367cd4eaaaf06bd452d8cc3e00a2cd18a677bc",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md"
+      }
+    },
     "qwen3.6-35b-a3b-ud-q8-k-xl-gguf": {
       "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
       "source": {
@@ -1885,6 +1919,18 @@
         "llama"
       ]
     },
+    "llama-muse-glimmer-30b-ud-q8-k-xl-dflash": {
+      "description": "Muse Glimmer 30B Unsloth Dynamic Q8_K_XL llama.cpp model with official DFlash draft",
+      "application": "llama-cpp",
+      "artifacts": [
+        "muse-glimmer-30b-ud-q8-k-xl-gguf",
+        "muse-glimmer-30b-dflash-kquant-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
     "llama-hy-mt1.5-7b-q8-0": {
       "description": "Tencent HY-MT1.5 7B Q8_0 llama.cpp model",
       "application": "llama-cpp",
@@ -2449,7 +2495,8 @@
       "bundle": "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
       "artifact": "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf",
       "default_context": 262144,
-      "mtp_draft_tokens": 3,
+      "speculative_type": "draft-mtp",
+      "draft_tokens": 3,
       "jinja": true,
       "agent_tools": true,
       "reasoning_effort_budget": true
@@ -2466,7 +2513,8 @@
       "bundle": "llama-qwen3.6-27b-mtp-q8-0",
       "artifact": "qwen3.6-27b-mtp-q8-0-gguf",
       "default_context": 262144,
-      "mtp_draft_tokens": 2,
+      "speculative_type": "draft-mtp",
+      "draft_tokens": 2,
       "jinja": true,
       "agent_tools": true,
       "reasoning_effort_budget": true
@@ -2476,7 +2524,8 @@
       "artifact": "gemma4-31b-it-q8-gguf",
       "draft_artifact": "gemma4-31b-it-mtp-q8-gguf",
       "default_context": 262144,
-      "mtp_draft_tokens": 4,
+      "speculative_type": "draft-mtp",
+      "draft_tokens": 4,
       "jinja": true,
       "agent_tools": true,
       "reasoning_effort_budget": true
@@ -2491,6 +2540,21 @@
         "strix-halo": "off",
         "strix-point": "off"
       }
+    },
+    "muse-glimmer-30b-ud-q8-k-xl": {
+      "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
+      "artifact": "muse-glimmer-30b-ud-q8-k-xl-gguf",
+      "default_context": 131072,
+      "jinja": true
+    },
+    "muse-glimmer-30b-ud-q8-k-xl-dflash": {
+      "bundle": "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
+      "artifact": "muse-glimmer-30b-ud-q8-k-xl-gguf",
+      "draft_artifact": "muse-glimmer-30b-dflash-kquant-gguf",
+      "default_context": 131072,
+      "speculative_type": "draft-dflash",
+      "draft_tokens": 15,
+      "jinja": true
     },
     "hy-mt1.5-7b-q8-0": {
       "bundle": "llama-hy-mt1.5-7b-q8-0",

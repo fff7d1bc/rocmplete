@@ -302,11 +302,11 @@ preset results include immutable source metadata. Local `--model` results
 record only resolved path, size, and modification time and are weaker
 reproducibility evidence.
 
-MTP presets are intentionally rejected here. `llama-bench` measures the main
-model without ROCmplete's speculative-decoding policy, so accepting an MTP
-preset would produce a clean-looking result for a different runtime. Measure
-an MTP preset through the llama.cpp server API when you need end-to-end
-generation throughput, or select its non-MTP counterpart for a native
+Speculative presets are intentionally rejected here. `llama-bench` measures
+the main model without ROCmplete's speculative-decoding policy, so accepting
+an MTP or DFlash preset would produce a clean-looking result for a different
+runtime. Measure it through the llama.cpp server API when you need end-to-end
+generation throughput, or select a non-speculative control for a native
 `llama-bench` comparison.
 
 The llama.cpp image contains both ROCm and Vulkan. Compare them unattended:

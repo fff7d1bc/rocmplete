@@ -27,7 +27,7 @@ Recipes are organized by their consuming application:
 comfyui
   image  edit  t2v  i2v
 llama-cpp
-  qwen3.6  ornith  kat-coder  laguna-s-2.1
+  qwen3.6  ornith  kat-coder  laguna-s-2.1  muse-glimmer
   shisa-v2.1  translation-gemma  translation-hy
 dwarfstar
   flash-0731-q2-imatrix
@@ -40,6 +40,7 @@ Install interactively, or select one recipe explicitly:
 ./rocmplete content install comfyui image
 ./rocmplete content install llama-cpp qwen3.6
 ./rocmplete content install llama-cpp laguna-s-2.1
+./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete content install llama-cpp shisa-v2.1 --accept-license
 ./rocmplete content install llama-cpp translation-gemma --accept-license
 ./rocmplete content install dwarfstar flash-0731-q2-imatrix
@@ -56,6 +57,11 @@ non-MTP build. ROCmplete keeps that upstream filename, but identifies the MTP
 variant in its source repository, managed directory, bundle, and preset. The
 same is true of the 27B MTP artifact. Its upstream basename omits `MTP`, while
 its ROCmplete directory, bundle, preset, and pinned source retain the identity.
+
+The `muse-glimmer` recipe installs the 30B Dynamic Q8_K_XL target and its
+separate official DFlash draft. Its next-step command selects DFlash by
+default; the matching non-speculative preset remains available as a managed
+control without downloading the target model twice.
 
 If a recipe is not specific enough, choose the exact-bundle browser in the
 guided installer. It narrows the catalog by application and task before

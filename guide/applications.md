@@ -173,7 +173,7 @@ A model and a ROCmplete preset are related, but they are not interchangeable:
 | Layer | What it owns | Examples |
 | --- | --- | --- |
 | GGUF model | Architecture, trained weights, and quantization | Qwen3.6 27B Q6_K, Q8_0, or Dynamic Q8_K_XL |
-| ROCmplete preset | Model artifact, context size, and required model runtime policy | Chat template, Jinja, profile-specific Flash Attention, MTP draft settings |
+| ROCmplete preset | Model artifact, context size, and required model runtime policy | Chat template, Jinja, profile-specific Flash Attention, MTP or DFlash settings |
 | Server launch | Machine and service policy for this run | ROCm or Vulkan, hardware profile, render nodes, listen address, port |
 | API request or client | The current task and generation behavior | System message, conversation history, temperature, top-p, maximum tokens |
 
@@ -234,9 +234,9 @@ the gain. MTP does not accelerate prompt ingestion, and the client's
 
 For an MTP comparison, use the server API and measure complete response wall
 time, output validity, and draft acceptance on the same prompts. The native
-`benchmark llama-cpp` path deliberately rejects managed MTP presets because
-`llama-bench` does not apply their speculative-decoding policy. The non-MTP
-counterpart remains the useful control.
+`benchmark llama-cpp` path deliberately rejects managed speculative presets
+because `llama-bench` does not apply their MTP or DFlash policy. A matching
+non-speculative preset remains the useful control.
 
 See the launch policy and catalog footprint for every installed managed
 preset:
@@ -778,6 +778,43 @@ catalog-owned settings. Qwen GGUFs contain their MTP heads; Gemma installs a
 separate pinned draft. Performance and output behavior depend on the llama.cpp
 revision, context, backend, and hardware. Use the server API for end-to-end MTP
 measurements as described in the Qwen section.
+
+### Muse Glimmer and DFlash
+
+Muse Glimmer is a separate 30B model family rather than another Qwen variant.
+The recipe installs [Unsloth's Dynamic Q8_K_XL target](https://huggingface.co/unsloth/Muse-Glimmer-30B-GGUF/blob/c3ac2ebf47426591b4c6d408103c8c15a1e2afd6/README.md)
+plus [Meta's official DFlash k-quant draft](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md),
+approximately 31.60 GiB in total:
+
+```bash
+./rocmplete content install llama-cpp muse-glimmer
+./rocmplete run llama-cpp server \
+  --preset muse-glimmer-30b-ud-q8-k-xl-dflash
+```
+
+The DFlash preset is the recipe default. It starts at the model's 131072-token
+trained context and allows up to fifteen draft tokens, matching the draft's
+16-token block. The same installed bundle also exposes
+`muse-glimmer-30b-ud-q8-k-xl` as a non-speculative control. This makes it
+possible to compare output, draft acceptance, wall time, and memory without
+changing the target GGUF.
+
+Initial `gfx1151` feasibility testing with the pinned llama.cpp source loaded
+both presets at 128K, preserved byte-identical greedy output in a controlled
+request, and improved decode throughput by roughly 2.4× on a mixed 512-token
+workload and 4.7× on a short greedy path. Those are workload-specific
+observations, not a cross-hardware performance promise. The DFlash server used
+about 2.4 GiB more resident memory than the base server in that test. A
+31,054-token needle-retrieval prompt succeeded; a highly repetitive
+56,057-token synthetic prompt completed without a runtime fault but did not
+retrieve the answer within its output limit.
+
+The current llama.cpp runtime caps the model at 131072 tokens even if a larger
+`--context` is requested. The GGUF template supports the raw Chat Completions
+tool-call and tool-result protocol, but the preset is not advertised to the
+managed OpenCode, Pi, or Maki clients until all three complete their own
+acceptance. Direct API callers own sampling; the [pinned upstream model card](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/f84ecc3a0ea984a4c04542a84269e3d065350a6e/README.md)
+starts from temperature 1.0, top-p 0.95, and top-k 64.
 
 ### Laguna S 2.1
 

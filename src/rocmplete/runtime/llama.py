@@ -32,7 +32,8 @@ class LlamaOptions:
     model: Optional[Path] = None
     managed_model: str = ""
     managed_draft: str = ""
-    mtp_draft_tokens: int = 0
+    speculative_type: str = ""
+    draft_tokens: int = 0
     jinja: bool = False
     chat_template: str = ""
     profile_flash_attention: Mapping[str, str] = field(default_factory=dict)
@@ -109,8 +110,11 @@ def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
             if options.managed_draft
             else ""
         ),
-        "--env", "ROCMLETE_LLAMA_MTP_DRAFT_TOKENS={}".format(
-            options.mtp_draft_tokens
+        "--env", "ROCMLETE_LLAMA_SPECULATIVE_TYPE={}".format(
+            options.speculative_type
+        ),
+        "--env", "ROCMLETE_LLAMA_DRAFT_TOKENS={}".format(
+            options.draft_tokens
         ),
         "--env", "ROCMLETE_LLAMA_JINJA={}".format(
             "1" if options.jinja else "0"

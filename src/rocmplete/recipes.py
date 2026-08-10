@@ -121,6 +121,21 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             ),
         ),
         ContentRecipe(
+            identifier="muse-glimmer",
+            application="llama-cpp",
+            description=(
+                "Muse Glimmer 30B Dynamic Q8_K_XL with DFlash"
+            ),
+            bundles=(
+                "llama-muse-glimmer-30b-ud-q8-k-xl-dflash",
+            ),
+            launch=RecipeLaunch(
+                "llama-cpp",
+                mode="server",
+                preset="muse-glimmer-30b-ud-q8-k-xl-dflash",
+            ),
+        ),
+        ContentRecipe(
             identifier="translation-hy",
             application="llama-cpp",
             description="Tencent HY-MT1.5 7B Q8_0 multilingual translator",

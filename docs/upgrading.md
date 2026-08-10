@@ -265,12 +265,13 @@ Also compare upstream router preset syntax and controlled arguments
 `applications/llama-cpp/entrypoint.sh` and the catalog renderer. A syntax or
 precedence change must fail closed in CPU router startup tests before the pin
 moves.
-For managed MTP presets, confirm `llama-server` and `llama-cli` still expose
-`--spec-type draft-mtp`, `--spec-draft-n-max`, and `--model-draft`, and that
-the router accepts the corresponding INI keys without changing their
-precedence. Re-run representative generation both with and without MTP:
-speculative decoding regressions can affect speed, memory, or committed output
-even when startup succeeds.
+For managed speculative presets, confirm `llama-server` and `llama-cli` still
+expose `--spec-type`, `--spec-draft-n-max`, and `--model-draft`, and that the
+router accepts the corresponding INI keys without changing their precedence.
+Exercise both allowlisted strategies: embedded and separate-draft
+`draft-mtp`, plus separate-draft `draft-dflash`. Re-run representative
+generation with and without speculative decoding: regressions can affect
+speed, memory, or committed output even when startup succeeds.
 Inspect `llama-bench --help`, `--list-devices`, and JSON output as well.
 Changes to option names, backend device names, result shape, or progress
 streams require coordinated updates to

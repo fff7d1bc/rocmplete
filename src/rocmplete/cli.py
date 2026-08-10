@@ -3296,15 +3296,20 @@ def _llama_template_policy(preset: LlamaPreset) -> str:
 
 
 def _llama_speculation_policy(preset: LlamaPreset) -> str:
-    if not preset.mtp_draft_tokens:
+    if not preset.speculative_type:
         return "off"
+    strategy = {
+        "draft-mtp": "MTP",
+        "draft-dflash": "DFlash",
+    }[preset.speculative_type]
     if preset.draft_artifact:
-        return "MTP, {} draft tokens; draft {}".format(
-            preset.mtp_draft_tokens,
+        return "{}, {} draft tokens; draft {}".format(
+            strategy,
+            preset.draft_tokens,
             preset.draft_artifact,
         )
-    return "MTP, {} draft tokens from model heads".format(
-        preset.mtp_draft_tokens
+    return "{}, {} draft tokens from model heads".format(
+        strategy, preset.draft_tokens
     )
 
 
@@ -5133,14 +5138,14 @@ def _command_llama_benchmark(
         }
     else:
         preset = catalog.llama_preset(arguments.preset)
-        if preset.mtp_draft_tokens:
+        if preset.speculative_type:
             raise LauncherError(
                 (
-                    "preset '{}' enables MTP, but llama-bench does not "
-                    "exercise ROCmplete's MTP runtime policy; benchmark a "
-                    "non-MTP preset or measure the preset through the "
-                    "llama.cpp server API"
-                ).format(preset.identifier)
+                    "preset '{}' enables {}, but llama-bench does not "
+                    "exercise ROCmplete's speculative runtime policy; "
+                    "benchmark a non-speculative preset or measure the "
+                    "preset through the llama.cpp server API"
+                ).format(preset.identifier, preset.speculative_type)
             )
         managed_model, installed = _llama_preset_status(
             catalog, preset.identifier, data_dir
@@ -5553,12 +5558,12 @@ def _render_llama_router_preset(
                         profile, flash_attention
                     )
                 )
-        if preset.mtp_draft_tokens:
+        if preset.speculative_type:
             section.extend(
                 [
-                    "spec-type = draft-mtp",
+                    "spec-type = {}".format(preset.speculative_type),
                     "spec-draft-n-max = {}".format(
-                        preset.mtp_draft_tokens
+                        preset.draft_tokens
                     ),
                 ]
             )
@@ -5653,7 +5658,8 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         StorageLayout(data_dir).prepare_runtime("llama-cpp")
     managed_model = ""
     managed_draft = ""
-    mtp_draft_tokens = 0
+    speculative_type = ""
+    draft_tokens = 0
     jinja = False
     chat_template = ""
     profile_flash_attention = {}
@@ -5671,7 +5677,8 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
             managed_draft = catalog.artifact(
                 preset.draft_artifact
             ).destination
-        mtp_draft_tokens = preset.mtp_draft_tokens
+        speculative_type = preset.speculative_type
+        draft_tokens = preset.draft_tokens
         jinja = preset.jinja
         chat_template = preset.chat_template
         profile_flash_attention = preset.flash_attention
@@ -5720,7 +5727,8 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         model=model,
         managed_model=managed_model,
         managed_draft=managed_draft,
-        mtp_draft_tokens=mtp_draft_tokens,
+        speculative_type=speculative_type,
+        draft_tokens=draft_tokens,
         jinja=jinja,
         chat_template=chat_template,
         profile_flash_attention=profile_flash_attention,

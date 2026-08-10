@@ -148,14 +148,24 @@ For an API serving several installed presets, use the managed router:
 ```
 
 The [llama.cpp guide](guide/applications.md#llamacpp) explains presets,
-contexts, MTP, translations, the terminal CLI, tool calling, and choosing
-between the managed Qwen variants. High-memory hosts can also install the
-Ornith and KAT-Coder Q8 coding-agent candidates independently without changing
-the default:
+contexts, MTP, DFlash, translations, the terminal CLI, tool calling, and
+choosing between the managed Qwen variants. High-memory hosts can also install
+the Ornith and KAT-Coder Q8 coding-agent candidates independently without
+changing the default:
 
 ```bash
 ./rocmplete content install llama-cpp ornith
 ./rocmplete content install llama-cpp kat-coder
+```
+
+Muse Glimmer is a separate 30B family with a managed 128K context and an
+official DFlash draft. Its recipe starts the accelerated preset by default
+and also installs a non-speculative control:
+
+```bash
+./rocmplete content install llama-cpp muse-glimmer
+./rocmplete run llama-cpp server \
+  --preset muse-glimmer-30b-ud-q8-k-xl-dflash
 ```
 
 For Japanese and English translation on a high-memory host, the separate

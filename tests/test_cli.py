@@ -2619,6 +2619,53 @@ class CliTests(unittest.TestCase):
             contents,
         )
 
+    def test_llama_router_renders_preset_owned_dflash_settings(self):
+        catalog = load_catalog()
+        preset = catalog.llama_preset(
+            "muse-glimmer-30b-ud-q8-k-xl-dflash"
+        )
+        bundle = catalog.bundle(preset.bundle)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            for identifier in bundle.artifacts:
+                artifact = catalog.artifact(identifier)
+                path = (
+                    data_dir
+                    / "content"
+                    / "llama-cpp"
+                    / "models"
+                    / artifact.destination
+                )
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with path.open("wb") as handle:
+                    handle.truncate(artifact.size)
+                _record_managed_file(data_dir, path, artifact)
+            contents, installed = _render_llama_router_preset(
+                catalog, data_dir
+            )
+        self.assertEqual(
+            installed,
+            (
+                "muse-glimmer-30b-ud-q8-k-xl",
+                "muse-glimmer-30b-ud-q8-k-xl-dflash",
+            ),
+        )
+        base_section = contents.split(
+            "[muse-glimmer-30b-ud-q8-k-xl]", 1
+        )[1].split(
+            "[muse-glimmer-30b-ud-q8-k-xl-dflash]", 1
+        )[0]
+        self.assertNotIn("spec-type", base_section)
+        self.assertIn("c = 131072", contents)
+        self.assertIn("jinja = true", contents)
+        self.assertIn("spec-type = draft-dflash", contents)
+        self.assertIn("spec-draft-n-max = 15", contents)
+        self.assertIn(
+            "model-draft = /content/models/"
+            "muse-glimmer-30b/dflash-kquant.gguf",
+            contents,
+        )
+
     def test_llama_router_renders_qwen_embedded_jinja_policy(self):
         catalog = load_catalog()
         identifier = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
@@ -2838,7 +2885,8 @@ class CliTests(unittest.TestCase):
             "gemma4-31b-it-q8-mtp/mtp-gemma-4-31B-it-Q8_0.gguf",
             command,
         )
-        self.assertIn("ROCMLETE_LLAMA_MTP_DRAFT_TOKENS=4", command)
+        self.assertIn("ROCMLETE_LLAMA_SPECULATIVE_TYPE=draft-mtp", command)
+        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=4", command)
         self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
         self.assertIn("--ctx-size 262144", command)
 
@@ -3065,22 +3113,33 @@ class CliTests(unittest.TestCase):
             ):
                 command_benchmark(arguments, load_catalog())
 
-    def test_llama_benchmark_rejects_mtp_preset(self):
-        _, arguments = parse_arguments(
-            [
-                "benchmark",
-                "llama-cpp",
-                "--preset",
-                "qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
-                "--profile",
-                "cpu",
-                "--dry-run",
-            ]
-        )
-        with self.assertRaisesRegex(
-            LauncherError, "llama-bench does not exercise.*MTP"
+    def test_llama_benchmark_rejects_speculative_presets(self):
+        for preset, speculative_type in (
+            ("qwen3.6-35b-a3b-mtp-ud-q8-k-xl", "draft-mtp"),
+            (
+                "muse-glimmer-30b-ud-q8-k-xl-dflash",
+                "draft-dflash",
+            ),
         ):
-            command_benchmark(arguments, load_catalog())
+            with self.subTest(preset=preset):
+                _, arguments = parse_arguments(
+                    [
+                        "benchmark",
+                        "llama-cpp",
+                        "--preset",
+                        preset,
+                        "--profile",
+                        "cpu",
+                        "--dry-run",
+                    ]
+                )
+                with self.assertRaisesRegex(
+                    LauncherError,
+                    ".*{}.*llama-bench does not exercise".format(
+                        speculative_type
+                    ),
+                ):
+                    command_benchmark(arguments, load_catalog())
 
     def test_real_run_resolution_prepares_data_directory(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -3702,6 +3761,7 @@ class CliTests(unittest.TestCase):
         self.assertNotIn("llama-cpp assistant", text)
         self.assertNotIn("llama-cpp agent ", text)
         self.assertIn("llama-cpp laguna-s-2.1", text)
+        self.assertIn("llama-cpp muse-glimmer", text)
         self.assertIn("llama-cpp translation-hy", text)
         self.assertIn("llama-cpp translation-gemma", text)
         self.assertIn("llama-cpp shisa-v2.1", text)
@@ -3755,7 +3815,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(command_content(arguments, load_catalog()), 0)
         text = output.getvalue()
         self.assertIn("family qwen   8  bundles", text)
-        self.assertIn("all  49  bundles", text)
+        self.assertIn("all  50  bundles", text)
         self.assertNotIn("Exact bundles:", text)
 
     def test_content_list_application_filter_requires_filterable_view(self):
@@ -3999,6 +4059,9 @@ class CliTests(unittest.TestCase):
         separate_draft = catalog.llama_preset(
             "gemma4-31b-it-q8-0-mtp"
         )
+        dflash = catalog.llama_preset(
+            "muse-glimmer-30b-ud-q8-k-xl-dflash"
+        )
         laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
         translate = catalog.llama_preset("translategemma-27b-it-q8-0")
 
@@ -4009,6 +4072,11 @@ class CliTests(unittest.TestCase):
         self.assertIn(
             "gemma4-31b-it-mtp-q8-gguf",
             _llama_speculation_policy(separate_draft),
+        )
+        self.assertEqual(
+            _llama_speculation_policy(dflash),
+            "DFlash, 15 draft tokens; draft "
+            "muse-glimmer-30b-dflash-kquant-gguf",
         )
         self.assertEqual(
             _llama_flash_attention_policy(laguna),
@@ -4420,11 +4488,11 @@ class CliTests(unittest.TestCase):
         self.assertIn("exact-bundles", text)
         self.assertIn("Browse exact bundles:", text)
         self.assertIn("ComfyUI — image models (9 bundles)", text)
-        self.assertIn("llama.cpp (12 bundles)", text)
+        self.assertIn("llama.cpp (13 bundles)", text)
         self.assertIn("Laguna S 2.1", text)
         self.assertIn("laguna-s-2.1-q4-k-m", text)
 
-    @patch("builtins.input", side_effect=("8", "9"))
+    @patch("builtins.input", side_effect=("9", "9"))
     @patch("rocmplete.cli.sys.stdin")
     def test_llama_recipe_menu_can_browse_exact_llama_bundles(
         self, stdin, input_mock
@@ -4452,7 +4520,7 @@ class CliTests(unittest.TestCase):
                 "comfyui-images": 9,
                 "comfyui-videos": 20,
                 "comfyui-addons": 7,
-                "llama-cpp": 12,
+                "llama-cpp": 13,
                 "dwarfstar": 1,
             },
         )
@@ -4551,6 +4619,10 @@ class CliTests(unittest.TestCase):
             ): ("llama-laguna-s-2.1-q4-k-m",),
             (
                 "llama-cpp",
+                "muse-glimmer",
+            ): ("llama-muse-glimmer-30b-ud-q8-k-xl-dflash",),
+            (
+                "llama-cpp",
                 "translation-hy",
             ): ("llama-hy-mt1.5-7b-q8-0",),
             (
@@ -4643,8 +4715,8 @@ class CliTests(unittest.TestCase):
                     )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 63)
-        self.assertEqual(len({item.identifier for item in artifacts}), 63)
+        self.assertEqual(len(artifacts), 65)
+        self.assertEqual(len({item.identifier for item in artifacts}), 65)
         self.assertEqual(
             install_artifacts.call_args.args[2],
             "localhost/custom-content-tools",
@@ -4660,7 +4732,7 @@ class CliTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Content ready: 49 bundles and 28 workflows.",
+            "Content ready: 50 bundles and 28 workflows.",
             output.getvalue(),
         )
 
@@ -4688,10 +4760,10 @@ class CliTests(unittest.TestCase):
                 )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 13)
-        self.assertEqual(len({item.identifier for item in artifacts}), 13)
+        self.assertEqual(len(artifacts), 15)
+        self.assertEqual(len({item.identifier for item in artifacts}), 15)
         self.assertIn(
-            "Content ready: 12 bundles and 0 workflows.",
+            "Content ready: 13 bundles and 0 workflows.",
             output.getvalue(),
         )
 

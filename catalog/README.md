@@ -26,10 +26,11 @@ media. Use `./rocmplete content list --bundles` for the current exact inventory.
   rendered hash.
 - `llama_presets` connects one llama.cpp bundle and target GGUF artifact to a
   stable router model ID and a conservative `default_context`. A preset may
-  additionally own constrained MTP, embedded Jinja or project-owned
-  chat-template policy, profile-specific Flash Attention policy, and one
-  verified draft GGUF from the same bundle. `agent_tools` records the smaller
-  reviewed set maintained for function-tool agent clients.
+  additionally own constrained `draft-mtp` or `draft-dflash` speculative
+  decoding, embedded Jinja or project-owned chat-template policy,
+  profile-specific Flash Attention policy, and one verified draft GGUF from
+  the same bundle. `agent_tools` records the smaller reviewed set maintained
+  for function-tool agent clients.
   `reasoning_effort_budget` records presets whose client reasoning selectors
   are backed by enforced llama.cpp thinking-token ceilings.
 

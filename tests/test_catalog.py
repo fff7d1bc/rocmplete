@@ -85,10 +85,10 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 49)
-        self.assertEqual(len(catalog.artifacts), 63)
+        self.assertEqual(len(catalog.bundles), 50)
+        self.assertEqual(len(catalog.artifacts), 65)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 12)
+        self.assertEqual(len(catalog.llama_presets), 14)
         self.assertFalse(
             [
                 artifact.identifier
@@ -131,7 +131,8 @@ class CatalogTests(unittest.TestCase):
         )
         qwen35_artifact = catalog.artifact(qwen35.artifact)
         self.assertEqual(qwen35.default_context, 262144)
-        self.assertEqual(qwen35.mtp_draft_tokens, 0)
+        self.assertEqual(qwen35.speculative_type, "")
+        self.assertEqual(qwen35.draft_tokens, 0)
         self.assertTrue(qwen35.agent_tools)
         self.assertTrue(qwen35.reasoning_effort_budget)
         self.assertEqual(
@@ -148,7 +149,8 @@ class CatalogTests(unittest.TestCase):
         )
         qwen35_mtp_artifact = catalog.artifact(qwen35_mtp.artifact)
         self.assertEqual(qwen35_mtp.default_context, 262144)
-        self.assertEqual(qwen35_mtp.mtp_draft_tokens, 3)
+        self.assertEqual(qwen35_mtp.speculative_type, "draft-mtp")
+        self.assertEqual(qwen35_mtp.draft_tokens, 3)
         self.assertTrue(qwen35_mtp.agent_tools)
         self.assertTrue(qwen35_mtp.reasoning_effort_budget)
         self.assertEqual(
@@ -181,7 +183,8 @@ class CatalogTests(unittest.TestCase):
             assistant_mtp.bundle, "llama-qwen3.6-27b-mtp-q8-0"
         )
         self.assertEqual(assistant_mtp.default_context, 262144)
-        self.assertEqual(assistant_mtp.mtp_draft_tokens, 2)
+        self.assertEqual(assistant_mtp.speculative_type, "draft-mtp")
+        self.assertEqual(assistant_mtp.draft_tokens, 2)
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(assistant_mtp.bundle)),
             29047084160,
@@ -220,7 +223,8 @@ class CatalogTests(unittest.TestCase):
                 self.assertEqual(artifact.license.status, "verified")
         gemma = catalog.llama_preset("gemma4-31b-it-q8-0-mtp")
         self.assertEqual(gemma.default_context, 262144)
-        self.assertEqual(gemma.mtp_draft_tokens, 4)
+        self.assertEqual(gemma.speculative_type, "draft-mtp")
+        self.assertEqual(gemma.draft_tokens, 4)
         self.assertTrue(gemma.jinja)
         self.assertTrue(gemma.agent_tools)
         self.assertTrue(gemma.reasoning_effort_budget)
@@ -240,6 +244,45 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(gemma.bundle)),
             33150364000,
+        )
+        muse = catalog.llama_preset(
+            "muse-glimmer-30b-ud-q8-k-xl-dflash"
+        )
+        muse_base = catalog.llama_preset(
+            "muse-glimmer-30b-ud-q8-k-xl"
+        )
+        muse_artifact = catalog.artifact(muse.artifact)
+        muse_draft = catalog.artifact(muse.draft_artifact)
+        self.assertEqual(muse.default_context, 131072)
+        self.assertEqual(muse_base.default_context, 131072)
+        self.assertEqual(muse_base.speculative_type, "")
+        self.assertEqual(muse_base.artifact, muse.artifact)
+        self.assertEqual(muse_base.bundle, muse.bundle)
+        self.assertEqual(muse.speculative_type, "draft-dflash")
+        self.assertEqual(muse.draft_tokens, 15)
+        self.assertTrue(muse.jinja)
+        self.assertFalse(muse.agent_tools)
+        self.assertEqual(
+            muse_artifact.source.repository,
+            "unsloth/Muse-Glimmer-30B-GGUF",
+        )
+        self.assertEqual(muse_artifact.size, 32300651040)
+        self.assertEqual(
+            muse_artifact.sha256,
+            "e63bf23b7710ecdea2579e4b1de58980c4a2b446e8ecf48b782cfcefd2e31770",
+        )
+        self.assertEqual(
+            muse_draft.source.repository,
+            "meta-models/Muse-Glimmer-30B-GGUF",
+        )
+        self.assertEqual(muse_draft.size, 1631205312)
+        self.assertEqual(
+            muse_draft.sha256,
+            "27d9a805fa29b943cfb6ad4843367cd4eaaaf06bd452d8cc3e00a2cd18a677bc",
+        )
+        self.assertEqual(
+            catalog.bundle_size(catalog.bundle(muse.bundle)),
+            33931856352,
         )
         qwen_presets = (
             llama,
@@ -423,12 +466,36 @@ class CatalogTests(unittest.TestCase):
     def test_llama_mtp_draft_count_is_bounded(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         raw["llama_presets"]["gemma4-31b-it-q8-0-mtp"][
-            "mtp_draft_tokens"
+            "draft_tokens"
         ] = 9
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
-                LauncherError, "between 0 and 8"
+                LauncherError, "between 1 and 8"
+            ):
+                load_catalog(path)
+
+    def test_llama_dflash_requires_a_separate_draft_artifact(self):
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"][
+            "muse-glimmer-30b-ud-q8-k-xl-dflash"
+        ]
+        del preset["draft_artifact"]
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "draft-dflash requires draft_artifact"
+            ):
+                load_catalog(path)
+
+    def test_llama_draft_tokens_require_a_speculative_type(self):
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"]["qwen3-0.6b-q8-0"]
+        preset["draft_tokens"] = 1
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "draft_tokens requires speculative_type"
             ):
                 load_catalog(path)
 

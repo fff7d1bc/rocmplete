@@ -11,7 +11,8 @@ backend="${ROCMLETE_LLAMA_BACKEND:-rocm}"
 mode="${ROCMLETE_LLAMA_MODE:-server}"
 model="${ROCMLETE_LLAMA_MODEL:-}"
 draft_model="${ROCMLETE_LLAMA_DRAFT_MODEL:-}"
-mtp_draft_tokens="${ROCMLETE_LLAMA_MTP_DRAFT_TOKENS:-0}"
+speculative_type="${ROCMLETE_LLAMA_SPECULATIVE_TYPE:-}"
+draft_tokens="${ROCMLETE_LLAMA_DRAFT_TOKENS:-0}"
 jinja="${ROCMLETE_LLAMA_JINJA:-0}"
 chat_template="${ROCMLETE_LLAMA_CHAT_TEMPLATE:-}"
 flash_attn_rdna4="${ROCMLETE_LLAMA_FLASH_ATTN_RDNA4:-}"
@@ -47,6 +48,32 @@ case "$chat_template" in
     ""|translategemma-manual) ;;
     *) die "unknown managed llama.cpp chat template '$chat_template'" ;;
 esac
+case "$speculative_type" in
+    ""|draft-mtp|draft-dflash) ;;
+    *) die "unknown llama.cpp speculative type '$speculative_type'" ;;
+esac
+[[ "$draft_tokens" =~ ^(0|[1-9]|1[0-5])$ ]] ||
+    die "draft-token count must be between 0 and 15"
+if [[ -z "$speculative_type" ]]; then
+    [[ "$draft_tokens" == 0 ]] ||
+        die "draft tokens require a speculative type"
+    [[ -z "$draft_model" ]] ||
+        die "a draft model requires a speculative type"
+else
+    [[ "$draft_tokens" != 0 ]] ||
+        die "speculative decoding requires a positive draft-token count"
+fi
+if [[ "$speculative_type" == draft-mtp ]]; then
+    ((draft_tokens <= 8)) ||
+        die "MTP draft-token count must be between 1 and 8"
+fi
+if [[ "$speculative_type" == draft-dflash && -z "$draft_model" ]]; then
+    die "DFlash requires a draft model"
+fi
+if [[ -n "$draft_model" ]]; then
+    [[ -f "$draft_model" ]] ||
+        die "draft model is not a regular file: $draft_model"
+fi
 case "$flash_attn_strix_halo" in
     ""|on|off|auto) ;;
     *) die "invalid Strix Halo Flash Attention setting '$flash_attn_strix_halo'" ;;
@@ -63,14 +90,6 @@ case "$router" in
     0)
         [[ -n "$model" ]] || die "no GGUF model was selected"
         [[ -f "$model" ]] || die "GGUF model is not a regular file: $model"
-        [[ "$mtp_draft_tokens" =~ ^[0-8]$ ]] ||
-            die "MTP draft-token count must be between 0 and 8"
-        if [[ -n "$draft_model" ]]; then
-            [[ "$mtp_draft_tokens" != 0 ]] ||
-                die "an MTP draft model requires a positive draft-token count"
-            [[ -f "$draft_model" ]] ||
-                die "MTP draft model is not a regular file: $draft_model"
-        fi
         ;;
     1)
         [[ "$mode" == server ]] || die "router mode requires the server"
@@ -86,7 +105,7 @@ architecture=cpu
 device="CPU"
 profile_args=()
 bench_profile_args=()
-mtp_args=()
+speculative_args=()
 model_policy_args=()
 if [[ "$router" == 0 && "$jinja" == 1 ]]; then
     model_policy_args+=(--jinja)
@@ -97,10 +116,13 @@ if [[ "$router" == 0 && -n "$chat_template" ]]; then
         die "managed llama.cpp chat template is not a readable regular file: $chat_template_path"
     model_policy_args+=(--jinja --chat-template-file "$chat_template_path")
 fi
-if [[ "$router" == 0 && "$mtp_draft_tokens" != 0 ]]; then
-    mtp_args+=(--spec-type draft-mtp --spec-draft-n-max "$mtp_draft_tokens")
+if [[ "$router" == 0 && -n "$speculative_type" ]]; then
+    speculative_args+=(
+        --spec-type "$speculative_type"
+        --spec-draft-n-max "$draft_tokens"
+    )
     if [[ -n "$draft_model" ]]; then
-        mtp_args+=(--model-draft "$draft_model")
+        speculative_args+=(--model-draft "$draft_model")
     fi
 fi
 if [[ "$profile" == cpu ]]; then
@@ -108,8 +130,8 @@ if [[ "$profile" == cpu ]]; then
         die "CPU profile must not expose GPU devices"
     profile_args+=(--device none --gpu-layers 0)
     bench_profile_args+=(--device none --n-gpu-layers 0)
-    if [[ "$mtp_draft_tokens" != 0 ]]; then
-        mtp_args+=(--device-draft none)
+    if [[ -n "$speculative_type" ]]; then
+        speculative_args+=(--device-draft none)
     fi
 else
     ((gpu_count > 0)) || die "GPU profile requires at least one GPU"
@@ -152,8 +174,8 @@ else
     backend_devices="${backend_devices%,}"
     profile_args+=(--device "$backend_devices")
     bench_profile_args+=(--device "$backend_devices")
-    if [[ "$mtp_draft_tokens" != 0 ]]; then
-        mtp_args+=(--device-draft "$backend_devices")
+    if [[ -n "$speculative_type" ]]; then
+        speculative_args+=(--device-draft "$backend_devices")
     fi
     printf -v device '%s; ' "${devices[@]}"
     device="${device%; }"
@@ -210,9 +232,9 @@ if [[ "$router" == 1 ]]; then
     printf '  models:        managed router presets (max %s loaded)\n' "$models_max"
 else
     printf '  model:         %s\n' "$model"
-    if [[ "$mtp_draft_tokens" != 0 ]]; then
-        printf '  MTP:           enabled (%s draft tokens)\n' \
-            "$mtp_draft_tokens"
+    if [[ -n "$speculative_type" ]]; then
+        printf '  speculation:   %s (%s draft tokens)\n' \
+            "$speculative_type" "$draft_tokens"
         if [[ -n "$draft_model" ]]; then
             printf '  draft model:   %s\n' "$draft_model"
         fi
@@ -278,7 +300,7 @@ if [[ "$mode" == server ]]; then
                         }
                         next
                     }
-                    /^spec-type = draft-mtp$/ {
+                    /^spec-type = draft-(mtp|dflash)$/ {
                         print
                         print "device-draft = " backend_devices
                         next
@@ -300,7 +322,7 @@ if [[ "$mode" == server ]]; then
         --model "$model" \
         "${profile_args[@]}" \
         "${model_policy_args[@]}" \
-        "${mtp_args[@]}" \
+        "${speculative_args[@]}" \
         "$@"
 fi
 
@@ -309,5 +331,5 @@ exec llama-cli \
     --model "$model" \
     "${profile_args[@]}" \
     "${model_policy_args[@]}" \
-    "${mtp_args[@]}" \
+    "${speculative_args[@]}" \
     "$@"

@@ -122,7 +122,8 @@ class LlamaPreset:
     bundle: str
     artifact: str
     default_context: int
-    mtp_draft_tokens: int = 0
+    speculative_type: str = ""
+    draft_tokens: int = 0
     draft_artifact: str = ""
     jinja: bool = False
     agent_tools: bool = False
@@ -743,7 +744,8 @@ def _load_llama_preset(
         "bundle",
         "artifact",
         "default_context",
-        "mtp_draft_tokens",
+        "speculative_type",
+        "draft_tokens",
         "draft_artifact",
         "jinja",
         "agent_tools",
@@ -768,29 +770,61 @@ def _load_llama_preset(
             "llama.cpp preset {} default_context must be a positive "
             "integer".format(identifier)
         )
-    mtp_draft_tokens = data.get("mtp_draft_tokens", 0)
-    if (
-        not isinstance(mtp_draft_tokens, int)
-        or isinstance(mtp_draft_tokens, bool)
-        or not 0 <= mtp_draft_tokens <= 8
+    speculative_type = data.get("speculative_type", "")
+    if not isinstance(speculative_type, str) or speculative_type not in (
+        "",
+        "draft-mtp",
+        "draft-dflash",
     ):
         raise LauncherError(
-            "llama.cpp preset {} mtp_draft_tokens must be an integer "
-            "between 0 and 8".format(identifier)
+            "llama.cpp preset {} speculative_type must be empty, "
+            "draft-mtp, or draft-dflash".format(identifier)
+        )
+    draft_tokens = data.get("draft_tokens", 0)
+    if (
+        not isinstance(draft_tokens, int)
+        or isinstance(draft_tokens, bool)
+        or not 0 <= draft_tokens <= 15
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} draft_tokens must be an integer between "
+            "0 and 15".format(identifier)
+        )
+    if not speculative_type and draft_tokens:
+        raise LauncherError(
+            "llama.cpp preset {} draft_tokens requires speculative_type".format(
+                identifier
+            )
+        )
+    if speculative_type and draft_tokens == 0:
+        raise LauncherError(
+            "llama.cpp preset {} speculative_type requires positive "
+            "draft_tokens".format(identifier)
+        )
+    if speculative_type == "draft-mtp" and draft_tokens > 8:
+        raise LauncherError(
+            "llama.cpp preset {} draft-mtp draft_tokens must be between "
+            "1 and 8".format(identifier)
         )
     draft_artifact = data.get("draft_artifact", "")
     if draft_artifact:
         draft_artifact = _identifier(
             draft_artifact, "{}.draft_artifact".format(identifier)
         )
-        if mtp_draft_tokens == 0:
+        if not speculative_type:
             raise LauncherError(
                 "llama.cpp preset {} draft_artifact requires positive "
-                "mtp_draft_tokens".format(identifier)
+                "draft_tokens and speculative_type".format(identifier)
             )
     elif not isinstance(draft_artifact, str):
         raise LauncherError(
             "llama.cpp preset {} draft_artifact must be a string".format(
+                identifier
+            )
+        )
+    if speculative_type == "draft-dflash" and not draft_artifact:
+        raise LauncherError(
+            "llama.cpp preset {} draft-dflash requires draft_artifact".format(
                 identifier
             )
         )
@@ -870,7 +904,8 @@ def _load_llama_preset(
             data.get("artifact"), "{}.artifact".format(identifier)
         ),
         default_context=default_context,
-        mtp_draft_tokens=mtp_draft_tokens,
+        speculative_type=speculative_type,
+        draft_tokens=draft_tokens,
         draft_artifact=draft_artifact,
         jinja=jinja,
         agent_tools=agent_tools,
@@ -1059,7 +1094,7 @@ def _validate_catalog(catalog: Catalog) -> None:
 
 def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
     raw = _read_json_object(path, "catalog")
-    if not isinstance(raw, dict) or raw.get("schema_version") != 18:
+    if not isinstance(raw, dict) or raw.get("schema_version") != 19:
         raise LauncherError("unsupported or invalid catalog schema")
     allowed = {
         "schema_version",

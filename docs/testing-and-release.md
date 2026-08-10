@@ -222,12 +222,14 @@ and Pi, and normal server-side thinking through Maki. Confirm the generated
 providers follow `--dwarfstar-port`. Do not claim agent
 compatibility from `/v1/models` or a plain text response alone.
 
-MTP catalog changes additionally require one single-model dry run and router
-INI inspection for an embedded-draft preset and a separate-draft preset.
-Confirm the target and draft are both hash-verified before startup, the draft
-path is mounted through the existing read-only model partition, and no
-speculative arguments appear for non-MTP presets. CPU startup validates
-argument shape only; it is not an MTP correctness or performance result.
+Speculative-decoding catalog changes additionally require one single-model
+dry run and router INI inspection for every affected strategy. Cover an
+embedded MTP draft, a separate MTP draft, and a separate DFlash draft when
+those paths change. Confirm the target and draft are both hash-verified before
+startup, the draft path is mounted through the existing read-only model
+partition, and no speculative arguments appear for ordinary presets. CPU
+startup validates argument shape only; it is not a correctness or performance
+result for speculative decoding.
 
 ### Tier 5: GPU diagnostics
 
@@ -290,10 +292,10 @@ Keep its JSON and Markdown result. A `BLOCKED` result means generated media
 still needs human review; resume the same result rather than rerunning passed
 cases. Then exercise the additional matrix rows coupled to the change.
 
-- each changed llama.cpp MTP preset against its non-MTP counterpart, recording
-  prompt processing, generation speed, peak memory, acceptance behavior, and
-  output sanity on `gfx1150`, `gfx1151`, `gfx1200`, and `gfx1201` where the
-  preset is practical;
+- each changed llama.cpp speculative preset against a non-speculative control,
+  recording prompt processing, generation speed, peak memory, acceptance
+  behavior, and output sanity on `gfx1150`, `gfx1151`, `gfx1200`, and
+  `gfx1201` where the preset is practical;
 
 - one base and one accelerated bundle;
 - every affected precision;
@@ -325,9 +327,9 @@ gate without assuming that one contributor owns every hardware class.
    web asset was fetched at runtime.
 2. **Primary target acceptance:** on one capable machine, run `doctor`, the
    bounded acceptance smoke, real CLI and router generation, both API
-   endpoints, reasoning controls, MTP and non-MTP generation, and interruption
-   cleanup. Then run the benchmark matrix below for every backend or patch
-   path affected by the update.
+   endpoints, reasoning controls, speculative and non-speculative generation,
+   and interruption cleanup. Then run the benchmark matrix below for every
+   backend or patch path affected by the update.
 3. **Cross-architecture spot checks:** on each remaining applicable hardware
    class, run `doctor`, a tiny-model GPU smoke, and the smallest representative
    benchmark that exercises the changed backend path. A profile-specific
@@ -348,7 +350,7 @@ minimum matrix is:
 | Tiny smoke | Detects basic load, offload, and generated-output failures cheaply. | ROCm and Vulkan, 32 prompt tokens, 16 generated tokens, one measured repetition. |
 | Representative f16 KV | Detects ordinary dense or sparse long-context regressions. | Both backends at shallow depth and at least 32K context, 512 prompt tokens, 128 generated tokens, three repetitions. |
 | Representative q8_0 KV | Exercises quantized-KV Flash Attention and its memory/performance tradeoff. | Repeat the long-context case with both K and V explicitly set to `q8_0` and Flash Attention explicitly enabled. |
-| MTP control | Separates model/runtime changes from speculative-decoding behavior. | The same managed family, prompt, and backend with MTP enabled and disabled; record acceptance rate as well as aggregate timing. |
+| Speculative control | Separates model/runtime changes from speculative-decoding behavior. | The same managed family, prompt, and backend with MTP or DFlash enabled and disabled; record acceptance rate as well as aggregate timing. |
 | Service behavior | Detects integration regressions outside `llama-bench`. | Router model selection, Chat Completions, Responses, reasoning levels, one-shot CLI exit, and clean stop or interruption. |
 
 The exact representative model may change with the catalog. State why the
