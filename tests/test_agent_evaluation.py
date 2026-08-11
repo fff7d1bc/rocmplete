@@ -10,6 +10,8 @@ from pathlib import Path
 from rocmplete.agent_evaluation import (
     AgentEvaluationOptions,
     PreparedAttempt,
+    _build_command,
+    _dependency_changed,
     _extract_git_archive,
     _evaluation_sandbox_environment,
     _generated_artifacts,
@@ -17,6 +19,7 @@ from rocmplete.agent_evaluation import (
     _server_command,
     _server_readiness_url,
     _snapshot_protected,
+    _test_command,
     _validate_agent_tree,
     grade_review,
     load_coding_suite,
@@ -32,14 +35,17 @@ from rocmplete.errors import LauncherError
 
 
 class AgentEvaluationTests(unittest.TestCase):
-    def test_frozen_definition_has_six_implementation_and_two_review_tasks(self):
+    def test_frozen_definition_has_nine_implementation_and_two_review_tasks(self):
         suite = load_coding_suite()
-        self.assertEqual(suite.identifier, "rocmplete-coding-v4")
-        self.assertEqual(len(suite.tasks), 8)
+        self.assertEqual(suite.identifier, "rocmplete-coding-v5")
+        self.assertEqual(len(suite.tasks), 11)
         self.assertEqual(
-            sum(task.kind == "implementation" for task in suite.tasks), 6
+            sum(task.kind == "implementation" for task in suite.tasks), 9
         )
         self.assertEqual(sum(task.kind == "review" for task in suite.tasks), 2)
+        self.assertEqual(
+            sum(task.toolchain == "python-stdlib" for task in suite.tasks), 1
+        )
         self.assertEqual(len(suite.fingerprint), 64)
         for task in suite.tasks:
             self.assertEqual(len(task.base_commit), 40)
@@ -51,6 +57,71 @@ class AgentEvaluationTests(unittest.TestCase):
             else:
                 self.assertEqual(task.answer, "ROCMLETE_EVAL_ANSWER.md")
                 self.assertIn("between 200 and 2,000 words", task.prompt)
+
+    def test_toolchains_select_fixed_controller_commands(self):
+        tasks = {task.identifier: task for task in load_coding_suite().tasks}
+        go_task = tasks["proxy-late-probe"]
+        python_task = tasks["rc-selinux-verify"]
+
+        self.assertEqual(
+            _test_command(go_task), ("go", "test", "-count=1", "./...")
+        )
+        self.assertEqual(_build_command(go_task), ("go", "build", "./..."))
+        self.assertEqual(
+            _test_command(python_task),
+            ("python3", "-m", "unittest", "discover", "-s", "tests"),
+        )
+        self.assertIn("compileall", _build_command(python_task))
+        self.assertTrue(
+            _dependency_changed(
+                python_task,
+                ((" M", "containers/x/requirements.txt"),),
+            )
+        )
+        self.assertFalse(
+            _dependency_changed(
+                python_task,
+                ((" M", "src/rocmplete/podman.py"),),
+            )
+        )
+
+    def test_definition_rejects_repository_toolchain_mismatch(self):
+        source = Path(__file__).parents[1] / "evaluations" / "coding"
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "coding"
+            import shutil
+
+            shutil.copytree(source, destination)
+            definition = destination / "tasks.json"
+            raw = json.loads(definition.read_text())
+            task = next(
+                task
+                for task in raw["tasks"]
+                if task["identifier"] == "rc-selinux-verify"
+            )
+            task["toolchain"] = "go"
+            definition.write_text(json.dumps(raw))
+            with self.assertRaisesRegex(LauncherError, "unreviewed repository"):
+                load_coding_suite(definition)
+
+    def test_definition_rejects_unsafe_python_hidden_destination(self):
+        source = Path(__file__).parents[1] / "evaluations" / "coding"
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "coding"
+            import shutil
+
+            shutil.copytree(source, destination)
+            definition = destination / "tasks.json"
+            raw = json.loads(definition.read_text())
+            task = next(
+                task
+                for task in raw["tasks"]
+                if task["identifier"] == "rc-selinux-verify"
+            )
+            task["hidden"]["destination"] = "../test_escape.py"
+            definition.write_text(json.dumps(raw))
+            with self.assertRaisesRegex(LauncherError, "unsafe hidden-test"):
+                load_coding_suite(definition)
 
     def test_definition_fails_closed_when_hidden_test_changes(self):
         source = Path(__file__).parents[1] / "evaluations" / "coding"
@@ -122,6 +193,25 @@ class AgentEvaluationTests(unittest.TestCase):
             self.assertEqual(remotes, "")
             self.assertEqual((fixture / "AGENTS.md").read_text(), "# controlled\n")
 
+    def test_fixture_replaces_existing_instructions_only_when_explicit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            rejected = root / "rejected"
+            rejected.mkdir()
+            (rejected / "AGENTS.md").write_text("# upstream\n")
+            with self.assertRaisesRegex(LauncherError, "unexpectedly contains"):
+                _git_fixture(rejected, "# controlled\n")
+
+            allowed = root / "allowed"
+            allowed.mkdir()
+            (allowed / "AGENTS.md").write_text("# upstream\n")
+            _git_fixture(
+                allowed,
+                "# controlled\n",
+                replace_existing_notes=True,
+            )
+            self.assertEqual((allowed / "AGENTS.md").read_text(), "# controlled\n")
+
     def test_agent_tree_rejects_symlinks(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -148,6 +238,10 @@ class AgentEvaluationTests(unittest.TestCase):
                 },
                 {"type": "tool", "input": {"command": "git status --short"}},
                 {"type": "tool", "input": {"command": "curl https://example.invalid"}},
+                {
+                    "type": "tool",
+                    "input": {"command": "python3 -m pip install example"},
+                },
             )
             transcript.write_text("".join(json.dumps(item) + "\n" for item in events))
             self.assertEqual(
@@ -162,7 +256,10 @@ class AgentEvaluationTests(unittest.TestCase):
             )
             self.assertEqual(
                 transcript_network_attempts(transcript),
-                ("curl https://example.invalid",),
+                (
+                    "curl https://example.invalid",
+                    "python3 -m pip install example",
+                ),
             )
 
     def test_evaluation_sandbox_uses_neutral_identity_and_terminal(self):
@@ -194,17 +291,20 @@ class AgentEvaluationTests(unittest.TestCase):
         self.assertEqual(metrics["generation_tokens_per_second"], 80.0)
 
     def test_repository_named_build_output_is_a_generated_artifact(self):
-        task = next(
-            task
-            for task in load_coding_suite().tasks
-            if task.identifier == "fz-eintr"
-        )
+        tasks = {task.identifier: task for task in load_coding_suite().tasks}
+        task = tasks["fz-eintr"]
         self.assertEqual(
             _generated_artifacts(
                 task,
                 ((" M", "scanner.go"), ("??", "fzr"), ("??", "notes.txt")),
             ),
             ("fzr",),
+        )
+        self.assertEqual(
+            _generated_artifacts(
+                tasks["rc-selinux-verify"], (("??", "rocmplete"),)
+            ),
+            (),
         )
 
     def test_review_grade_preserves_answer_and_rejects_other_changes(self):

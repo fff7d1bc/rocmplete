@@ -1,12 +1,13 @@
 {
-  "schema": 1,
-  "identifier": "rocmplete-coding-v4",
-  "description": "Frozen Go coding-agent acceptance tasks derived from reviewed repository changes.",
-  "fixture_instructions": "# Coding evaluation fixture\n\nThis is a disposable, single-commit evaluation checkout. Work only inside this repository. Do not use the network, inspect parent directories, or look for hidden tests or later repository history. Read the task carefully, inspect the implementation, make the smallest complete change, format Go sources with gofmt, and run `go test ./...` before finishing. The controller performs an independent build after your work, so do not leave generated executables or other build artifacts in the repository. Do not weaken existing tests or dependency pins.\n",
+  "schema": 2,
+  "identifier": "rocmplete-coding-v5",
+  "description": "Frozen Go and Python coding-agent acceptance tasks derived from reviewed repository changes.",
+  "fixture_instructions": "# Coding evaluation fixture\n\nThis is a disposable, single-commit evaluation checkout. Work only inside this repository. Do not use the network, inspect parent directories, or look for hidden tests or later repository history. Read the task carefully, inspect the implementation, and make the smallest complete change. For Go, format changed sources with gofmt and run `go test ./...`. For Python, preserve Python 3.12 compatibility, use only the existing standard-library environment, and run `PYTHONPATH=src python3 -m unittest discover -s tests`. The controller performs independent tests and a build or compilation check after your work, so do not leave generated executables or other build artifacts in the repository. Do not weaken existing tests or dependency pins.\n",
   "tasks": [
     {
       "identifier": "re-align",
       "kind": "implementation",
+      "toolchain": "go",
       "repository": "reencode",
       "remote": "https://github.com/fff7d1bc/reencode.git",
       "base_commit": "d8b18748f3babe3f0a87660c337587ae4bd9f3dd",
@@ -24,6 +25,7 @@
     {
       "identifier": "fz-eintr",
       "kind": "implementation",
+      "toolchain": "go",
       "repository": "fzr",
       "remote": "https://github.com/fff7d1bc/fzr.git",
       "base_commit": "8301eadcb637f25b95169a981c5995a7398b0cfe",
@@ -41,6 +43,7 @@
     {
       "identifier": "fz-symlink",
       "kind": "implementation",
+      "toolchain": "go",
       "repository": "fzr",
       "remote": "https://github.com/fff7d1bc/fzr.git",
       "base_commit": "f0e691e7eddc621c6ba82fe23d4efd71398117bf",
@@ -58,6 +61,7 @@
     {
       "identifier": "re-cancel",
       "kind": "implementation",
+      "toolchain": "go",
       "repository": "reencode",
       "remote": "https://github.com/fff7d1bc/reencode.git",
       "base_commit": "5f4881bcd15f7db221eee04bad82f30a9ce2df60",
@@ -75,6 +79,7 @@
     {
       "identifier": "fz-sort-cancel",
       "kind": "implementation",
+      "toolchain": "go",
       "repository": "fzr",
       "remote": "https://github.com/fff7d1bc/fzr.git",
       "base_commit": "ecab57aba12d71b9908a39e800e5f61e09e6f57b",
@@ -92,6 +97,7 @@
     {
       "identifier": "re-source-race",
       "kind": "implementation",
+      "toolchain": "go",
       "repository": "reencode",
       "remote": "https://github.com/fff7d1bc/reencode.git",
       "base_commit": "34ae314afc8cfc7653d83c7f0aae44dd6c5b6bd7",
@@ -107,8 +113,63 @@
       }
     },
     {
+      "identifier": "proxy-late-probe",
+      "kind": "implementation",
+      "toolchain": "go",
+      "repository": "ssh-host-proxy",
+      "remote": "https://github.com/fff7d1bc/ssh-host-proxy.git",
+      "base_commit": "b8513df5795510620a26ea97c496ecf7945f85e4",
+      "base_tree": "b73d978b1036c2fd879b1a5cfd69831d63f5cbe5",
+      "reference_commit": "03d762464c77e5c6a25850ac7d62b9abebbad942",
+      "difficulty": "medium",
+      "safety_critical": false,
+      "prompt": "Parallel target selection can return as soon as one target wins or the selection deadline expires, while a canceled probe may still return a successful live connection afterward. Ensure that every successful probe connection that arrives after selection is closed without delaying the winner or timeout path. Preserve the selected connection, existing target-state reporting, priority behavior, and prompt return when a probe is slow to unwind.",
+      "hidden": {
+        "resource": "hidden/proxy-late-probe/rocmplete_eval_test.go",
+        "sha256": "fff6210323ee6f6514454f2e3dcdd67129bb329836fff7873d6e3a97210d09b5",
+        "destination": "rocmplete_eval_test.go"
+      }
+    },
+    {
+      "identifier": "rc-selinux-verify",
+      "kind": "implementation",
+      "toolchain": "python-stdlib",
+      "repository": "rocmplete",
+      "remote": "https://github.com/fff7d1bc/rocmplete.git",
+      "base_commit": "6f866b3c3c7108ebf60cf6afb99e39163538c06b",
+      "base_tree": "d821dcf90adb0b615c8a55d46ad47594bfb55cb0",
+      "reference_commit": "a333de212e0dbbc20386d5578815e6a70b952deb",
+      "difficulty": "hard",
+      "safety_critical": true,
+      "prompt": "On an enforcing SELinux host, the first shared container bind mount can relabel managed model content after it was hashed and receipted, changing filesystem identity and making the new receipt stale. Add a `prepare_shared_content_label` host helper that applies the exact shared container-file label without following links only when the existing SELinux volume policy requires it. Invoke it before hashing both installed and staged artifacts for the shared model targets, while leaving non-shared targets unchanged. Fail closed when the required labeling tool is unavailable or fails, and preserve download staging, verification, receipt, and dry-run behavior.",
+      "hidden": {
+        "resource": "hidden/rc-selinux-verify/test_rocmplete_eval_runtime_label.py",
+        "sha256": "cfa8733603fbd3c7a64cb66a997ece5818cdaf1bbc9896b3d9a2f001e21f25fe",
+        "destination": "tests/test_rocmplete_eval_runtime_label.py"
+      }
+    },
+    {
+      "identifier": "nonet-lifecycle",
+      "kind": "implementation",
+      "toolchain": "go",
+      "repository": "nonet",
+      "remote": "https://github.com/fff7d1bc/nonet.git",
+      "base_commit": "3f6387529135912f036bffa475d80d93b912ca0b",
+      "base_tree": "22072836892cd18c0910ca1e8360c71863c3d227",
+      "reference_commit": "374e8beb879ca3dd5a8d85262d1935b7510aeec6",
+      "difficulty": "hard",
+      "safety_critical": true,
+      "prompt": "Tie the final command lifecycle to its nonet wrapper. While a target is running, relay wrapper SIGTERM to the direct child and wait for the child's real status through a directly testable `waitForTargetSignal` helper. In the clone child, use the Linux parent-death facility so an abruptly lost Go parent cannot leave the target detached, and close the race where the parent dies before that policy is installed. Preserve setup-failure handling, forwarding cleanup, and the target's exit or signal semantics.",
+      "hidden": {
+        "resource": "hidden/nonet-lifecycle/rocmplete_eval_test.go",
+        "sha256": "668cd420365078f19e0dbc7167c8a737e7cf4484c80a3ac1f60936d97f942b01",
+        "destination": "rocmplete_eval_test.go"
+      }
+    },
+    {
       "identifier": "review-reencode-lifecycle",
       "kind": "review",
+      "toolchain": "go",
       "repository": "reencode",
       "remote": "https://github.com/fff7d1bc/reencode.git",
       "base_commit": "7f1f6005c64595438602e5bbe757e2730875198a",
@@ -122,6 +183,7 @@
     {
       "identifier": "review-fzr-concurrency",
       "kind": "review",
+      "toolchain": "go",
       "repository": "fzr",
       "remote": "https://github.com/fff7d1bc/fzr.git",
       "base_commit": "a349035985a0f7c8c91bd0f3fe35e2a9c7bc3de1",

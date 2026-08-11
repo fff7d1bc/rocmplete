@@ -88,11 +88,11 @@ or performance comparison in the maintainer acceptance matrix.
 ## Coding-agent evaluation
 
 Use the frozen coding suite to compare how managed models investigate and
-change real Go repositories. It is deliberately separate from target-hardware
-smoke acceptance and `llama-bench`: a model can generate tokens quickly while
-still making an unsafe or incomplete patch.
+change real Go and Python repositories. It is deliberately separate from
+target-hardware smoke acceptance and `llama-bench`: a model can generate
+tokens quickly while still making an unsafe or incomplete patch.
 
-Inspect the eight tasks and preview one model without fetching sources,
+Inspect the eleven tasks and preview one model without fetching sources,
 creating data, loading a model, or starting Pi:
 
 ```bash
@@ -101,9 +101,9 @@ creating data, loading a model, or starting Pi:
   --preset qwen3.6-27b-q8-0 --dry-run
 ```
 
-The frozen suite has six implementation tasks and two read-only review tasks
-drawn from `reencode` and `fzr`. Run the complete suite with one exact managed
-llama.cpp preset:
+The frozen suite has nine implementation tasks and two read-only review tasks
+drawn from `reencode`, `fzr`, `ssh-host-proxy`, `rocmplete`, and `nonet`. Run
+the complete suite with one exact managed llama.cpp preset:
 
 ```bash
 ./rocmplete benchmark agent \
@@ -135,19 +135,22 @@ ROCmplete fetches each pinned public repository into a managed source mirror,
 verifies the exact Git tree, and archives the base commit into a new repository
 with one synthetic commit and no remote. Pi therefore cannot discover the
 later reference fix through local Git history. Each attempt is sandboxed to
-its fixture and receives an offline Go module cache. The model is instructed
-not to use the network, and recognized network commands in Pi's structured
-transcript invalidate the attempt. The host network remains available to the
-Pi process because it must reach the loopback model server, so this is an
-audited benchmark policy rather than syscall-level hostile-code containment.
+its fixture. Go tasks receive an offline module cache, while the Python task
+uses its standard-library test environment without prepared dependencies. The
+model is instructed not to use the network, and recognized network commands in
+Pi's structured transcript invalidate the attempt. The host network remains
+available to the Pi process because it must reach the loopback model server,
+so this is an audited benchmark policy rather than syscall-level hostile-code
+containment.
 
 Implementation grading runs the resulting patch against the repository tests,
-then adds a hash-verified hidden test and runs the build. Dependency files are
-restored to their pinned baseline before grading. A result is `solved` only
-when Pi exits cleanly, ordinary and hidden tests pass, the project builds, and
-no dependency or audited-network policy was violated. Review answers are
-preserved as `review-pending`; they are intentionally not folded into the
-implementation solve rate and need factual human review.
+then adds a hash-verified hidden test and runs the fixed toolchain's build or
+compilation check. Dependency files are restored to their pinned baseline
+before grading. A result is `solved` only when Pi exits cleanly, ordinary and
+hidden tests pass, the final check passes, and no dependency or audited-network
+policy was violated. Review answers are preserved as `review-pending`; they are
+intentionally not folded into the implementation solve rate and need factual
+human review.
 
 Raw results live below:
 

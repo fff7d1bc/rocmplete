@@ -365,7 +365,8 @@ Sparse and dense models, and even different quantizations from one family,
 can prefer different backends on the same GPU. The
 [tuning guide](guide/tuning.md#benchmarks) covers repeatable comparisons.
 
-Evaluate a managed model as a coding agent against the frozen Go task suite:
+Evaluate a managed model as a coding agent against the frozen Go and Python
+task suite:
 
 ```bash
 ./rocmplete benchmark agent --list-tasks

@@ -23,6 +23,12 @@ not treated as equivalent merely because their grading result says `solved`.
 The structure of the retained patch, convergence behavior, and broader suite
 evidence also matter.
 
+The current frozen definition is version 5. It retains these tasks and adds
+ssh-host-proxy late-connection ownership, ROCmplete SELinux verification
+ordering, and nonet process-lifecycle work. No model has version 5 acceptance
+evidence in this record yet, so the ranking below remains explicitly version 4
+evidence rather than silently mixing suite fingerprints.
+
 ## Provisional quality order
 
 This is the most useful current order for choosing a coding model. It is
@@ -226,6 +232,8 @@ Use these quality gates in order:
 
 To be a demonstrated quality improvement over the current evidence, a new
 model should retain a clean shared-policy implementation on the easy screen,
-exceed 3/6 implementation solves, avoid both hard safety failures, and produce
-factually sound reviews. Merely beating the 229.9-second easy-task time would
-make it faster, not better.
+exceed the inherited 3/6 implementation baseline, avoid both inherited hard
+safety failures, and produce factually sound reviews. A complete version 5 run
+must also report the three new tasks separately until there is a repeated
+version 5 baseline. Merely beating the 229.9-second easy-task time would make
+the model faster, not better.

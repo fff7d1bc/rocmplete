@@ -502,7 +502,7 @@ apps/
     results/                         checkpointed JSON and Markdown summaries
   agent-evaluation/
     sources/                         pinned public bare mirrors
-    cache/                           prepared Go module and build caches
+    cache/                           prepared toolchain caches, currently Go
     results/                         machine-specific JSON and Markdown summaries
     runs/                            fixtures, transcripts, patches, and grading logs
 content/
@@ -770,9 +770,12 @@ discovery remains available from the mounted project.
 `src/rocmplete/agent_evaluation.py` builds a benchmark-specific layer on top
 of the Pi boundary. Every pinned source commit is exported into a new
 repository with one synthetic commit and no remote, while hidden graders and
-protected inputs remain outside the mounted worktree. A prepared Go module
-cache is added as an explicit read-only mount and Pi receives an offline proxy
-policy plus a temporary build cache. The Pi process still needs shared host
+protected inputs remain outside the mounted worktree. Fixed repository-owned
+toolchain adapters select baseline, grading, and build commands. Go tasks add a
+prepared module cache as an explicit read-only mount and receive an offline
+proxy policy plus a temporary build cache. The standard-library Python task
+receives no dependency environment. Task definitions cannot supply arbitrary
+commands. The Pi process still needs shared host
 networking for its loopback model endpoint, so structured tool transcripts are
 audited for ordinary network commands and this boundary is not claimed as
 adversarial network containment. Grading happens outside the client sandbox

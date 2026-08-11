@@ -44,7 +44,7 @@ from .project import PROJECT_ROOT
 
 
 DEFINITION_PATH = PROJECT_ROOT / "evaluations" / "coding" / "tasks.json"
-SUITE_SCHEMA = 1
+SUITE_SCHEMA = 2
 RESULT_SCHEMA = "rocmplete.coding-agent-evaluation.v1"
 DEFAULT_CONTEXT = 131072
 DEFAULT_PORT = 8187
@@ -62,7 +62,9 @@ _IDENTIFIER = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _NETWORK_COMMAND = re.compile(
     r"(?:^|[;&|]\s*|\s)(?:curl|wget|ssh|scp|nc|ncat|telnet)\s"
     r"|\bgit\s+(?:clone|fetch|pull|remote)\b"
-    r"|\bgo\s+(?:get|install)\b",
+    r"|\bgo\s+(?:get|install)\b"
+    r"|\b(?:pip|pip3)\s+install\b"
+    r"|\bpython(?:3)?\s+-m\s+pip\s+install\b",
     re.IGNORECASE,
 )
 _PROMPT_METRIC = re.compile(
@@ -75,6 +77,23 @@ _GENERATION_METRIC = re.compile(
     r"([0-9]+(?:\.[0-9]+)?)\s+tokens per second",
     re.IGNORECASE,
 )
+_REPOSITORY_TOOLCHAINS = {
+    "fzr": "go",
+    "nonet": "go",
+    "reencode": "go",
+    "rocmplete": "python-stdlib",
+    "ssh-host-proxy": "go",
+}
+_PYTHON_DEPENDENCY_FILES = frozenset(
+    (
+        "constraints.txt",
+        "pyproject.toml",
+        "requirements.txt",
+        "setup.cfg",
+        "setup.py",
+    )
+)
+_ALL_DEPENDENCY_FILES = frozenset(("go.mod", "go.sum")) | _PYTHON_DEPENDENCY_FILES
 
 
 @dataclass(frozen=True)
@@ -88,6 +107,7 @@ class HiddenTest:
 class CodingTask:
     identifier: str
     kind: str
+    toolchain: str
     repository: str
     remote: str
     base_commit: str
@@ -225,6 +245,7 @@ def load_coding_suite(path: Path = DEFINITION_PATH) -> CodingSuite:
             (
                 "identifier",
                 "kind",
+                "toolchain",
                 "repository",
                 "remote",
                 "base_commit",
@@ -244,10 +265,14 @@ def load_coding_suite(path: Path = DEFINITION_PATH) -> CodingSuite:
         kind = _required_string(value["kind"], "task kind")
         if kind not in ("implementation", "review"):
             raise LauncherError("unknown task kind for {}: {}".format(task_id, kind))
+        toolchain = _required_string(value["toolchain"], "task toolchain")
         repository = _required_string(value["repository"], "repository")
         remote = _required_string(value["remote"], "remote")
         expected_remote = "https://github.com/fff7d1bc/{}.git".format(repository)
-        if remote != expected_remote or repository not in ("reencode", "fzr"):
+        if (
+            remote != expected_remote
+            or _REPOSITORY_TOOLCHAINS.get(repository) != toolchain
+        ):
             raise LauncherError("task {} has an unreviewed repository remote".format(task_id))
         commits = []
         for field in ("base_commit", "base_tree", "reference_commit"):
@@ -275,7 +300,29 @@ def load_coding_suite(path: Path = DEFINITION_PATH) -> CodingSuite:
             if not re.fullmatch(r"[0-9a-f]{64}", digest) or _sha256(resource) != digest:
                 raise LauncherError("hidden test hash mismatch for {}".format(task_id))
             destination = _required_string(hidden_raw["destination"], "hidden destination")
-            if Path(destination).name != destination or not destination.endswith("_test.go"):
+            destination_path = PurePosixPath(destination)
+            safe_destination = (
+                not destination_path.is_absolute()
+                and bool(destination_path.parts)
+                and all(part not in ("", ".", "..") for part in destination_path.parts)
+            )
+            if toolchain == "go":
+                safe_destination = (
+                    safe_destination
+                    and len(destination_path.parts) == 1
+                    and destination_path.name.endswith("_test.go")
+                )
+            elif toolchain == "python-stdlib":
+                safe_destination = (
+                    safe_destination
+                    and len(destination_path.parts) == 2
+                    and destination_path.parts[0] == "tests"
+                    and destination_path.name.startswith("test_")
+                    and destination_path.name.endswith(".py")
+                )
+            else:
+                safe_destination = False
+            if not safe_destination:
                 raise LauncherError("unsafe hidden-test destination for {}".format(task_id))
             hidden = HiddenTest(resource=resource, sha256=digest, destination=destination)
             fingerprint.update(resource.read_bytes())
@@ -293,6 +340,7 @@ def load_coding_suite(path: Path = DEFINITION_PATH) -> CodingSuite:
             CodingTask(
                 identifier=task_id,
                 kind=kind,
+                toolchain=toolchain,
                 repository=repository,
                 remote=remote,
                 base_commit=commits[0],
@@ -508,10 +556,26 @@ def _extract_git_archive(archive: bytes, destination: Path) -> None:
                 )
 
 
-def _git_fixture(fixture: Path, instructions: str) -> None:
+def _git_fixture(
+    fixture: Path, instructions: str, *, replace_existing_notes: bool = False
+) -> None:
     agent_notes = fixture / "AGENTS.md"
     if agent_notes.exists() or agent_notes.is_symlink():
-        raise LauncherError("coding evaluation source unexpectedly contains AGENTS.md")
+        if not replace_existing_notes:
+            raise LauncherError("coding evaluation source unexpectedly contains AGENTS.md")
+        try:
+            status = agent_notes.lstat()
+            if not stat.S_ISREG(status.st_mode):
+                raise LauncherError(
+                    "coding evaluation source has unsafe AGENTS.md"
+                )
+            agent_notes.unlink()
+        except OSError as error:
+            raise LauncherError(
+                "cannot replace coding evaluation source instructions: {}".format(
+                    error
+                )
+            )
     try:
         agent_notes.write_text(instructions)
     except OSError as error:
@@ -538,19 +602,43 @@ def _git_fixture(fixture: Path, instructions: str) -> None:
             )
 
 
-def _protected_files(fixture: Path) -> Tuple[Path, ...]:
+def _is_test_path(relative: Path) -> bool:
+    return relative.name.endswith("_test.go") or (
+        relative.parts[:1] == ("tests",)
+        and relative.suffix == ".py"
+        and relative.name.startswith("test")
+    )
+
+
+def _is_dependency_path(task: CodingTask, relative: Path) -> bool:
+    if task.toolchain == "go":
+        return relative.name in ("go.mod", "go.sum")
+    return relative.name in _PYTHON_DEPENDENCY_FILES
+
+
+def _protected_files(
+    fixture: Path, task: Optional[CodingTask] = None
+) -> Tuple[Path, ...]:
     selected = []
     for path in fixture.rglob("*"):
         if ".git" in path.relative_to(fixture).parts or not path.is_file():
             continue
-        if path.name.endswith("_test.go") or path.name in ("go.mod", "go.sum", "AGENTS.md"):
-            selected.append(path.relative_to(fixture))
+        relative = path.relative_to(fixture)
+        dependency = (
+            _is_dependency_path(task, relative)
+            if task is not None
+            else relative.name in _ALL_DEPENDENCY_FILES
+        )
+        if _is_test_path(relative) or dependency or relative.name == "AGENTS.md":
+            selected.append(relative)
     return tuple(sorted(selected, key=str))
 
 
-def _snapshot_protected(fixture: Path, protected: Path) -> None:
+def _snapshot_protected(
+    fixture: Path, protected: Path, task: Optional[CodingTask] = None
+) -> None:
     protected.mkdir(mode=0o700)
-    for relative in _protected_files(fixture):
+    for relative in _protected_files(fixture, task):
         target = protected / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(fixture / relative, target)
@@ -570,6 +658,43 @@ def _go_environment(root: Path) -> Mapping[str, str]:
         }
     )
     return child
+
+
+def _task_environment(
+    task: CodingTask, root: Path, worktree: Path
+) -> Mapping[str, str]:
+    if task.toolchain == "go":
+        return _go_environment(root)
+    child = dict(os.environ)
+    child.update(
+        {
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONPATH": str(worktree / "src"),
+        }
+    )
+    return child
+
+
+def _test_command(task: CodingTask) -> Tuple[str, ...]:
+    if task.toolchain == "go":
+        return ("go", "test", "-count=1", "./...")
+    return ("python3", "-m", "unittest", "discover", "-s", "tests")
+
+
+def _build_command(task: CodingTask) -> Tuple[str, ...]:
+    if task.toolchain == "go":
+        return ("go", "build", "./...")
+    return (
+        "python3",
+        "-m",
+        "compileall",
+        "-q",
+        "applications",
+        "containers",
+        "src/rocmplete",
+        "tests",
+        "tools",
+    )
 
 
 def _write_process_log(path: Path, result: subprocess.CompletedProcess) -> None:
@@ -606,20 +731,25 @@ def prepare_attempt(
         "archive coding evaluation fixture",
     )
     _extract_git_archive(archive, fixture)
-    _git_fixture(fixture, suite.fixture_instructions)
-    _snapshot_protected(fixture, protected)
-    environment = _go_environment(_evaluation_root(data_dir))
-    download = _run_capture(
-        ("go", "mod", "download"),
-        "prepare Go modules",
-        cwd=fixture,
-        env=environment,
+    _git_fixture(
+        fixture,
+        suite.fixture_instructions,
+        replace_existing_notes=task.repository == "rocmplete",
     )
-    _write_process_log(attempt_root / "module-prepare.log", download)
-    if download.returncode != 0:
-        raise LauncherError("cannot prepare Go modules for {}".format(task.identifier))
+    _snapshot_protected(fixture, protected, task)
+    environment = _task_environment(task, _evaluation_root(data_dir), fixture)
+    if task.toolchain == "go":
+        download = _run_capture(
+            ("go", "mod", "download"),
+            "prepare Go modules",
+            cwd=fixture,
+            env=environment,
+        )
+        _write_process_log(attempt_root / "module-prepare.log", download)
+        if download.returncode != 0:
+            raise LauncherError("cannot prepare Go modules for {}".format(task.identifier))
     baseline = _run_capture(
-        ("go", "test", "-count=1", "./..."),
+        _test_command(task),
         "run baseline tests",
         cwd=fixture,
         env=environment,
@@ -720,18 +850,16 @@ def _copy_for_grading(attempt: PreparedAttempt) -> Path:
     if grade.exists() or grade.is_symlink():
         raise LauncherError("coding evaluation grading path already exists")
     shutil.copytree(attempt.fixture, grade, symlinks=True, ignore=shutil.ignore_patterns(".git"))
-    for name in ("go.mod", "go.sum", "AGENTS.md"):
-        path = grade / name
-        if path.exists():
-            path.unlink()
     for source in attempt.protected.rglob("*"):
         if not source.is_file():
             continue
         relative = source.relative_to(attempt.protected)
-        if relative.name.endswith("_test.go"):
+        if _is_test_path(relative):
             continue
         target = grade / relative
         target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists():
+            target.unlink()
         shutil.copy2(source, target)
     return grade
 
@@ -744,17 +872,20 @@ def _run_grade_command(
     return result.returncode
 
 
-def _dependency_changed(entries: Sequence[Tuple[str, str]]) -> bool:
-    return any(Path(path).name in ("go.mod", "go.sum") for _, path in entries)
+def _dependency_changed(
+    task: CodingTask, entries: Sequence[Tuple[str, str]]
+) -> bool:
+    return any(_is_dependency_path(task, Path(path)) for _, path in entries)
 
 
 def _generated_artifacts(
     task: CodingTask, entries: Sequence[Tuple[str, str]]
 ) -> Tuple[str, ...]:
-    # Both reviewed repositories are single-main-package Go projects. A bare
-    # root file named after the repository is the default output from `go
-    # build`, not source. The fixture tells the agent to leave builds to the
-    # controller; retain the artifact in evidence but do not accept the patch.
+    # Reviewed Go repositories are single-main-package projects. A bare root
+    # file named after the repository is the default output from `go build`,
+    # not source. Retain the artifact in evidence but do not accept the patch.
+    if task.toolchain != "go":
+        return ()
     return tuple(path for _, path in entries if path == task.repository)
 
 
@@ -770,10 +901,16 @@ def grade_implementation(
         return {"outcome": "invalid", "reason": invalid_reason, "pi_exit": pi_exit}
     patch_sha256, entries = _capture_patch(attempt)
     grade = _copy_for_grading(attempt)
-    environment = dict(_go_environment(_evaluation_root(data_dir)))
-    environment.update({"GOPROXY": "off", "GOSUMDB": "off"})
+    environment = dict(
+        _task_environment(attempt.task, _evaluation_root(data_dir), grade)
+    )
+    if attempt.task.toolchain == "go":
+        environment.update({"GOPROXY": "off", "GOSUMDB": "off"})
     regression = _run_grade_command(
-        ("go", "test", "-count=1", "./..."), grade, environment, attempt.root / "regression.log"
+        _test_command(attempt.task),
+        grade,
+        environment,
+        attempt.root / "regression.log",
     )
     hidden = attempt.task.hidden
     if hidden is None:
@@ -791,14 +928,21 @@ def grade_implementation(
                 attempt.task.identifier
             )
         )
+    hidden_destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(hidden.resource, hidden_destination)
     hidden_exit = _run_grade_command(
-        ("go", "test", "-count=1", "./..."), grade, environment, attempt.root / "hidden.log"
+        _test_command(attempt.task),
+        grade,
+        environment,
+        attempt.root / "hidden.log",
     )
     build_exit = _run_grade_command(
-        ("go", "build", "./..."), grade, environment, attempt.root / "build.log"
+        _build_command(attempt.task),
+        grade,
+        environment,
+        attempt.root / "build.log",
     )
-    dependency_changed = _dependency_changed(entries)
+    dependency_changed = _dependency_changed(attempt.task, entries)
     generated_artifacts = _generated_artifacts(attempt.task, entries)
     solved = (
         pi_exit == 0
@@ -981,22 +1125,31 @@ def _run_pi(
     )
     paths = pi_sandbox_paths(options.data_dir)
     prepare_pi_state(plan, paths, options.data_dir)
-    module_cache = _evaluation_root(options.data_dir) / "cache" / "go-mod"
-    sandbox_module_cache = SANDBOX_RUNTIME / "go-mod"
     sandbox_environment = _evaluation_sandbox_environment(os.environ)
-    sandbox = create_pi_sandbox_plan(
-        plan,
-        options.data_dir,
-        attempt.fixture,
-        sandbox_environment,
-        read_only_mounts=((module_cache, sandbox_module_cache),),
-        extra_environment={
+    read_only_mounts: Tuple[Tuple[Path, Path], ...] = ()
+    if attempt.task.toolchain == "go":
+        module_cache = _evaluation_root(options.data_dir) / "cache" / "go-mod"
+        sandbox_module_cache = SANDBOX_RUNTIME / "go-mod"
+        read_only_mounts = ((module_cache, sandbox_module_cache),)
+        toolchain_environment = {
             "GOMODCACHE": str(sandbox_module_cache),
             "GOCACHE": "/tmp/go-build",
             "GOPROXY": "off",
             "GOSUMDB": "off",
             "GOFLAGS": "-buildvcs=false",
-        },
+        }
+    else:
+        toolchain_environment = {
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "PYTHONPATH": str(attempt.fixture / "src"),
+        }
+    sandbox = create_pi_sandbox_plan(
+        plan,
+        options.data_dir,
+        attempt.fixture,
+        sandbox_environment,
+        read_only_mounts=read_only_mounts,
+        extra_environment=toolchain_environment,
     )
     stdout_path = attempt.root / "pi.jsonl"
     stderr_path = attempt.root / "pi.stderr.log"
@@ -1395,6 +1548,7 @@ def run_agent_evaluation(
         task_result: Dict[str, object] = {
             "identifier": task.identifier,
             "kind": task.kind,
+            "toolchain": task.toolchain,
             "repository": task.repository,
             "base_commit": task.base_commit,
             "reference_commit": task.reference_commit,

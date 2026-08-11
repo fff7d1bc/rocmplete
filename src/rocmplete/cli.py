@@ -4984,9 +4984,10 @@ def command_benchmark(
             print("Frozen coding-agent tasks")
             for task in suite.tasks:
                 print(
-                    "  {:30} {:14} {:6} {}".format(
+                    "  {:30} {:14} {:15} {:6} {}".format(
                         task.identifier,
                         task.kind,
+                        task.toolchain,
                         task.difficulty,
                         task.repository,
                     )
