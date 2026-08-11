@@ -33,7 +33,7 @@ from rocmplete.errors import LauncherError
 class AgentEvaluationTests(unittest.TestCase):
     def test_frozen_definition_has_six_implementation_and_two_review_tasks(self):
         suite = load_coding_suite()
-        self.assertEqual(suite.identifier, "rocmplete-coding-v2")
+        self.assertEqual(suite.identifier, "rocmplete-coding-v3")
         self.assertEqual(len(suite.tasks), 8)
         self.assertEqual(
             sum(task.kind == "implementation" for task in suite.tasks), 6
@@ -49,6 +49,7 @@ class AgentEvaluationTests(unittest.TestCase):
                 self.assertTrue(task.hidden.resource.is_file())
             else:
                 self.assertEqual(task.answer, "ROCMLETE_EVAL_ANSWER.md")
+                self.assertIn("between 200 and 2,000 words", task.prompt)
 
     def test_definition_fails_closed_when_hidden_test_changes(self):
         source = Path(__file__).parents[1] / "evaluations" / "coding"
@@ -218,6 +219,13 @@ class AgentEvaluationTests(unittest.TestCase):
             grade = grade_review(attempt, pi_exit=0, network_attempts=())
             self.assertEqual(grade["outcome"], "review-pending")
             self.assertTrue((root / "answer.md").is_file())
+
+            (fixture / task.answer).write_text(
+                "picker.go scanner.go " + "evidence " * 2001
+            )
+            grade = grade_review(attempt, pi_exit=0, network_attempts=())
+            self.assertEqual(grade["outcome"], "invalid")
+            self.assertGreater(grade["answer_words"], 2000)
 
     def test_server_command_is_explicit_for_llama_and_dwarfstar(self):
         llama = _server_command(

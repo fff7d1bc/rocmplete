@@ -28,9 +28,9 @@ source tree. A curated result summary may be added to an appropriate research
 or hardware-acceptance record when it states the exact suite fingerprint,
 model artifact, runtime, harness, context, repetitions, and hardware.
 
-## Frozen version 2 task set
+## Frozen version 3 task set
 
-Version 2 contains six implementation tasks and two review tasks:
+Version 3 contains six implementation tasks and two review tasks:
 
 | Task | Repository | Base | Reference | Purpose |
 | --- | --- | --- | --- | --- |
@@ -90,7 +90,7 @@ factual grading and never increase the implementation solve rate.
 
 Use one machine, backend, image, context, harness version, thinking level,
 task selection, repetition count, and runtime policy for a model comparison.
-Pi is the version 2 fixed harness. OpenCode, Maki, and OMP have different tool
+Pi is the version 3 fixed harness. OpenCode, Maki, and OMP have different tool
 prompts and context behavior and belong in a separately labelled harness
 comparison.
 
@@ -114,10 +114,12 @@ remains the stronger final check.
 
 Changing any prompt, pin, tree, hidden test, or fixture instruction changes
 the suite fingerprint and requires a new named suite version. Do not silently
-rewrite `rocmplete-coding-v2` after results exist. Version 1 was superseded
+rewrite `rocmplete-coding-v3` after results exist. Version 1 was superseded
 during initial calibration because asking the agent to run `go build ./...`
-left an untracked executable in a single-main-package fixture. Version 2 leaves
-the independently recorded build check to the controller.
+left an untracked executable in a single-main-package fixture. Version 2 moved
+that build check to the controller. Version 3 makes the grader's existing
+200-to-2,000-word review-answer bound visible in both review prompts; version 2
+results remain valid under their recorded fingerprint and must not be relabeled.
 
 For a new implementation task:
 

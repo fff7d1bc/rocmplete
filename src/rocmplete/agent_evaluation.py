@@ -49,6 +49,8 @@ RESULT_SCHEMA = "rocmplete.coding-agent-evaluation.v1"
 DEFAULT_CONTEXT = 131072
 DEFAULT_PORT = 8187
 ANSWER_FILE = "ROCMLETE_EVAL_ANSWER.md"
+REVIEW_MIN_WORDS = 200
+REVIEW_MAX_WORDS = 2000
 _EVALUATION_GIT_IDENTITY = {
     "GIT_AUTHOR_NAME": "ROCmplete Evaluation",
     "GIT_AUTHOR_EMAIL": "evaluation@invalid.local",
@@ -832,7 +834,7 @@ def grade_review(
         and not unexpected
         and not network_attempts
         and not answer_error
-        and 200 <= words <= 2000
+        and REVIEW_MIN_WORDS <= words <= REVIEW_MAX_WORDS
         and len(cited_files) >= 2
     )
     try:

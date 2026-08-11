@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "identifier": "rocmplete-coding-v2",
+  "identifier": "rocmplete-coding-v3",
   "description": "Frozen Go coding-agent acceptance tasks derived from reviewed repository changes.",
   "fixture_instructions": "# Coding evaluation fixture\n\nThis is a disposable, single-commit evaluation checkout. Work only inside this repository. Do not use the network, inspect parent directories, or look for hidden tests or later repository history. Read the task carefully, inspect the implementation, make the smallest complete change, format Go sources with gofmt, and run `go test ./...` before finishing. The controller performs an independent build after your work, so do not leave generated executables or other build artifacts in the repository. Do not weaken existing tests or dependency pins.\n",
   "tasks": [
@@ -116,7 +116,7 @@
       "reference_commit": "7f1f6005c64595438602e5bbe757e2730875198a",
       "difficulty": "review",
       "safety_critical": true,
-      "prompt": "Perform a focused safety review of the destructive encode lifecycle. Trace one successful input from eligibility through temporary output creation, media validation, destination publication, logging, and source removal. Then explain what protects the source and destination from path aliasing, replacement races, concurrent publishers, validation failure, cancellation, and failures after the source is quarantined. Cite concrete files and function names. Write the complete answer to `ROCMLETE_EVAL_ANSWER.md` and do not modify source code.",
+      "prompt": "Perform a focused safety review of the destructive encode lifecycle. Trace one successful input from eligibility through temporary output creation, media validation, destination publication, logging, and source removal. Then explain what protects the source and destination from path aliasing, replacement races, concurrent publishers, validation failure, cancellation, and failures after the source is quarantined. Cite concrete files and function names. Keep the complete answer between 200 and 2,000 words, write it to `ROCMLETE_EVAL_ANSWER.md`, and do not modify source code.",
       "answer": "ROCMLETE_EVAL_ANSWER.md"
     },
     {
@@ -129,7 +129,7 @@
       "reference_commit": "a349035985a0f7c8c91bd0f3fe35e2a9c7bc3de1",
       "difficulty": "review",
       "safety_critical": false,
-      "prompt": "Review how the interactive picker stays responsive while filesystem scanning and query ranking happen concurrently. Trace scan batches, pending-entry flushing, query debounce and generations, cancellation of stale ranking work, Enter during stale refresh, and terminal restoration on normal exit and signals. Explain which snapshot may be selected at each boundary and cite concrete files and function names. Write the complete answer to `ROCMLETE_EVAL_ANSWER.md` and do not modify source code.",
+      "prompt": "Review how the interactive picker stays responsive while filesystem scanning and query ranking happen concurrently. Trace scan batches, pending-entry flushing, query debounce and generations, cancellation of stale ranking work, Enter during stale refresh, and terminal restoration on normal exit and signals. Explain which snapshot may be selected at each boundary and cite concrete files and function names. Keep the complete answer between 200 and 2,000 words, write it to `ROCMLETE_EVAL_ANSWER.md`, and do not modify source code.",
       "answer": "ROCMLETE_EVAL_ANSWER.md"
     }
   ]
