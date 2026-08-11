@@ -133,3 +133,37 @@ def installed_agent_presets(
         for identifier, preset in catalog.llama_presets.items()
         if identifier in ready and is_agent_capable(preset)
     )
+
+
+def default_agent_model(
+    catalog: Catalog,
+    data_dir: Path,
+    client_name: str,
+    *,
+    require_installed: bool = True,
+) -> Tuple[str, str, str]:
+    """Select the common managed default for a coding-agent client."""
+
+    installed = installed_agent_presets(catalog, data_dir)
+    if RECOMMENDED_MODEL in installed:
+        return PROVIDER_ID, RECOMMENDED_MODEL, "medium"
+    if installed:
+        preset = catalog.llama_preset(installed[0])
+        thinking = "medium" if preset.reasoning_effort_budget else "off"
+        return PROVIDER_ID, installed[0], thinking
+    dwarfstar = catalog.bundle(
+        "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
+    )
+    if all(
+        content_status_ready(status)
+        for status in inspect_bundle(catalog, dwarfstar, data_dir)
+    ):
+        return DWARFSTAR_PROVIDER_ID, DWARFSTAR_MODEL, "high"
+    if not require_installed:
+        return PROVIDER_ID, RECOMMENDED_MODEL, "medium"
+    raise LauncherError(
+        "no installed model is maintained for {}".format(client_name)
+        + "\n  llama.cpp: ./rocmplete content install llama-cpp qwen3.6"
+        + "\n  DwarfStar: ./rocmplete content install dwarfstar "
+        "flash-0731-q2-imatrix"
+    )

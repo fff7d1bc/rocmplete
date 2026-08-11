@@ -650,10 +650,11 @@ later `--provider`, `--model`, or `--thinking` remains authoritative.
 
 `src/rocmplete/agent_models.py` also owns reviewed coding-task sampling policy
 for every maintained llama.cpp agent preset. OpenCode receives those values as
-per-model request options and Pi receives them as `samplingParams`; explicit
-OpenCode provider options or Pi request settings remain higher-precedence
-caller policy. Catalog presets and server startup remain free of task sampling
-so ordinary API and terminal workloads do not inherit coding defaults.
+per-model request options, Pi receives them as `samplingParams`, and OMP
+receives them as per-model `compat.extraBody`; explicit client request settings
+remain higher-precedence caller policy. Catalog presets and server startup
+remain free of task sampling so ordinary API and terminal workloads do not
+inherit coding defaults.
 
 Pi recognizes package and configuration commands only when the command is its
 first argument. The launcher classifies `install`, `remove`, `uninstall`,
@@ -670,6 +671,29 @@ passes information, completion, plugin, upgrade, and uninstall commands to the
 real executable without the managed environment. Its remaining subcommands
 accept global options first; a regression test preserves their position after
 the managed `--pure` option.
+
+`src/rocmplete/omp_agent.py` renders the reviewed providers into OMP's
+JSON-compatible `models.yml` schema and writes a separate runtime overlay.
+`bin/omp` delegates to the host launcher, which stores both generated files
+below `StorageLayout.application("omp") / "sandbox"` and points
+`PI_CODING_AGENT_DIR` and `PI_CONFIG_FILES` there. OMP is a Pi fork but remains
+an independent client with independent state. Its ordinary `~/.omp` tree and
+user `config.yml` are not read or rewritten. Generated files are atomically
+replaced, mode-restricted, and reject symbolic or multiple hard links.
+
+The OMP provider enables its llama.cpp discovery compatibility so Qwen chat,
+tool, and reasoning messages receive OMP's maintained adapter, while an exact
+`enabledModels` list prevents unrelated discovered IDs from entering the
+picker. Default, smol, slow, and plan roles all resolve to the selected local
+model. The managed overlay makes OMP's upstream yolo approval mode explicit
+and disables the setup wizard, startup update checks, and marketplace
+auto-update. Session arguments are forwarded after the selected model and
+thinking defaults, so explicit later values win. Management commands use the
+same private state without requiring installed model bytes; help, version,
+completion, and self-update requests pass directly to the real executable.
+Named OMP profiles change the configuration root and would bypass this state
+contract, so inherited profile variables are removed and explicit `--profile`
+or `--alias` arguments are rejected.
 
 `src/rocmplete/maki_agent.py` publishes the same reviewed model catalog as two
 executable dynamic providers below Maki's private XDG configuration. Both use
@@ -699,13 +723,14 @@ high to the same normal thinking mode; Think Max needs a substantially larger
 context and is not advertised. Disabled custom entries remove OpenCode's
 inherited low, medium, high, and max variants from the picker without hiding
 reasoning output. Pi maps the same behavior to `off` and `high` while hiding
-unsupported intermediate levels. Maki's llama.cpp base sends
+unsupported intermediate levels. OMP advertises only its supported `high`
+effort. Maki's llama.cpp base sends
 `thinking_budget_tokens`, which DwarfStar does not consume, so its generated
 entry leaves the model at normal server-side thinking and advertises no false
 selector. A generated provider does not imply that the DwarfStar server or
 model is installed or running.
 
-`src/rocmplete/agent_sandbox.py` owns the common client boundary. All three
+`src/rocmplete/agent_sandbox.py` owns the common client boundary. All four
 launchers use bubblewrap by default and refuse to fall back silently when
 `bwrap` is unavailable. They unshare user, PID, IPC, UTS, cgroup, and other
 available namespaces while deliberately restoring host networking for the
@@ -775,7 +800,7 @@ retained context. Compaction remains lossy and the sandbox remains the hard
 filesystem boundary when a local model misreads generated context.
 
 This protocol choice is deliberate. llama.cpp maps ordinary function tools
-from Chat Completions, which covers all three clients' host-side tools. A newly
+from Chat Completions, which covers all four clients' host-side tools. A newly
 maintained preset still needs a complete tool-call and tool-result acceptance
 test in each client before unattended use.
 

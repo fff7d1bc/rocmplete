@@ -22,7 +22,7 @@ this document.
 | Host | Architecture | Observed workload scope |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets; DwarfStar generation was about 3.9 tokens/s |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 27B MTP tool protocol and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer quant, DFlash, context, and Maki/OpenCode agent probes |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 MTP tool protocol, OMP probe, and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer quant, DFlash, context, and Maki/OpenCode agent probes |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -70,6 +70,20 @@ Observed results:
   `20260809T184422Z-3a1edea5.json`, and
   `20260809T184422Z-backend-comparison-860c0bbf.json` below the same benchmark
   directory.
+- A 2026-08-11 OMP 17.2.12 probe used the managed launcher and
+  llama.cpp image `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r16`
+  to load Qwen3.6 35B-A3B MTP at 262144 context.
+  OMP called its `read` tool inside the default bubblewrap boundary, replayed
+  the 318-line `AGENTS.md` result, and returned the exact requested heading.
+  The first turn processed 21,358 prompt tokens at 708.34 tokens/s and decoded
+  158 tokens at 66.94 tokens/s, with 112 of 138 MTP proposals accepted. The
+  cached follow-up processed 4,702 new tokens at 535.68 tokens/s and decoded
+  44 at 64.43 tokens/s, with 33 of 39 proposals accepted. Neither turn was
+  truncated. A separate managed DwarfStar pass through the same OMP sandbox
+  called `read`, replayed its result, and returned the same exact heading; its
+  tool and final turns took 111.4 and 128.1 seconds. Both containers stopped
+  cleanly. This verifies OMP model selection, tool replay, and sandbox behavior
+  on two providers, not the complete agent matrix.
 - A later manual Muse Glimmer run used source commit `9de3587`, llama.cpp
   commit `62bf73d25c53b8161f8a22894d4f90c4aebbd7d0`, image
   `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r15`, and the
@@ -217,7 +231,7 @@ and a tool schema with a nested object, require a structured tool call, return
 the result as a tool message, and require a final answer. Repeat the exchange
 with streaming enabled. If the MTP preset fails, repeat it with
 `qwen3.6-27b-q8-0` to separate template handling from speculative decoding.
-Only after the raw API exchange passes should OpenCode, Pi, and Maki tasks be
+Only after the raw API exchange passes should OpenCode, Pi, OMP, and Maki tasks be
 used as the final integration checks.
 
 For the 35B-A3B agent-evaluation row, start the non-MTP preset first and leave
@@ -227,8 +241,8 @@ bounded delegated web investigation, a raw nested-tool round trip, and the
 concurrent nonce corruption probe before allowing a disposable edit task.
 Confirm that only the two hidden read-only workers are available to
 Investigate and that their reports return to the parent without mutation
-prompts. Repeat the bounded repository task through Pi and Maki and verify
-their tool calls and result replay before testing the matching MTP preset.
+prompts. Repeat the bounded repository task through Pi, OMP, and Maki and
+verify their tool calls and result replay before testing the matching MTP preset.
 Record quality, protocol, or state-corruption failures instead of promoting
 either candidate to a default.
 
@@ -238,7 +252,7 @@ or output is suspect. Exercise the forced-256K preset with prompts extending
 beyond 128K and inspect retrieval quality, tool selection, draft acceptance,
 latency, and memory rather than treating successful startup as acceptance.
 Maki has completed substantial live repository tasks and is the strongest
-validated scaffold for the official target. OpenCode and Pi remain exposed
+validated scaffold for the official target. OpenCode, Pi, and OMP remain exposed
 through the same reviewed function-tool contract, but depth is sensitive to
 their scaffold and prompt. Complete the intended live task in each client
 before allowing unattended writes. Confirm `reasoning-preserve = true` in

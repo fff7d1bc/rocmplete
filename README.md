@@ -34,7 +34,7 @@ passed.
 | Host | GPU target | Workloads exercised |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 27B llama.cpp MTP/tool and ROCm/Vulkan paths; Muse Glimmer quant, DFlash, context, and Maki/OpenCode agent probes |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 llama.cpp MTP/tool, OMP, and ROCm/Vulkan paths; Muse Glimmer quant, DFlash, context, and Maki/OpenCode agent probes |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -55,7 +55,7 @@ ROCmplete tries to cover the whole path.
   rebuilds.
 - Containers are rootless, read-only, capability-free, and expose only the
   selected GPU devices. Web applications publish on loopback by default.
-- Optional OpenCode, Pi, and Maki launchers add a bubblewrap filesystem
+- Optional OpenCode, Pi, Oh My Pi, and Maki launchers add a bubblewrap filesystem
   boundary around local coding-agent work.
 - `acceptance run` checks more than startup. It runs small real workloads,
   checkpoints progress, and collects visual review after unattended work.
@@ -237,15 +237,16 @@ PATH launcher. At least one managed agent model must already be installed.
 export PATH="$PWD/bin:$PATH"
 opencode
 # or: pi
+# or: omp
 # or: maki
 ```
 
-Muse Glimmer is available through the same three clients after
+Muse Glimmer is available through the same four clients after
 `./rocmplete content install llama-cpp muse-glimmer`. Select its base, 128K
 DFlash, or experimental forced-256K DFlash preset in the client's model
 picker.
 
-OpenCode starts new sessions in read-only Investigate mode. All three launchers
+OpenCode starts new sessions in read-only Investigate mode. All four launchers
 keep the current directory and private client state writable while hiding the
 real home directory, credentials, Podman state, and GPU devices. The
 [tool-using client guide](guide/applications.md#tool-using-clients) documents
@@ -357,7 +358,7 @@ can prefer different backends on the same GPU. The
 ## User guides
 
 - [Applications](guide/applications.md) covers ComfyUI, llama.cpp, DwarfStar,
-  managed models, APIs, OpenCode, Pi, Maki, and multi-GPU workloads.
+  managed models, APIs, OpenCode, Pi, Oh My Pi, Maki, and multi-GPU workloads.
 - [Content](guide/content.md) covers recipes, exact bundles, licenses,
   verification, resumable downloads, mirrors, imports, and workflows.
 - [Operations](guide/operations.md) covers acceptance, builds, caches, image

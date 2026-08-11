@@ -26,10 +26,9 @@ from .agent_models import (
     RECOMMENDED_MODEL,
     agent_output_limit,
     agent_sampling_parameters,
-    installed_agent_presets,
+    default_agent_model,
     is_agent_capable,
 )
-from .bundles import content_status_ready, inspect_bundle
 from .catalog import Catalog
 from .config import (
     DWARFSTAR_DEFAULT_CONTEXT,
@@ -255,25 +254,10 @@ def render_config(
 
 
 def _default_model(catalog: Catalog, data_dir: Path) -> Tuple[str, str]:
-    installed = installed_agent_presets(catalog, data_dir)
-    if RECOMMENDED_MODEL in installed:
-        return PROVIDER_ID, RECOMMENDED_MODEL
-    if installed:
-        return PROVIDER_ID, installed[0]
-    dwarfstar = catalog.bundle(
-        "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
+    provider, model, _ = default_agent_model(
+        catalog, data_dir, "OpenCode"
     )
-    if all(
-        content_status_ready(status)
-        for status in inspect_bundle(catalog, dwarfstar, data_dir)
-    ):
-        return DWARFSTAR_PROVIDER_ID, DWARFSTAR_MODEL
-    raise LauncherError(
-        "no installed model is maintained for OpenCode"
-        "\n  llama.cpp: ./rocmplete content install llama-cpp qwen3.6"
-        "\n  DwarfStar: ./rocmplete content install dwarfstar "
-        "flash-0731-q2-imatrix"
-    )
+    return provider, model
 
 
 def _real_opencode(environ: Mapping[str, str]) -> str:

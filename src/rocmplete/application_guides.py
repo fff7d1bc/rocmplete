@@ -221,8 +221,8 @@ def _llama_guide() -> ApplicationGuide:
                     "settings, GPU backend, or hardware profile. Put task "
                     "instructions and temperature in each API request or in "
                     "the client that owns the conversation.",
-                    "ROCmplete's managed OpenCode and Pi configurations are "
-                    "coding clients, so they apply reviewed per-model "
+                    "ROCmplete's managed OpenCode, Pi, and OMP configurations "
+                    "are coding clients, so they apply reviewed per-model "
                     "sampling defaults. Direct API requests, terminal mode, "
                     "and Maki keep their own request behavior.",
                     "The qwen3.6 recipe installs dense 27B MTP Q8_0 and sparse "
@@ -345,17 +345,22 @@ def _llama_guide() -> ApplicationGuide:
                     "configure the client with that preset's actual context "
                     "limit. Qwen3 0.6B can smoke-test the protocol but is "
                     "not a dependable repository agent.",
-                    "ROCmplete's bin/opencode, bin/pi, and bin/maki wrappers "
-                    "render the current server and model config at launch "
-                    "without editing any client's normal settings. Add the "
-                    "checkout's bin directory to PATH once, then invoke "
-                    "a client normally. All use ordinary Chat "
+                    "ROCmplete's bin/opencode, bin/pi, bin/omp, and bin/maki "
+                    "wrappers render the current server and model config at "
+                    "launch without editing any client's normal settings. "
+                    "Add the checkout's bin directory to PATH once, then "
+                    "invoke a client normally. All use ordinary Chat "
                     "Completions function tools.",
                     "Pi package commands such as install, list, and update "
                     "keep their upstream shape and use Pi's private "
                     "ROCmplete state. Explicitly installed user packages "
                     "load in later sandboxed Pi sessions; review them as "
                     "trusted executable inputs.",
+                    "OMP is a separate Pi fork with its own private state. "
+                    "Its managed local roles, reviewed per-model sampling, "
+                    "and yolo approval default can be overridden by normal "
+                    "OMP session arguments. Named OMP profiles bypass that "
+                    "state boundary and are rejected by the wrapper.",
                     "The PATH launchers use bubblewrap by default. Only the "
                     "launch directory and private ROCmplete-owned client "
                     "state are writable; the real home, credentials, SSH "
@@ -376,8 +381,8 @@ def _llama_guide() -> ApplicationGuide:
                     "medium, and high thinking budgets. The disabled choice "
                     "turns thinking off; medium is the llama.cpp fallback. "
                     "OpenCode uses ctrl+t or /variants. Pi uses Shift+Tab "
-                    "or /settings. Maki uses /thinking and Tab toggles its "
-                    "Plan and Build modes.",
+                    "or /settings. OMP accepts --thinking. Maki uses "
+                    "/thinking and Tab toggles its Plan and Build modes.",
                 ),
                 (
                     _action(
@@ -397,6 +402,11 @@ def _llama_guide() -> ApplicationGuide:
                     _action(
                         "./rocmplete agent pi",
                         "Start Pi directly; bin/pi is the PATH-friendly "
+                        "equivalent.",
+                    ),
+                    _action(
+                        "./rocmplete agent omp",
+                        "Start OMP directly; bin/omp is the PATH-friendly "
                         "equivalent.",
                     ),
                     _action(
@@ -635,6 +645,12 @@ def _dwarfstar_guide() -> ApplicationGuide:
                         "--model deepseek-v4-flash --thinking high",
                         "Use the same server through ROCmplete's guarded "
                         "Pi launcher.",
+                    ),
+                    _action(
+                        "./rocmplete agent omp -- --model "
+                        "dwarfstar/deepseek-v4-flash --thinking high",
+                        "Use the same server through ROCmplete's guarded "
+                        "OMP launcher.",
                     ),
                     _action(
                         "./rocmplete agent maki -- "

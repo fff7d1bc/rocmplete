@@ -17,7 +17,7 @@ from .agent_models import (
     RECOMMENDED_MODEL,
     agent_output_limit,
     agent_sampling_parameters,
-    installed_agent_presets,
+    default_agent_model,
     is_agent_capable,
 )
 from .agent_sandbox import (
@@ -29,7 +29,6 @@ from .agent_sandbox import (
     prepare_sandbox_paths as prepare_agent_sandbox_paths,
     sandbox_paths as agent_sandbox_paths,
 )
-from .bundles import content_status_ready, inspect_bundle
 from .catalog import Catalog
 from .config import (
     DWARFSTAR_DEFAULT_CONTEXT,
@@ -166,31 +165,7 @@ def render_config(
 
 
 def _default_model(catalog: Catalog, data_dir: Path) -> Tuple[str, str, str]:
-    installed = installed_agent_presets(catalog, data_dir)
-    if RECOMMENDED_MODEL in installed:
-        return PROVIDER_ID, RECOMMENDED_MODEL, _DEFAULT_REASONING_EFFORT
-    if installed:
-        preset = catalog.llama_preset(installed[0])
-        thinking = (
-            _DEFAULT_REASONING_EFFORT
-            if preset.reasoning_effort_budget
-            else "off"
-        )
-        return PROVIDER_ID, installed[0], thinking
-    dwarfstar = catalog.bundle(
-        "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
-    )
-    if all(
-        content_status_ready(status)
-        for status in inspect_bundle(catalog, dwarfstar, data_dir)
-    ):
-        return DWARFSTAR_PROVIDER_ID, DWARFSTAR_MODEL, "high"
-    raise LauncherError(
-        "no installed model is maintained for Pi"
-        "\n  llama.cpp: ./rocmplete content install llama-cpp qwen3.6"
-        "\n  DwarfStar: ./rocmplete content install dwarfstar "
-        "flash-0731-q2-imatrix"
-    )
+    return default_agent_model(catalog, data_dir, "Pi")
 
 
 def create_launch_plan(

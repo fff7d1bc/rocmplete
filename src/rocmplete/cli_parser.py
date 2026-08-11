@@ -147,6 +147,7 @@ Run a supported coding agent against managed local models:
 
   ./rocmplete agent opencode
   ./rocmplete agent pi
+  ./rocmplete agent omp
   ./rocmplete agent maki
 
 The PATH-friendly launchers in bin/ provide the same guarded defaults without
@@ -207,6 +208,29 @@ For a router on another local port:
 For DwarfStar on another local port:
 
   ROCMLETE_PI_DWARFSTAR_PORT=8001 pi
+"""
+OMP_EXAMPLES = """\
+Run Oh My Pi with the current ROCmplete model catalog:
+
+  export PATH="$PWD/bin:$PATH"
+  ./rocmplete run llama-cpp server --router --models-max 1
+  omp
+
+The PATH launcher uses bubblewrap by default. To troubleshoot without it:
+
+  ./rocmplete agent omp --no-sandbox --
+
+Forward normal OMP arguments through the launcher:
+
+  omp --model rocmplete/qwen3.6-35b-a3b-mtp-ud-q8-k-xl --thinking high
+
+Use a separately running DwarfStar server:
+
+  ./rocmplete run dwarfstar server
+  omp --model dwarfstar/deepseek-v4-flash --thinking high
+
+For servers on other local ports, set ROCMLETE_OMP_PORT or
+ROCMLETE_OMP_DWARFSTAR_PORT.
 """
 MAKI_EXAMPLES = """\
 Run Maki with the current ROCmplete model catalog:
@@ -830,6 +854,49 @@ def _parser() -> argparse.ArgumentParser:
         help=argparse.SUPPRESS,
     )
     pi.set_defaults(command_parser=pi)
+
+    omp = agent_clients.add_parser(
+        "omp",
+        help="run Oh My Pi with the managed local model providers",
+        allow_abbrev=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=OMP_EXAMPLES,
+    )
+    omp.add_argument(
+        "--port",
+        help=(
+            "local llama.cpp router port (default: "
+            "ROCMLETE_OMP_PORT or 8080)"
+        ),
+    )
+    omp.add_argument(
+        "--dwarfstar-port",
+        help=(
+            "local DwarfStar server port (default: "
+            "ROCMLETE_OMP_DWARFSTAR_PORT or 8000)"
+        ),
+    )
+    omp.add_argument("--data-dir", help="persistent data directory")
+    omp_sandbox = omp.add_mutually_exclusive_group()
+    omp_sandbox.add_argument(
+        "--sandbox",
+        dest="sandbox",
+        action="store_true",
+        default=True,
+        help="confine OMP to the launch directory with bubblewrap (default)",
+    )
+    omp_sandbox.add_argument(
+        "--no-sandbox",
+        dest="sandbox",
+        action="store_false",
+        help="run OMP with normal host filesystem access",
+    )
+    omp.add_argument(
+        "omp_arguments",
+        nargs=argparse.REMAINDER,
+        help=argparse.SUPPRESS,
+    )
+    omp.set_defaults(command_parser=omp)
 
     maki = agent_clients.add_parser(
         "maki",
