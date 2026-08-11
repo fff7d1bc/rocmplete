@@ -242,13 +242,83 @@ implementation solve rate was 3/6:
 | `review-reencode-lifecycle` | review pending | useful review, but it overstated cancellation safety after validation |
 | `review-fzr-concurrency` | review pending | contained a material version-order error and missed that Enter can select from an older accepted snapshot before refresh |
 
-The current conclusion is therefore narrower than "Qwen is trustworthy."
+The version 4 conclusion was therefore narrower than "Qwen is trustworthy."
 Qwen3.6 35B-A3B MTP is the best-supported and fastest managed coding choice
-on this host, while KAT and Ornith deserve a full-suite run before promotion.
-The reference still failed both hard safety implementations and made a
-material factual error in one review. Muse, Qwen 27B MTP, and Gemma passed the
-screen but offered no practical advantage here. Laguna XS, Laguna S, and
-DwarfStar did not pass the screen.
+on this host. The reference still failed both hard safety implementations and
+made a material factual error in one review. The version 5 follow-up below
+supersedes the earlier recommendation to promote KAT and Ornith directly to a
+full-suite run.
+
+#### Version 5 coding follow-up (2026-08-12)
+
+The follow-up used source commit
+`d62ef8cae0a49bed6cab1b2ee85ecd3b720c4d08`, frozen suite
+`rocmplete-coding-v5` with fingerprint
+`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`,
+and the same host, image ID, Pi 0.84.1, ROCm backend, high thinking, 131072
+context, and reviewed per-model sampling policies as version 4.
+
+Qwen3.6 35B-A3B MTP completed all eleven tasks in 52 minutes 28 seconds
+elapsed. The agent attempts accounted for 3,105.2 seconds, 286 tool calls,
+513,182 input tokens, 11,205,961 cached tokens, and 114,087 output tokens. Its
+implementation solve rate remained **3/9**: `re-align`, `fz-eintr`, and
+`fz-symlink` passed. The retained result is
+`apps/agent-evaluation/results/v5-qwen35-full.json`.
+
+The six implementation failures were bounded completions, not loops:
+
+- `re-cancel` passed ordinary and hidden tests but retained a generated
+  executable.
+- `fz-sort-cancel` passed ordinary tests, but its changed sorting helper was
+  incompatible with the withheld cancellation contract.
+- `re-source-race` passed ordinary tests, but its snapshot and quarantine
+  design was incompatible with the withheld replacement-race contract.
+- `proxy-late-probe` failed to close a successful connection that returned
+  after timeout.
+- `rc-selinux-verify` invoked recursive host relabeling at the wrong boundary,
+  broke 14 ordinary tests, and missed the required per-file no-dereference
+  command.
+- `nonet-lifecycle` passed ordinary tests, but its changed wait-helper contract
+  was incompatible with the withheld lifecycle test.
+
+Human review also rejected both read-only answers as fully trustworthy. The
+reencode answer mislocated core lifecycle functions and overstated
+cancellation safety after validation. The fzr answer incorrectly said an
+older entry snapshot is discarded; the picker accepts it and schedules a
+follow-up, which also made the answer's Enter-selection explanation
+inconsistent.
+
+The five other easy-screen winners then received only `re-source-race`, with
+a 20-minute practical ceiling. A remote SIGINT produced a durable interrupted
+checkpoint and clean container removal on timeout.
+
+```bash
+timeout --foreground --signal=INT --kill-after=90s 20m \
+  ./rocmplete benchmark agent --preset PRESET --task re-source-race
+```
+
+- Gemma4 31B MTP completed in 1,000.2 seconds and 27 tool calls. Ordinary tests
+  and the build passed, no generated artifact remained, and the hidden
+  contract failed. Result: `v5-gemma4-mtp-source-race.json`.
+- Ornith 1.0 35B completed in 1,000.6 seconds and 54 tool calls. Ordinary tests
+  passed, the hidden contract failed, and a generated executable remained.
+  Result: `v5-ornith-source-race.json`.
+- KAT-Coder v2.5 Dev completed in 1,139.7 seconds and 90 tool calls. Ordinary
+  tests passed, the hidden contract failed, and a generated executable
+  remained. Result: `v5-kat-source-race.json`.
+- Muse Glimmer 30B DFlash reached ordinary tests but had not exited after 20
+  minutes and 67 tool calls. Result: `v5-muse-dflash-source-race.json`.
+- Qwen3.6 27B MTP had a substantial patch but had not reached tests after 20
+  minutes and 31 tool calls. Result: `v5-qwen27-mtp-source-race.json`.
+
+All result paths are below `apps/agent-evaluation/results/`. No challenger
+passed the hard gate, so none consumed a full-suite run. Laguna and DwarfStar
+were not repeated because their unchanged earlier runs had already established
+non-convergence. The installed non-MTP Qwen variants were also not repeated:
+the version 4 comparison had selected the MTP variants as its practical
+configurations, and the older non-MTP Qwen 27B easy run was slower than its
+MTP counterpart. This follow-up filled missing suite coverage rather than
+reopening the MTP-versus-non-MTP comparison.
 
 For a newly integrated model, preserve the suite and host inputs and use the
 same promotion sequence:
@@ -259,8 +329,9 @@ same promotion sequence:
 ./rocmplete benchmark agent --preset NEW_PRESET
 ```
 
-The first command permits a direct comparison with the table. The safety
-screen prevents an easy formatting fix from qualifying a model by itself.
+The first command permits a direct comparison with the version 4 table and
+the version 5 Qwen baseline. The safety screen prevents an easy formatting
+fix from qualifying a model by itself.
 Run the complete suite only after both bounded tasks converge, then repeat a
 finalist three times before changing the recommended default. Compare results
 only when suite fingerprint, host, image, backend, context, harness, thinking,

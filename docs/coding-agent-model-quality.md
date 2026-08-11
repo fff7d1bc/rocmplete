@@ -9,13 +9,14 @@ in the
 
 ## Evidence boundary
 
-The current comparable screen used `rocmplete-coding-v4`, fingerprint
+The shared easy screen used `rocmplete-coding-v4`, fingerprint
 `8825f9235c854fdf693c4881faa035c5efe99a545f4111372ca95e6f2def1160`,
 Pi 0.84.1, ROCm, high thinking, 131072 context, one fresh fixture, and one
 repetition on the Fedora 44 Strix Halo host. A screen pass means the model
 completed the easy `re-align` implementation with ordinary tests, hidden
 tests, and the build passing, without a dependency change, retained build
-artifact, or network attempt.
+artifact, or network attempt. That version 4 screen remains the direct
+same-task comparison across all six models.
 
 Passing one easy task establishes basic coding-agent competence. It does not
 establish safety, review accuracy, or performance on hard changes. Models are
@@ -23,38 +24,36 @@ not treated as equivalent merely because their grading result says `solved`.
 The structure of the retained patch, convergence behavior, and broader suite
 evidence also matter.
 
-The current frozen definition is version 5. It retains these tasks and adds
-ssh-host-proxy late-connection ownership, ROCmplete SELinux verification
-ordering, and nonet process-lifecycle work. No model has version 5 acceptance
-evidence in this record yet, so the ranking below remains explicitly version 4
-evidence rather than silently mixing suite fingerprints.
+The current frozen definition is `rocmplete-coding-v5`, fingerprint
+`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`.
+Version 5 retains the version 4 tasks and adds ssh-host-proxy late-connection
+ownership, ROCmplete SELinux verification ordering, and nonet process
+lifecycle work. Qwen3.6 35B-A3B MTP completed the full version 5 suite. The
+other five screened models then received the hard `re-source-race` promotion
+gate with a 20-minute practical ceiling. A remote SIGINT preserved an
+interrupted checkpoint and let ROCmplete remove the server cleanly.
 
-## Provisional quality order
+## Current quality groups
 
-This is the most useful current order for choosing a coding model. It is
-provisional because only Qwen 35B has completed the full suite and the other
-placements rely on one shared easy task.
+These groups put demonstrated repository-level quality before token speed.
+They do not turn a hidden-test failure into a success merely because the patch
+looked plausible or the model exited normally.
 
-1. **Qwen3.6 27B MTP** produced the best-designed bounded patch. It expressed
-   the requested alignment as one named policy used by both output paths. It
-   was also the second-slowest completed screen, so this is a quality-first
-   placement rather than a speed ranking.
-2. **Qwen3.6 35B-A3B MTP** has the broadest and therefore most trustworthy
-   evidence. It was the fastest completed screen and solved three of six full
-   suite implementations, but real hard-safety failures and one materially
-   wrong review prevent calling it the quality winner.
-3. **KAT-Coder v2.5 Dev** produced a correct minimal patch at a much lower
-   cost than Qwen 27B. It is the strongest next candidate for a full-suite run,
-   but its broader quality is still unknown.
-4. **Muse Glimmer 30B DFlash** produced the same correct minimal change as
-   KAT. Repeated probing, 40 tool calls, and known harness sensitivity make it
-   less dependable as an autonomous default.
-5. **Gemma4 31B MTP** also produced the same correct minimal change. It was
-   the slowest completed screen, and there is no broader evidence to justify
-   paying that cost for normal coding work yet.
-6. **Ornith 1.0 35B** completed the task correctly, but its patch allocated an
-   unnecessary extra column and duplicated the policy as literals. It remains
-   a viable alternate, not a demonstrated leader.
+1. **Demonstrated baseline: Qwen3.6 35B-A3B MTP.** It is the only model with a
+   complete version 5 run, remains the fastest, and solved 3/9 implementations.
+   Six implementation misses and two flawed reviews mean “baseline,” not
+   “trusted autonomous engineer.”
+2. **Completed but failed the hard gate: Gemma4 31B MTP, Ornith 1.0 35B, and
+   KAT-Coder v2.5 Dev.** All three produced coherent snapshot-oriented patches,
+   passed the repository tests, and failed the withheld source-race contract.
+   Gemma left the cleanest fixture and used the fewest tool calls. Ornith and
+   KAT also retained generated executables. None qualifies for a full-suite
+   promotion.
+3. **Correct easy patch, impractical hard-task completion: Muse Glimmer 30B
+   DFlash and Qwen3.6 27B MTP.** Muse reached its own tests and Qwen had a
+   substantial patch in progress, but neither completed the gate within 20
+   minutes. Qwen 27B still owns the best-designed easy patch, but an unfinished
+   hard task cannot support an overall first-place claim.
 
 Laguna XS, Laguna S, and DwarfStar DeepSeek V4 Flash are outside this order.
 They did not complete the bounded autonomous coding task in the tested
@@ -62,10 +61,13 @@ configuration.
 
 ## Model assessments
 
-### 1. Qwen3.6 27B MTP
+These sections preserve the evidence for each model; their order is not a
+second ranking separate from the quality groups above.
 
-**Verdict:** strongest patch on the comparable bounded task, with insufficient
-evidence to declare it the best general coding model.
+### Qwen3.6 27B MTP
+
+**Verdict:** strongest easy-task patch, but too slow to complete the hard
+promotion gate within the practical ceiling.
 
 The `qwen3.6-27b-mtp-q8-0` result introduced one named width-10 constant and
 used it for the header and every rendered row. That was the clearest expression
@@ -73,10 +75,12 @@ of the requested shared formatting policy. It removed the opportunity for the
 two paths to drift and included a comment explaining the constraint. Ordinary
 tests, hidden tests, and the build all passed.
 
-This design is why Qwen 27B ranks first despite its speed. The conclusion is
-strictly task-local. It has not yet faced the hard source-race task, the other
-full-suite implementations, or the two review tasks. A clean abstraction on
-one easy task cannot prove safe repository-wide behavior.
+The version 5 source-race gate confirmed that limitation. Qwen inspected the
+repository broadly, began a substantial file-identity patch after roughly
+13.5 minutes, and was still wiring the change when the 20-minute ceiling sent
+SIGINT. It had made 31 tool calls and had not reached tests. The checkpoint is
+therefore `interrupted`, not a hidden-test result. This is a practical failure
+for bounded autonomous work even though the partial design was sensible.
 
 The run took 766.7 seconds, 3.34 times the Qwen 35B reference time. It used 22
 tool calls, generated 8,699 tokens at 15.57 tokens per second, and processed
@@ -84,17 +88,32 @@ prompt tokens at 48.43 tokens per second. It was the second-slowest successful
 screen, ahead of Gemma only. Choose it when the observed patch quality matters
 more than turnaround time, then review the result as unproven on harder work.
 
-### 2. Qwen3.6 35B-A3B MTP
+### Qwen3.6 35B-A3B MTP
 
-**Verdict:** best-supported and fastest model in the current evidence, but not
-a demonstrated overall quality winner.
+**Verdict:** best-supported and fastest current baseline, with a low full-suite
+solve rate and material safety limitations.
 
-The `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` result is the only one backed by the
-complete version 4 suite. It solved three of six implementation tasks. The
-successful work covered formatting, EINTR handling, and symlink behavior. One
-otherwise passing cancellation attempt was invalidated because it left a
-generated executable in the fixture. Both hard safety implementations had
-real behavioral failures. One review also made a material concurrency error.
+The `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` result is now backed by the complete
+version 5 suite. It solved formatting, EINTR handling, and symlink behavior,
+for 3/9 implementations. The run completed in 52 minutes 28 seconds elapsed,
+with 3,105.2 seconds of agent wall time, 286 tool calls, and 114,087 generated
+tokens. Its three successes are unchanged from version 4.
+
+The six misses were bounded completions rather than hangs. `re-cancel` passed
+all tests but retained a generated executable. Both inherited hard tasks
+failed their hidden contracts. The new proxy task failed to close a successful
+connection that returned after timeout. The SELinux attempt invoked real
+recursive `chcon` work at the wrong boundary, broke 14 ordinary tests, and
+missed the required per-file no-dereference command. The nonet attempt passed
+ordinary tests but changed a helper contract incompatibly with the hidden
+lifecycle test.
+
+Both review answers were detailed but materially inaccurate. The reencode
+review placed core functions in the wrong file and overstated cancellation
+safety after output validation. The fzr review said older entry snapshots are
+discarded, although the picker deliberately accepts one and schedules a
+follow-up, then gave an internally inconsistent explanation of Enter while
+that stale refresh is active.
 
 On `re-align`, it used matching width-11 literals for the header and rows. The
 patch was functionally correct and passed all grading, but the longest relevant
@@ -105,66 +124,66 @@ even though the model has much stronger evidence across the suite.
 The comparable `re-align` attempt took 229.9 seconds with 23 tool calls. It
 generated 12,596 tokens at 70.03 tokens per second and processed prompt tokens
 at 111.30 tokens per second. It is the practical baseline when predictable
-runtime and known limitations matter. Its 3/6 suite result is the threshold a
-new candidate should exceed, not proof that it is safe without review.
+runtime and known limitations matter. Its 3/6 suite result was the version 4
+threshold. The current threshold is the 3/9 version 5 result, not proof that
+the model is safe without review.
 
-### 3. KAT-Coder v2.5 Dev
+### KAT-Coder v2.5 Dev
 
-**Verdict:** correct, efficient, and the strongest candidate not yet run
-through the hard safety screen and complete suite.
+**Verdict:** correct and efficient on the easy task, but expensive and
+incorrect on the hard safety gate.
 
 The `kat-coder-v2.5-dev-q8-0` patch made the required width-10 changes to the
 header, rows, and expectations. It was minimal and all grading passed. Its only
 design weakness relative to Qwen 27B was representing the shared width as two
 matching literals instead of one named policy.
 
-The run took 319.3 seconds, 1.39 times the Qwen 35B reference, with 25 tool
-calls. It generated 12,321 tokens at 41.42 tokens per second and processed
-prompt tokens at 493.52 tokens per second. This is an attractive balance on
-the easy task, but it has no hard-task or review evidence. KAT should be the
-next non-Qwen model promoted through the source-race screen before its result
-is interpreted as more than a promising bounded success.
+The easy run took 319.3 seconds, 1.39 times the Qwen 35B reference, with 25
+tool calls. On `re-source-race`, KAT spent a long initial period investigating,
+then produced a snapshot-oriented patch and exited after 1,139.7 seconds and
+90 tool calls. Ordinary tests and the build passed, but the hidden contract did
+not compile against its incompatible helper design, and KAT left a generated
+`reencode` executable. This is a completed 0/1 safety-gate result, not a reason
+to spend a full-suite run.
 
-### 4. Muse Glimmer 30B DFlash
+### Muse Glimmer 30B DFlash
 
-**Verdict:** capable of a correct minimal patch, but currently better treated
-as a supervised alternate than an autonomous default.
+**Verdict:** capable of a correct minimal patch, but unable to finish the hard
+gate inside the practical autonomous-work budget.
 
 The `muse-glimmer-30b-kquant-dynamic-dflash` result made the same width-10
 header, row, and expectation changes as KAT. Ordinary tests, hidden tests, and
 the build passed. The retained patch itself gives no quality reason to place
 Muse below KAT.
 
-The operational behavior does. Muse took 670.2 seconds, 2.92 times the Qwen
-35B reference, and made 40 tool calls, the most in the completed screen. It
-generated 14,080 tokens at 18.69 tokens per second and read 958,355 cached
-tokens. Earlier testing also showed substantial harness sensitivity. A model
-that performs well through Pi or Maki can be markedly less effective through
-a different client even when the underlying server is unchanged. Use Muse
-where its behavior has been accepted with the chosen harness, and keep a human
-close enough to notice repeated probing or loss of convergence.
+The operational behavior does. Muse took 670.2 seconds on the easy task and
+made 40 tool calls. On the source-race gate it made 67 tool calls, built a
+substantial patch, and reached ordinary tests, but did not exit before the
+20-minute ceiling. Earlier testing also showed substantial harness
+sensitivity. Use Muse where its behavior has been accepted with the chosen
+harness, and keep a human close enough to notice loss of convergence.
 
-### 5. Gemma4 31B MTP
+### Gemma4 31B MTP
 
-**Verdict:** correct bounded result, but presently too slow and too lightly
-tested to recommend ahead of the main candidates.
+**Verdict:** cleanest completed challenger on the hard gate, but still a hidden
+safety failure and too slow for routine first choice.
 
 The `gemma4-31b-it-q8-0-mtp` patch was the same correct width-10 implementation
 as KAT and Muse. It changed the header, rows, and expectations without adding
 unrelated work, and all grading passed. Its patch quality therefore belongs in
 the same task-local group as those two models.
 
-The run took 902.5 seconds, 3.93 times the Qwen 35B reference, making it the
-slowest completed screen. It used 17 tool calls, generated 6,389 tokens at
-11.38 tokens per second, and processed prompt tokens at 70.87 tokens per
-second. Gemma remains useful as a model-family diversity check or second
-opinion. Broader acceptance would be needed before the runtime cost is
-justified for routine autonomous coding.
+The easy run took 902.5 seconds, making it the slowest completed screen. On the
+source-race gate, Gemma produced a coherent snapshot design, passed ordinary
+tests and the build, left no generated artifact, and exited after 1,000.2
+seconds with only 27 tool calls. Its hidden contract still failed to compile
+because the required snapshot and quarantine interfaces were absent. This is
+the best operational failure among the challengers, not a safety pass.
 
-### 6. Ornith 1.0 35B
+### Ornith 1.0 35B
 
-**Verdict:** functional alternate with a weaker bounded patch and no broader
-quality evidence.
+**Verdict:** functional alternate that converged on the hard task but failed
+its withheld safety contract.
 
 The `ornith-1.0-35b-q8-0` result used matching width-11 literals, just like
 Qwen 35B. It passed ordinary tests, hidden tests, and the build, but used one
@@ -173,12 +192,11 @@ design issue rather than a correctness failure. It is enough to rank Ornith
 below the models that produced the exact minimal behavior on the only shared
 task.
 
-The run took 484.2 seconds, 2.11 times the Qwen 35B reference, with 18 tool
-calls. It generated 15,049 tokens at 37.34 tokens per second and processed
-prompt tokens at 358.97 tokens per second. It consumed substantially more
-input and cached context than KAT. Ornith is reasonable as a second opinion,
-but needs hard-task evidence before it can be trusted for safety-sensitive
-repository changes.
+The easy run took 484.2 seconds, 2.11 times the Qwen 35B reference, with 18
+tool calls. On the hard gate Ornith reached repeated full test runs and exited
+after 1,000.6 seconds and 54 tool calls. Ordinary tests passed, but its hidden
+contract did not compile and it retained a generated executable. Ornith is a
+reasonable second opinion, not a safe autonomous choice.
 
 ## Disqualified models
 
@@ -232,8 +250,8 @@ Use these quality gates in order:
 
 To be a demonstrated quality improvement over the current evidence, a new
 model should retain a clean shared-policy implementation on the easy screen,
-exceed the inherited 3/6 implementation baseline, avoid both inherited hard
-safety failures, and produce factually sound reviews. A complete version 5 run
-must also report the three new tasks separately until there is a repeated
-version 5 baseline. Merely beating the 229.9-second easy-task time would make
-the model faster, not better.
+solve `re-source-race` inside the declared practical ceiling, exceed the 3/9
+version 5 implementation baseline, avoid the inherited hard safety failures,
+and produce factually sound reviews. Report the three new tasks separately.
+Merely beating the 152.6-second version 5 easy-task time would make the model
+faster, not better.
