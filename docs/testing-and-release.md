@@ -62,7 +62,7 @@ Exercise user-visible composition:
 ./rocmplete agent pi -- update --extensions --help
 ./rocmplete agent omp --help
 ./rocmplete agent omp --no-sandbox -- --help
-./rocmplete agent omp -- models rocmplete --json
+./rocmplete agent omp -- models rocmplete-llama-cpp --json
 ./rocmplete agent omp -- config get tools.approvalMode
 ./rocmplete agent maki --help
 ./rocmplete agent maki --no-sandbox -- --help
@@ -222,11 +222,12 @@ smoke test.
 
 For DwarfStar agent-client integration, start the managed 128K DwarfStar
 server, select `dwarfstar/deepseek-v4-flash` in OpenCode and the matching
-provider/model in Pi, OMP, and Maki, then complete one read plus function-tool
-round trip in each. Confirm disabled reasoning and normal thinking through
-OpenCode and Pi, OMP's high thinking path, and normal server-side thinking
-through Maki. Confirm the generated providers follow `--dwarfstar-port`. Do
-not claim agent
+provider/model in Pi and Maki. Select
+`rocmplete-dwarfstar/deepseek-v4-flash` in OMP, then complete one read plus
+function-tool round trip in each. Confirm disabled reasoning and normal
+thinking through OpenCode and Pi, OMP's high thinking path, and normal
+server-side thinking through Maki. Confirm the generated providers follow
+`--dwarfstar-port`. Do not claim agent
 compatibility from `/v1/models` or a plain text response alone.
 
 Speculative-decoding catalog changes additionally require one single-model

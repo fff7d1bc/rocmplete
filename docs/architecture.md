@@ -681,12 +681,14 @@ an independent client with independent state. Its ordinary `~/.omp` tree and
 user `config.yml` are not read or rewritten. Generated files are atomically
 replaced, mode-restricted, and reject symbolic or multiple hard links.
 
-The OMP provider enables its llama.cpp discovery compatibility so Qwen chat,
-tool, and reasoning messages receive OMP's maintained adapter, while an exact
-`enabledModels` list prevents unrelated discovered IDs from entering the
-picker. Default, smol, slow, and plan roles all resolve to the selected local
-model. The managed overlay makes OMP's upstream yolo approval mode explicit
-and disables the setup wizard, startup update checks, and marketplace
+The `rocmplete-llama-cpp` OMP provider enables its llama.cpp discovery
+compatibility so Qwen chat, tool, and reasoning messages receive OMP's
+maintained adapter, while an exact `enabledModels` list prevents unrelated
+discovered IDs from entering the picker. The separate
+`rocmplete-dwarfstar` provider owns DwarfStar's second endpoint. Every built-in
+role aliases the mutable default model so changing that default also moves
+background work. The managed overlay makes OMP's upstream yolo approval mode
+explicit and disables the setup wizard, startup update checks, and marketplace
 auto-update. Session arguments are forwarded after the selected model and
 thinking defaults, so explicit later values win. Management commands use the
 same private state without requiring installed model bytes; help, version,

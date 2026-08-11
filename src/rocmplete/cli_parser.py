@@ -222,12 +222,12 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal OMP arguments through the launcher:
 
-  omp --model rocmplete/qwen3.6-35b-a3b-mtp-ud-q8-k-xl --thinking high
+  omp --model rocmplete-llama-cpp/qwen3.6-35b-a3b-mtp-ud-q8-k-xl --thinking high
 
 Use a separately running DwarfStar server:
 
   ./rocmplete run dwarfstar server
-  omp --model dwarfstar/deepseek-v4-flash --thinking high
+  omp --model rocmplete-dwarfstar/deepseek-v4-flash --thinking high
 
 For servers on other local ports, set ROCMLETE_OMP_PORT or
 ROCMLETE_OMP_DWARFSTAR_PORT.

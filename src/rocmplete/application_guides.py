@@ -648,7 +648,7 @@ def _dwarfstar_guide() -> ApplicationGuide:
                     ),
                     _action(
                         "./rocmplete agent omp -- --model "
-                        "dwarfstar/deepseek-v4-flash --thinking high",
+                        "rocmplete-dwarfstar/deepseek-v4-flash --thinking high",
                         "Use the same server through ROCmplete's guarded "
                         "OMP launcher.",
                     ),

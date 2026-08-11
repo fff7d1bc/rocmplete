@@ -71,7 +71,7 @@ class OmpLauncherTests(unittest.TestCase):
                 "http://127.0.0.1:8001/v1",
             )
         )
-        provider = config["providers"]["rocmplete"]
+        provider = config["providers"]["rocmplete-llama-cpp"]
         self.assertEqual(provider["api"], "openai-completions")
         self.assertEqual(provider["auth"], "none")
         self.assertEqual(provider["discovery"], {"type": "llama.cpp"})
@@ -103,7 +103,7 @@ class OmpLauncherTests(unittest.TestCase):
             )
             self.assertFalse(model["compat"]["supportsDeveloperRole"])
 
-        dwarfstar = config["providers"]["dwarfstar"]
+        dwarfstar = config["providers"]["rocmplete-dwarfstar"]
         self.assertEqual(
             dwarfstar["baseUrl"], "http://127.0.0.1:8001/v1"
         )
@@ -117,9 +117,11 @@ class OmpLauncherTests(unittest.TestCase):
 
     def test_overlay_keeps_every_role_and_model_local(self):
         overlay = json.loads(
-            render_overlay(self.catalog, "rocmplete", self.default_model)
+            render_overlay(
+                self.catalog, "rocmplete-llama-cpp", self.default_model
+            )
         )
-        reference = "rocmplete/{}".format(self.default_model)
+        reference = "rocmplete-llama-cpp/{}".format(self.default_model)
         self.assertEqual(
             overlay["modelRoles"],
             {
@@ -136,7 +138,10 @@ class OmpLauncherTests(unittest.TestCase):
             },
         )
         self.assertEqual(len(overlay["enabledModels"]), 12)
-        self.assertIn("dwarfstar/deepseek-v4-flash", overlay["enabledModels"])
+        self.assertIn(
+            "rocmplete-dwarfstar/deepseek-v4-flash",
+            overlay["enabledModels"],
+        )
         self.assertEqual(overlay["disabledProviders"], ["llama.cpp"])
         self.assertEqual(overlay["tools"]["approvalMode"], "yolo")
         self.assertFalse(overlay["startup"]["checkUpdate"])
@@ -163,7 +168,7 @@ class OmpLauncherTests(unittest.TestCase):
 
             self.assertEqual(plan.command[0], str(executable))
             self.assertEqual(plan.mode, "session")
-            self.assertEqual(plan.default_provider, "rocmplete")
+            self.assertEqual(plan.default_provider, "rocmplete-llama-cpp")
             self.assertEqual(plan.default_model, self.default_model)
             self.assertEqual(plan.default_thinking, "medium")
             self.assertEqual(plan.endpoint, "http://127.0.0.1:9090/v1")
@@ -192,7 +197,7 @@ class OmpLauncherTests(unittest.TestCase):
                 (),
                 {"PATH": str(binary_dir)},
             )
-            self.assertEqual(plan.default_provider, "dwarfstar")
+            self.assertEqual(plan.default_provider, "rocmplete-dwarfstar")
             self.assertEqual(plan.default_model, "deepseek-v4-flash")
             self.assertEqual(plan.default_thinking, "high")
 
@@ -423,11 +428,11 @@ class OmpLauncherTests(unittest.TestCase):
             models = Path(child["PI_CODING_AGENT_DIR"]) / "models.yml"
             config = json.loads(models.read_text())
             self.assertEqual(
-                config["providers"]["rocmplete"]["baseUrl"],
+                config["providers"]["rocmplete-llama-cpp"]["baseUrl"],
                 "http://127.0.0.1:9090/v1",
             )
             self.assertEqual(
-                config["providers"]["dwarfstar"]["baseUrl"],
+                config["providers"]["rocmplete-dwarfstar"]["baseUrl"],
                 "http://127.0.0.1:8001/v1",
             )
 

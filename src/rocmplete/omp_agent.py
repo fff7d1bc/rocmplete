@@ -95,6 +95,10 @@ _MANAGEMENT_COMMANDS = frozenset(
     )
 )
 _PROFILE_ARGUMENTS = ("--profile", "--alias")
+_LLAMA_PROVIDER_ID = "{}-llama-cpp".format(PROVIDER_ID)
+_OMP_DWARFSTAR_PROVIDER_ID = "{}-{}".format(
+    PROVIDER_ID, DWARFSTAR_PROVIDER_ID
+)
 _MODEL_ROLES = (
     "default",
     "smol",
@@ -129,6 +133,14 @@ def _compat(identifier: str) -> Mapping[str, object]:
         # applied last and preserves the exact reviewed policy per model.
         "extraBody": dict(agent_sampling_parameters(identifier)),
     }
+
+
+def _provider_id(provider: str) -> str:
+    if provider == PROVIDER_ID:
+        return _LLAMA_PROVIDER_ID
+    if provider == DWARFSTAR_PROVIDER_ID:
+        return _OMP_DWARFSTAR_PROVIDER_ID
+    raise LauncherError("unsupported OMP provider: {}".format(provider))
 
 
 def render_models(
@@ -175,7 +187,7 @@ def render_models(
     }
     contents = {
         "providers": {
-            PROVIDER_ID: {
+            _LLAMA_PROVIDER_ID: {
                 "name": "ROCmplete llama.cpp",
                 "baseUrl": endpoint,
                 "api": "openai-completions",
@@ -185,7 +197,7 @@ def render_models(
                 "discovery": {"type": "llama.cpp"},
                 "models": models,
             },
-            DWARFSTAR_PROVIDER_ID: {
+            _OMP_DWARFSTAR_PROVIDER_ID: {
                 "name": "ROCmplete DwarfStar",
                 "baseUrl": dwarfstar_endpoint,
                 "api": "openai-completions",
@@ -206,11 +218,13 @@ def render_overlay(
         (role, "@default") for role in _MODEL_ROLES if role != "default"
     )
     enabled = [
-        "{}/{}".format(PROVIDER_ID, identifier)
+        "{}/{}".format(_LLAMA_PROVIDER_ID, identifier)
         for identifier, preset in catalog.llama_presets.items()
         if is_agent_capable(preset)
     ]
-    enabled.append("{}/{}".format(DWARFSTAR_PROVIDER_ID, DWARFSTAR_MODEL))
+    enabled.append(
+        "{}/{}".format(_OMP_DWARFSTAR_PROVIDER_ID, DWARFSTAR_MODEL)
+    )
     contents = {
         # OMP uses several roles for background work. Point them at the
         # mutable default role rather than its initial concrete model so a
@@ -276,6 +290,7 @@ def create_launch_plan(
         provider, model, thinking = _configuration_default(
             catalog, data_dir
         )
+        provider = _provider_id(provider)
         defaults = (None, None, None)
         mode = "passthrough" if passthrough else "management"
         command = (executable, *forwarded)
@@ -283,6 +298,7 @@ def create_launch_plan(
         provider, model, thinking = default_agent_model(
             catalog, data_dir, "OMP"
         )
+        provider = _provider_id(provider)
         defaults = (provider, model, thinking)
         mode = "session"
         command = (

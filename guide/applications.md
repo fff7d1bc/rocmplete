@@ -374,8 +374,8 @@ not download it; the router reports that it is unavailable. Use the client's
 model picker to choose a different installed model. OpenCode accepts `-m
 rocmplete/PRESET`. Pi accepts `--model PRESET`, with `--provider rocmplete`
 available when the provider would otherwise be ambiguous. OMP accepts
-`--model rocmplete/PRESET`. Maki accepts `-m rocmplete/PRESET` and exposes the
-same entries through `/model`.
+`--model rocmplete-llama-cpp/PRESET`. Maki accepts `-m rocmplete/PRESET` and
+exposes the same entries through `/model`.
 
 OpenCode, Pi, and OMP use these llama.cpp request defaults for coding turns:
 
@@ -468,11 +468,11 @@ update checks, the setup wizard, and marketplace auto-update are disabled in
 managed state. OMP's ordinary `~/.omp` state and user `config.yml` are not read
 or modified.
 
-The picker retains separate `rocmplete` and `dwarfstar` provider namespaces.
-OMP assigns one API endpoint to each provider, while the managed llama.cpp
-router and DwarfStar service listen on different ports. Combining them into
-one provider would require an additional routing proxy rather than a cosmetic
-model-name prefix.
+The picker uses the parallel `rocmplete-llama-cpp` and
+`rocmplete-dwarfstar` provider namespaces. OMP assigns one API endpoint to each
+provider, while the managed llama.cpp router and DwarfStar service listen on
+different ports. Combining them into one provider would require an additional
+routing proxy rather than a cosmetic model-name prefix.
 
 OMP starts managed sessions with medium thinking where supported and its
 upstream `yolo` approval mode. A later `--model`, `--thinking`, or
@@ -1081,7 +1081,7 @@ server, then choose it explicitly in a client:
 ./rocmplete run dwarfstar server
 opencode -m dwarfstar/deepseek-v4-flash
 pi --provider dwarfstar --model deepseek-v4-flash --thinking high
-omp --model dwarfstar/deepseek-v4-flash --thinking high
+omp --model rocmplete-dwarfstar/deepseek-v4-flash --thinking high
 maki -m dwarfstar/deepseek-v4-flash
 ```
 
