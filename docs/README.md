@@ -54,6 +54,7 @@ finished. The public contribution path and baseline checks are summarized in
    - [Adding applications, commands, modes, or hardware profiles](extending.md)
    - [Testing, release checks, and routine housekeeping](testing-and-release.md)
    - [Coding-agent evaluation maintenance](coding-agent-evaluation.md)
+   - [Coding-agent model quality baseline](coding-agent-model-quality.md)
    - [Target-hardware acceptance matrix](hardware-acceptance.md)
    - [DeepSeek V4 Flash llama.cpp feasibility
      snapshot](deepseek-v4-flash-llama-cpp-feasibility.md)

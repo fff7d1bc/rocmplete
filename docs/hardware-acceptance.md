@@ -145,6 +145,10 @@ Observed results:
 
 #### Coding-agent comparison (2026-08-11)
 
+The [model quality baseline](coding-agent-model-quality.md) groups these
+results by demonstrated coding quality. This section retains the exact
+measurement and artifact record.
+
 This comparison used source commit
 `ad5a2ce730a63f4a145c23a7af44f55a9971fc92`, frozen suite
 `rocmplete-coding-v4` with fingerprint
