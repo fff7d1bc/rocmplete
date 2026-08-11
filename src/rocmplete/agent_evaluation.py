@@ -1069,8 +1069,13 @@ def _container_running(name: str) -> bool:
     return result.returncode == 0 and result.stdout.strip() == b"true"
 
 
+def _server_readiness_url(options: AgentEvaluationOptions) -> str:
+    path = "/v1/models" if options.dwarfstar else "/health"
+    return "http://127.0.0.1:{}{}".format(options.port, path)
+
+
 def _wait_for_server(options: AgentEvaluationOptions) -> None:
-    url = "http://127.0.0.1:{}/health".format(options.port)
+    url = _server_readiness_url(options)
     name = _container_name(options)
     while True:
         if not _container_running(name):

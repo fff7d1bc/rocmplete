@@ -14,6 +14,7 @@ from rocmplete.agent_evaluation import (
     _evaluation_sandbox_environment,
     _git_fixture,
     _server_command,
+    _server_readiness_url,
     _snapshot_protected,
     _validate_agent_tree,
     grade_review,
@@ -235,6 +236,21 @@ class AgentEvaluationTests(unittest.TestCase):
         )
         self.assertIn("dwarfstar", dwarfstar)
         self.assertNotIn("--backend", dwarfstar)
+
+    def test_server_readiness_endpoint_is_engine_specific(self):
+        llama = AgentEvaluationOptions(
+            data_dir=Path("/data"), preset="qwen", port=9000
+        )
+        dwarfstar = AgentEvaluationOptions(
+            data_dir=Path("/data"), dwarfstar=True, port=9001
+        )
+        self.assertEqual(
+            _server_readiness_url(llama), "http://127.0.0.1:9000/health"
+        )
+        self.assertEqual(
+            _server_readiness_url(dwarfstar),
+            "http://127.0.0.1:9001/v1/models",
+        )
 
     def test_dwarfstar_rejects_unmapped_thinking_level(self):
         with self.assertRaisesRegex(LauncherError, "thinking off or high"):
