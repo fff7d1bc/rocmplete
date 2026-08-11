@@ -460,10 +460,19 @@ before its project resources can load.
 `models.yml` and a separate ROCmplete overlay inside OMP's private state. The
 model catalog uses OMP's llama.cpp discovery compatibility for Qwen chat and
 reasoning behavior while limiting the picker to reviewed ROCmplete model IDs.
-The default, smol, slow, and plan roles all use the selected local model, so
-background roles do not silently call a cloud provider. Startup update checks,
-the setup wizard, and marketplace auto-update are disabled in managed state.
-OMP's ordinary `~/.omp` state and user `config.yml` are not read or modified.
+Every built-in OMP role aliases its mutable default role. Selecting a new
+default in `/model` therefore moves title generation, subagents, planning,
+commits, and other background work to the same local model instead of making a
+one-resident-model llama.cpp router unload it for the initial model. Startup
+update checks, the setup wizard, and marketplace auto-update are disabled in
+managed state. OMP's ordinary `~/.omp` state and user `config.yml` are not read
+or modified.
+
+The picker retains separate `rocmplete` and `dwarfstar` provider namespaces.
+OMP assigns one API endpoint to each provider, while the managed llama.cpp
+router and DwarfStar service listen on different ports. Combining them into
+one provider would require an additional routing proxy rather than a cosmetic
+model-name prefix.
 
 OMP starts managed sessions with medium thinking where supported and its
 upstream `yolo` approval mode. A later `--model`, `--thinking`, or

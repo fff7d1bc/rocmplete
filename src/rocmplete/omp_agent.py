@@ -95,6 +95,18 @@ _MANAGEMENT_COMMANDS = frozenset(
     )
 )
 _PROFILE_ARGUMENTS = ("--profile", "--alias")
+_MODEL_ROLES = (
+    "default",
+    "smol",
+    "slow",
+    "vision",
+    "plan",
+    "designer",
+    "commit",
+    "tiny",
+    "task",
+    "advisor",
+)
 
 
 @dataclass(frozen=True)
@@ -189,6 +201,10 @@ def render_overlay(
     catalog: Catalog, default_provider: str, default_model: str
 ) -> bytes:
     reference = "{}/{}".format(default_provider, default_model)
+    model_roles = {"default": reference}
+    model_roles.update(
+        (role, "@default") for role in _MODEL_ROLES if role != "default"
+    )
     enabled = [
         "{}/{}".format(PROVIDER_ID, identifier)
         for identifier, preset in catalog.llama_presets.items()
@@ -196,12 +212,11 @@ def render_overlay(
     ]
     enabled.append("{}/{}".format(DWARFSTAR_PROVIDER_ID, DWARFSTAR_MODEL))
     contents = {
-        "modelRoles": {
-            "default": reference,
-            "smol": reference,
-            "slow": reference,
-            "plan": reference,
-        },
+        # OMP uses several roles for background work. Point them at the
+        # mutable default role rather than its initial concrete model so a
+        # /model change cannot make a one-model llama.cpp router unload the
+        # active model for title generation, subagents, or planning.
+        "modelRoles": model_roles,
         "enabledModels": enabled,
         # OMP otherwise adds its implicit localhost:8080 llama.cpp provider
         # beside the reviewed ROCmplete catalog.

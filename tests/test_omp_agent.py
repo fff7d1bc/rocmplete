@@ -124,9 +124,15 @@ class OmpLauncherTests(unittest.TestCase):
             overlay["modelRoles"],
             {
                 "default": reference,
-                "smol": reference,
-                "slow": reference,
-                "plan": reference,
+                "smol": "@default",
+                "slow": "@default",
+                "vision": "@default",
+                "plan": "@default",
+                "designer": "@default",
+                "commit": "@default",
+                "tiny": "@default",
+                "task": "@default",
+                "advisor": "@default",
             },
         )
         self.assertEqual(len(overlay["enabledModels"]), 12)
