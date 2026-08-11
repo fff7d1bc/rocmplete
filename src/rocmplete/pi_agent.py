@@ -375,15 +375,24 @@ def create_sandbox_plan(
     data_dir: Path,
     workdir: Path,
     environ: Optional[Mapping[str, str]] = None,
+    *,
+    read_only_mounts: Sequence[Tuple[Path, Path]] = (),
+    extra_environment: Optional[Mapping[str, str]] = None,
 ) -> PiSandboxPlan:
+    runtime_environment = dict(
+        _runtime_environment(
+            SANDBOX_AGENT_DIR, offline=plan.mode == "session"
+        )
+    )
+    if extra_environment is not None:
+        runtime_environment.update(extra_environment)
     return create_agent_sandbox_plan(
         plan.command,
         data_dir,
         workdir,
         "pi",
         "Pi",
-        _runtime_environment(
-            SANDBOX_AGENT_DIR, offline=plan.mode == "session"
-        ),
+        runtime_environment,
         environ,
+        read_only_mounts=read_only_mounts,
     )

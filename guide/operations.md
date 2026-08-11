@@ -85,6 +85,89 @@ This smoke suite answers “does each principal application path work on this
 machine now?” It does not cover every model family, precision, edit/I2V path,
 or performance comparison in the maintainer acceptance matrix.
 
+## Coding-agent evaluation
+
+Use the frozen coding suite to compare how managed models investigate and
+change real Go repositories. It is deliberately separate from target-hardware
+smoke acceptance and `llama-bench`: a model can generate tokens quickly while
+still making an unsafe or incomplete patch.
+
+Inspect the eight tasks and preview one model without fetching sources,
+creating data, loading a model, or starting Pi:
+
+```bash
+./rocmplete benchmark agent --list-tasks
+./rocmplete benchmark agent \
+  --preset qwen3.6-27b-q8-0 --dry-run
+```
+
+The frozen suite has six implementation tasks and two read-only review tasks
+drawn from `reencode` and `fzr`. Run the complete suite with one exact managed
+llama.cpp preset:
+
+```bash
+./rocmplete benchmark agent \
+  --preset qwen3.6-27b-q8-0
+```
+
+Or run selected tasks while calibrating a model:
+
+```bash
+./rocmplete benchmark agent \
+  --preset qwen3.6-35b-a3b-mtp-ud-q8-k-xl \
+  --task re-align --task re-cancel
+```
+
+`--repetitions 3` creates a fresh checkout and Pi session for every attempt.
+The default shared server context is 131072 tokens, the backend is ROCm, and
+Pi receives explicit high thinking plus its managed per-model sampling policy.
+Use the same context, thinking level, backend, task selection, and repetitions
+when comparing models. Do not mix Pi results with OpenCode, OMP, or Maki
+results; harness comparisons are a separate experiment.
+
+DwarfStar can run the same suite through its independently managed endpoint:
+
+```bash
+./rocmplete benchmark agent --dwarfstar
+```
+
+ROCmplete fetches each pinned public repository into a managed source mirror,
+verifies the exact Git tree, and archives the base commit into a new repository
+with one synthetic commit and no remote. Pi therefore cannot discover the
+later reference fix through local Git history. Each attempt is sandboxed to
+its fixture and receives an offline Go module cache. The model is instructed
+not to use the network, and recognized network commands in Pi's structured
+transcript invalidate the attempt. The host network remains available to the
+Pi process because it must reach the loopback model server, so this is an
+audited benchmark policy rather than syscall-level hostile-code containment.
+
+Implementation grading runs the resulting patch against the repository tests,
+then adds a hash-verified hidden test and runs the build. Dependency files are
+restored to their pinned baseline before grading. A result is `solved` only
+when Pi exits cleanly, ordinary and hidden tests pass, the project builds, and
+no dependency or audited-network policy was violated. Review answers are
+preserved as `review-pending`; they are intentionally not folded into the
+implementation solve rate and need factual human review.
+
+Raw results live below:
+
+```text
+apps/agent-evaluation/results/
+apps/agent-evaluation/runs/
+```
+
+Each result JSON has a neighboring Markdown summary. The run directory keeps
+the prompt-visible fixture, agent patch, Pi JSONL transcript, stderr, grading
+logs, review answer, and per-attempt server log. An unsolved implementation is
+a completed benchmark result, not a launcher failure. Infrastructure failure
+or interruption remains a nonzero command result and the checkpoint records
+where execution stopped.
+
+Public historical fixes may have appeared in model training data. Recent,
+small repositories reduce but do not eliminate that risk. Use the frozen
+suite for reproducible calibration, then add an unpublished holdout task when
+making a high-stakes final model choice.
+
 ## Builds and local caches
 
 Build one application during ordinary work, or all managed applications after

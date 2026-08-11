@@ -230,6 +230,34 @@ server-side thinking through Maki. Confirm the generated providers follow
 `--dwarfstar-port`. Do not claim agent
 compatibility from `/v1/models` or a plain text response alone.
 
+For coding-agent evaluation changes, validate the frozen inputs before using
+GPU time:
+
+```bash
+./rocmplete benchmark agent --list-tasks
+./rocmplete benchmark agent \
+  --preset qwen3.6-27b-q8-0 --task re-align --dry-run
+PYTHONPATH=src python3 -m unittest tests.test_agent_evaluation
+```
+
+Every implementation hidden test must fail on its recorded base commit, pass
+on its reference commit, and grade the complete reference diff as `solved`.
+Inspect the generated fixture to confirm it has exactly one Git commit, no
+remote, controlled `AGENTS.md`, and no mounted hidden-test sibling. Confirm a
+review task can change only `ROCMLETE_EVAL_ANSWER.md`, dependency changes are
+reported and restored before grading, and recognized network commands make an
+attempt unsolved. Dry runs must create no data, source mirror, server, fixture,
+or result.
+
+Target-hardware acceptance uses Pi, ROCm, one exact host, 131072 tokens, and a
+fresh fixture and session per attempt. First run one easy and one safety task
+for a bounded integration check, then run the frozen selection. Inspect Pi's
+JSONL, the per-attempt server-log delta, ordinary and hidden test logs, build
+log, patch hash, and Markdown solve rate. An unsolved task is a valid completed
+measurement; infrastructure failure and interruption must still checkpoint
+and clean up the exact model container. Keep machine-specific run trees and
+results out of the repository.
+
 Speculative-decoding catalog changes additionally require one single-model
 dry run and router INI inspection for every affected strategy. Cover an
 embedded MTP draft, a separate MTP draft, and a separate DFlash draft when

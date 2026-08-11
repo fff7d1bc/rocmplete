@@ -303,6 +303,9 @@ BENCHMARK_EXAMPLES = """\
 Try one of these:
 
   ./rocmplete benchmark run BUNDLE --dry-run
+  ./rocmplete benchmark agent --preset qwen3.6-27b-q8-0 --dry-run
+  ./rocmplete benchmark agent --preset PRESET --task re-cancel
+  ./rocmplete benchmark agent --list-tasks
   ./rocmplete benchmark llama-cpp --preset qwen3-0.6b-q8-0 --dry-run
   ./rocmplete benchmark llama-cpp --preset PRESET --compare-backends
   ./rocmplete benchmark llama-cpp --preset PRESET --context-depth 32768 \
@@ -1491,7 +1494,7 @@ def _parser() -> argparse.ArgumentParser:
 
     benchmark = subparsers.add_parser(
         "benchmark",
-        help="run or report managed cold/warm benchmarks",
+        help="run or report managed performance and coding evaluations",
         allow_abbrev=False,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=BENCHMARK_EXAMPLES,
@@ -1535,6 +1538,80 @@ def _parser() -> argparse.ArgumentParser:
         choices=("markdown", "html", "both", "none"),
         default="both",
         help="suite report output (default: both)",
+    )
+    agent_benchmark = benchmark_commands.add_parser(
+        "agent",
+        help="evaluate one managed model with the frozen coding-agent suite",
+        allow_abbrev=False,
+    )
+    agent_model = agent_benchmark.add_mutually_exclusive_group()
+    agent_model.add_argument(
+        "--preset", help="installed agent-capable llama.cpp preset"
+    )
+    agent_model.add_argument(
+        "--dwarfstar",
+        action="store_true",
+        help="evaluate the installed DwarfStar DeepSeek V4 Flash model",
+    )
+    agent_benchmark.add_argument(
+        "--task",
+        action="append",
+        default=[],
+        metavar="TASK",
+        help="limit the frozen suite to one task; repeatable",
+    )
+    agent_benchmark.add_argument(
+        "--list-tasks",
+        action="store_true",
+        help="list frozen task identifiers without preparing or running them",
+    )
+    agent_benchmark.add_argument(
+        "--repetitions",
+        type=int,
+        default=1,
+        help="fresh attempts per selected task (default: 1)",
+    )
+    agent_benchmark.add_argument(
+        "--context",
+        type=int,
+        default=131072,
+        help="server context shared by every task (default: 131072)",
+    )
+    agent_benchmark.add_argument(
+        "--thinking",
+        choices=("off", "minimal", "low", "medium", "high", "xhigh", "max"),
+        default="high",
+        help="explicit Pi thinking level (default: high)",
+    )
+    agent_benchmark.add_argument(
+        "--profile",
+        choices=("auto",) + GPU_PROFILES,
+        default="auto",
+        help="GPU execution profile (default: auto)",
+    )
+    agent_benchmark.add_argument(
+        "--backend",
+        choices=LLAMA_BACKENDS,
+        default="rocm",
+        help="llama.cpp backend (default: rocm)",
+    )
+    _add_render_node_arguments(agent_benchmark, multi_gpu=True)
+    agent_benchmark.add_argument("--data-dir", help="persistent data directory")
+    agent_benchmark.add_argument(
+        "--port", default="8187", help="private model-server port (default: 8187)"
+    )
+    agent_benchmark.add_argument(
+        "--output", help="new result JSON below managed evaluation storage"
+    )
+    agent_benchmark.add_argument(
+        "--keep-going",
+        action="store_true",
+        help="continue after an individual evaluation infrastructure failure",
+    )
+    agent_benchmark.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="validate and print the suite without fetching, starting, or writing",
     )
     llama_benchmark = benchmark_commands.add_parser(
         "llama-cpp",

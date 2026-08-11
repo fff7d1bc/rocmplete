@@ -412,6 +412,48 @@ class PiLauncherTests(unittest.TestCase):
             self.assertNotIn("PI_OFFLINE", command)
             self.assertIn(str(SANDBOX_AGENT_DIR), command)
 
+    def test_sandbox_accepts_explicit_read_only_cache_and_environment(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_dir = root / "data"
+            binary_dir = root / "bin"
+            workdir = root / "project"
+            module_cache = root / "module-cache"
+            binary_dir.mkdir()
+            workdir.mkdir()
+            module_cache.mkdir()
+            executable = self._fake_pi(binary_dir)
+            bwrap = binary_dir / "bwrap"
+            bwrap.write_text("#!/bin/sh\nexit 0\n")
+            bwrap.chmod(0o755)
+            self._mark_installed(data_dir, self.default_model)
+            plan = create_launch_plan(
+                self.catalog,
+                data_dir,
+                8080,
+                ("--print", "ping"),
+                {"PATH": str(binary_dir)},
+            )
+            paths = sandbox_paths(data_dir)
+            prepare_state(plan, paths, data_dir)
+            destination = Path("/run/rocmplete/modules")
+            sandbox = create_sandbox_plan(
+                plan,
+                data_dir,
+                workdir,
+                {"PATH": str(binary_dir)},
+                read_only_mounts=((module_cache, destination),),
+                extra_environment={"GOMODCACHE": str(destination)},
+            )
+            command = list(sandbox.command)
+            mount = command.index(str(module_cache))
+            self.assertEqual(command[mount - 1], "--ro-bind")
+            self.assertEqual(command[mount + 1], str(destination))
+            setting = command.index("GOMODCACHE")
+            self.assertEqual(command[setting - 1], "--setenv")
+            self.assertEqual(command[setting + 1], str(destination))
+            self.assertIn(str(executable.resolve()), command)
+
     @patch("rocmplete.cli.os.execvpe")
     def test_cli_executes_pi_with_private_state_without_sandbox(self, execute):
         with tempfile.TemporaryDirectory() as directory:

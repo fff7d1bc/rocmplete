@@ -124,6 +124,11 @@ from .benchmark import (
     run_benchmark,
     run_benchmark_suite,
 )
+from .agent_evaluation import (
+    AgentEvaluationOptions,
+    load_coding_suite,
+    run_agent_evaluation,
+)
 from .build import (
     build_cache_dir,
     build_command,
@@ -4970,9 +4975,63 @@ def command_benchmark(
     if action is None:
         return _print_incomplete_command(
             arguments.command_parser,
-            "choose run, suite, llama-cpp, or report",
+            "choose run, suite, agent, llama-cpp, or report",
             BENCHMARK_EXAMPLES,
         )
+    if action == "agent":
+        suite = load_coding_suite()
+        if arguments.list_tasks:
+            print("Frozen coding-agent tasks")
+            for task in suite.tasks:
+                print(
+                    "  {:30} {:14} {:6} {}".format(
+                        task.identifier,
+                        task.kind,
+                        task.difficulty,
+                        task.repository,
+                    )
+                )
+            return 0
+        if not arguments.preset and not arguments.dwarfstar:
+            raise LauncherError(
+                "benchmark agent requires --preset PRESET or --dwarfstar"
+            )
+        data_dir = _content_data_dir(arguments.data_dir, prepare=False)
+        output = (
+            Path(arguments.output).expanduser().resolve()
+            if arguments.output
+            else None
+        )
+        result_path, _ = run_agent_evaluation(
+            catalog,
+            AgentEvaluationOptions(
+                data_dir=data_dir,
+                preset=arguments.preset or "",
+                dwarfstar=arguments.dwarfstar,
+                tasks=tuple(arguments.task),
+                repetitions=arguments.repetitions,
+                context=arguments.context,
+                thinking=arguments.thinking,
+                profile=arguments.profile,
+                backend=arguments.backend,
+                port=validate_port(arguments.port),
+                render_nodes=tuple(arguments.render_node or ()),
+                output=output,
+                keep_going=arguments.keep_going,
+                dry_run=arguments.dry_run,
+            ),
+        )
+        if arguments.dry_run:
+            print(style("No source was fetched and no process was started.", "muted"))
+        else:
+            print(
+                "{} {}".format(
+                    style("Coding-agent evaluation complete:", "success"),
+                    result_path,
+                )
+            )
+            print("{} {}".format(style("Report:", "label"), result_path.with_suffix(".md")))
+        return 0
     if action == "llama-cpp":
         return _command_llama_benchmark(arguments, catalog)
     if action == "report":

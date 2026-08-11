@@ -53,6 +53,7 @@ finished. The public contribution path and baseline checks are summarized in
    - [Adding or updating models, bundles, workflows, and benchmarks](content-catalog.md)
    - [Adding applications, commands, modes, or hardware profiles](extending.md)
    - [Testing, release checks, and routine housekeeping](testing-and-release.md)
+   - [Coding-agent evaluation maintenance](coding-agent-evaluation.md)
    - [Target-hardware acceptance matrix](hardware-acceptance.md)
    - [DeepSeek V4 Flash llama.cpp feasibility
      snapshot](deepseek-v4-flash-llama-cpp-feasibility.md)
@@ -90,6 +91,7 @@ finished. The public contribution path and baseline checks are summarized in
 | Runtime client configuration | `src/rocmplete/opencode.py`, `src/rocmplete/pi_agent.py`, `src/rocmplete/omp_agent.py`, `src/rocmplete/maki_agent.py` |
 | Read-only local GGUF inventory | `src/rocmplete/model_inventory.py` |
 | Native llama.cpp benchmark results | `src/rocmplete/llama_benchmark.py` |
+| Frozen coding-agent tasks and results | `evaluations/coding/`, `src/rocmplete/agent_evaluation.py` |
 | Checkpointed target-hardware smoke acceptance | `src/rocmplete/acceptance.py` |
 | Third-party provenance summary | `THIRD_PARTY_NOTICES.md` |
 | Enforced behavior | `tests/` |

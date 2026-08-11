@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "identifier": "rocmplete-coding-v1",
+  "description": "Frozen Go coding-agent acceptance tasks derived from reviewed repository changes.",
+  "fixture_instructions": "# Coding evaluation fixture\n\nThis is a disposable, single-commit evaluation checkout. Work only inside this repository. Do not use the network, inspect parent directories, or look for hidden tests or later repository history. Read the task carefully, inspect the implementation, make the smallest complete change, format Go sources with gofmt, and run `go test ./...` plus `go build ./...` before finishing. Do not weaken existing tests or dependency pins.\n",
+  "tasks": [
+    {
+      "identifier": "re-align",
+      "kind": "implementation",
+      "repository": "reencode",
+      "remote": "https://github.com/fff7d1bc/reencode.git",
+      "base_commit": "d8b18748f3babe3f0a87660c337587ae4bd9f3dd",
+      "base_tree": "222fa3534488df96affdcd54a2b5d092245c857c",
+      "reference_commit": "7f1f6005c64595438602e5bbe757e2730875198a",
+      "difficulty": "easy",
+      "safety_critical": false,
+      "prompt": "The human probe-attempt table loses column alignment when a predicted output size grows from three-digit MiB to four-digit MiB, and the result column moves again around the GiB rollover. Make the header and every attempt row use one shared width policy so the result column remains fixed for ordinary MiB, 1000+ MiB, 1023.9 MiB, and 1.0 GiB values. Preserve the existing wording and numeric formatting.",
+      "hidden": {
+        "resource": "hidden/re-align/rocmplete_eval_test.go",
+        "sha256": "4eeea50b48df400af9b700151e4181602028a0e442211ab36e253ad18163fe29",
+        "destination": "rocmplete_eval_test.go"
+      }
+    },
+    {
+      "identifier": "fz-eintr",
+      "kind": "implementation",
+      "repository": "fzr",
+      "remote": "https://github.com/fff7d1bc/fzr.git",
+      "base_commit": "8301eadcb637f25b95169a981c5995a7398b0cfe",
+      "base_tree": "a3a99a50dfc10d907a4cd7e6c94606f980326361",
+      "reference_commit": "a349035985a0f7c8c91bd0f3fe35e2a9c7bc3de1",
+      "difficulty": "easy",
+      "safety_critical": false,
+      "prompt": "The scanner calls raw x/sys Unix directory-open functions, which can return EINTR instead of applying the retry behavior users expect from Go's os helpers. Make both no-follow directory-open paths retry only EINTR until they succeed or return a different error. Introduce a small generic `retryEINTR` helper so the behavior is directly testable, and preserve all existing no-follow and error-classification behavior.",
+      "hidden": {
+        "resource": "hidden/fz-eintr/rocmplete_eval_test.go",
+        "sha256": "0bda6e3f6bc12832f6ac77957c8b08b4c19f14e1255d94bfb306db321ef56195",
+        "destination": "rocmplete_eval_test.go"
+      }
+    },
+    {
+      "identifier": "fz-symlink",
+      "kind": "implementation",
+      "repository": "fzr",
+      "remote": "https://github.com/fff7d1bc/fzr.git",
+      "base_commit": "f0e691e7eddc621c6ba82fe23d4efd71398117bf",
+      "base_tree": "4b7da2d465af6de85da6fc5101fc3a6e69f46d3f",
+      "reference_commit": "745bfbc7fe6d3316d7892e6fb9f82e0339ff5ae0",
+      "difficulty": "medium",
+      "safety_critical": false,
+      "prompt": "When --follow-symlinks is active, scanned entries describe symlink targets, but interactive Ctrl-Space recency sorting lazily reads the link's own mtime. Carry follow-mode into the picker model so lazy mtime lookup follows the target in that mode while the default mode continues to use the link itself. Preserve caching, error handling, and all other sorting behavior. Document the user-visible follow-mode recency behavior.",
+      "hidden": {
+        "resource": "hidden/fz-symlink/rocmplete_eval_test.go",
+        "sha256": "d727277efa2dc5d324b925cbe42e4868f22b18aa02cfa3d889cd60d52b5cb897",
+        "destination": "rocmplete_eval_test.go"
+      }
+    },
+    {
+      "identifier": "re-cancel",
+      "kind": "implementation",
+      "repository": "reencode",
+      "remote": "https://github.com/fff7d1bc/reencode.git",
+      "base_commit": "5f4881bcd15f7db221eee04bad82f30a9ce2df60",
+      "base_tree": "42dd525950f195b209acd1d185c6ff0d6c938fa1",
+      "reference_commit": "46f6c203284acc0ab923e342880e337ad3850cb7",
+      "difficulty": "medium",
+      "safety_critical": true,
+      "prompt": "Cancellation is not propagated consistently through grouped encoding. An already-canceled group command can report a normal failure, cache preparation can launch context-free external probes, and a failed group probe may begin fallback encoding after cancellation. Thread the caller context through cache and external-tool inspection, make grouped command interruption return status 130, and ensure every group loop and fallback boundary stops before starting additional work when the context is canceled. Preserve partial probe-cache persistence for genuine non-cancellation failures.",
+      "hidden": {
+        "resource": "hidden/re-cancel/rocmplete_eval_test.go",
+        "sha256": "d58cd9cce7745b4bed20384deac173bbdf66150a40c2665d920003f3ccdff65d",
+        "destination": "rocmplete_eval_test.go"
+      }
+    },
+    {
+      "identifier": "fz-sort-cancel",
+      "kind": "implementation",
+      "repository": "fzr",
+      "remote": "https://github.com/fff7d1bc/fzr.git",
+      "base_commit": "ecab57aba12d71b9908a39e800e5f61e09e6f57b",
+      "base_tree": "e1364b5e538c3bfbc82723729776f816384e2f1b",
+      "reference_commit": "f955966861a1cb32e0a11db81b1d648c27b8127d",
+      "difficulty": "hard",
+      "safety_critical": false,
+      "prompt": "Large asynchronous ranking jobs poll cancellation while scoring entries but can still block on stable result sorting and natural near-tie sorting after the query has changed. Add a reusable generic `stableSortContext` helper that can stop an in-progress stable sort, then propagate cancellation through every ranking sort and output-copy phase. Preserve stable ordering, natural near-tie behavior, the background-context convenience wrappers, and the contract that canceled work returns no partial result.",
+      "hidden": {
+        "resource": "hidden/fz-sort-cancel/rocmplete_eval_test.go",
+        "sha256": "212e5a603a90449f09791cf22085aabe8dd7bed07e148e6f9a27a9859e92e3d2",
+        "destination": "rocmplete_eval_test.go"
+      }
+    },
+    {
+      "identifier": "re-source-race",
+      "kind": "implementation",
+      "repository": "reencode",
+      "remote": "https://github.com/fff7d1bc/reencode.git",
+      "base_commit": "34ae314afc8cfc7653d83c7f0aae44dd6c5b6bd7",
+      "base_tree": "d0a87737d4d4129c6efd4c05537c884f0d45bba4",
+      "reference_commit": "4919870bd8ad26aa4137adf0d230112d64c04b3a",
+      "difficulty": "hard",
+      "safety_critical": true,
+      "prompt": "A source file can be modified or replaced after eligibility checking and before final publication. The encoder must never remove that changed or replacement file. Capture a `sourceSnapshot` during path validation, verify it before probing and encoding boundaries, and use `verifySourceSnapshot`, `quarantineSource`, and `restoreQuarantinedSource` helpers around final publication so a mismatched replacement is restored in place and a matching source can be recovered if later publication or logging fails. Keep source-size logging correct after quarantine and apply the same contract to grouped encoding.",
+      "hidden": {
+        "resource": "hidden/re-source-race/rocmplete_eval_test.go",
+        "sha256": "bb31603e3a3303fadfa5d18c8db0f565ce8c2fdedc8dca47492a44c71990ae1e",
+        "destination": "rocmplete_eval_test.go"
+      }
+    },
+    {
+      "identifier": "review-reencode-lifecycle",
+      "kind": "review",
+      "repository": "reencode",
+      "remote": "https://github.com/fff7d1bc/reencode.git",
+      "base_commit": "7f1f6005c64595438602e5bbe757e2730875198a",
+      "base_tree": "1ac71fcb4a6f7757e71b5717199e775352961e56",
+      "reference_commit": "7f1f6005c64595438602e5bbe757e2730875198a",
+      "difficulty": "review",
+      "safety_critical": true,
+      "prompt": "Perform a focused safety review of the destructive encode lifecycle. Trace one successful input from eligibility through temporary output creation, media validation, destination publication, logging, and source removal. Then explain what protects the source and destination from path aliasing, replacement races, concurrent publishers, validation failure, cancellation, and failures after the source is quarantined. Cite concrete files and function names. Write the complete answer to `ROCMLETE_EVAL_ANSWER.md` and do not modify source code.",
+      "answer": "ROCMLETE_EVAL_ANSWER.md"
+    },
+    {
+      "identifier": "review-fzr-concurrency",
+      "kind": "review",
+      "repository": "fzr",
+      "remote": "https://github.com/fff7d1bc/fzr.git",
+      "base_commit": "a349035985a0f7c8c91bd0f3fe35e2a9c7bc3de1",
+      "base_tree": "b67c1697e52611ceb4a145c57147df34435620eb",
+      "reference_commit": "a349035985a0f7c8c91bd0f3fe35e2a9c7bc3de1",
+      "difficulty": "review",
+      "safety_critical": false,
+      "prompt": "Review how the interactive picker stays responsive while filesystem scanning and query ranking happen concurrently. Trace scan batches, pending-entry flushing, query debounce and generations, cancellation of stale ranking work, Enter during stale refresh, and terminal restoration on normal exit and signals. Explain which snapshot may be selected at each boundary and cite concrete files and function names. Write the complete answer to `ROCMLETE_EVAL_ANSWER.md` and do not modify source code.",
+      "answer": "ROCMLETE_EVAL_ANSWER.md"
+    }
+  ]
+}

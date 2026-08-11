@@ -500,6 +500,11 @@ apps/
     home/
   acceptance/
     results/                         checkpointed JSON and Markdown summaries
+  agent-evaluation/
+    sources/                         pinned public bare mirrors
+    cache/                           prepared Go module and build caches
+    results/                         machine-specific JSON and Markdown summaries
+    runs/                            fixtures, transcripts, patches, and grading logs
 content/
   comfyui/models/               direct ComfyUI model files
   llama-cpp/models/             managed GGUF model files
@@ -761,6 +766,17 @@ persist only below the client's `StorageLayout.application(CLIENT) /
 "sandbox"`, whose owned directories are forced to mode `0700`. Sandbox state
 and the writable working directory must not overlap. Project `AGENTS.md`
 discovery remains available from the mounted project.
+
+`src/rocmplete/agent_evaluation.py` builds a benchmark-specific layer on top
+of the Pi boundary. Every pinned source commit is exported into a new
+repository with one synthetic commit and no remote, while hidden graders and
+protected inputs remain outside the mounted worktree. A prepared Go module
+cache is added as an explicit read-only mount and Pi receives an offline proxy
+policy plus a temporary build cache. The Pi process still needs shared host
+networking for its loopback model endpoint, so structured tool transcripts are
+audited for ordinary network commands and this boundary is not claimed as
+adversarial network containment. Grading happens outside the client sandbox
+against a copied worktree with dependency pins restored.
 
 A client executable inside Linuxbrew causes its complete
 `/home/linuxbrew/.linuxbrew` prefix to be mounted read-only. Other executables

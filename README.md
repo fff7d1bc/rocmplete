@@ -365,6 +365,23 @@ Sparse and dense models, and even different quantizations from one family,
 can prefer different backends on the same GPU. The
 [tuning guide](guide/tuning.md#benchmarks) covers repeatable comparisons.
 
+Evaluate a managed model as a coding agent against the frozen Go task suite:
+
+```bash
+./rocmplete benchmark agent --list-tasks
+./rocmplete benchmark agent \
+  --preset qwen3.6-27b-q8-0 --dry-run
+./rocmplete benchmark agent \
+  --preset qwen3.6-27b-q8-0
+```
+
+This is separate from smoke acceptance and native token-speed benchmarking.
+It runs Pi against disposable single-commit fixtures, applies hidden tests
+after each implementation attempt, and preserves raw transcripts, patches,
+server logs, and a Markdown summary below managed application data. The
+[operations guide](guide/operations.md#coding-agent-evaluation) explains the
+fixed-harness policy, review tasks, grading, repetitions, and result scope.
+
 ## User guides
 
 - [Applications](guide/applications.md) covers ComfyUI, llama.cpp, DwarfStar,
@@ -384,6 +401,7 @@ Command-specific help remains the authoritative interface reference:
 ./rocmplete content --help
 ./rocmplete run --help
 ./rocmplete acceptance --help
+./rocmplete benchmark agent --help
 ```
 
 Human-facing output uses semantic colors on terminals. Redirected output stays

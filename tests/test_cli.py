@@ -3445,6 +3445,29 @@ class CliTests(unittest.TestCase):
         self.assertEqual(suite.family, "qwen")
         self.assertTrue(suite.keep_going)
 
+        _, agent = parse_arguments(
+            [
+                "benchmark",
+                "agent",
+                "--preset",
+                "qwen3.6-27b-q8-0",
+                "--task",
+                "re-align",
+                "--task",
+                "fz-eintr",
+                "--repetitions",
+                "3",
+                "--thinking",
+                "high",
+            ]
+        )
+        self.assertEqual(agent.benchmark_command, "agent")
+        self.assertEqual(agent.preset, "qwen3.6-27b-q8-0")
+        self.assertEqual(agent.task, ["re-align", "fz-eintr"])
+        self.assertEqual(agent.repetitions, 3)
+        self.assertEqual(agent.context, 131072)
+        self.assertEqual(agent.thinking, "high")
+
         _, isolated = parse_arguments(
             ["benchmark", "suite", "--cache-mode", "isolated"]
         )
