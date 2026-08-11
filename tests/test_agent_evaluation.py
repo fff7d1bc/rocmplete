@@ -11,6 +11,7 @@ from rocmplete.agent_evaluation import (
     AgentEvaluationOptions,
     PreparedAttempt,
     _extract_git_archive,
+    _evaluation_sandbox_environment,
     _git_fixture,
     _server_command,
     _snapshot_protected,
@@ -31,7 +32,7 @@ from rocmplete.errors import LauncherError
 class AgentEvaluationTests(unittest.TestCase):
     def test_frozen_definition_has_six_implementation_and_two_review_tasks(self):
         suite = load_coding_suite()
-        self.assertEqual(suite.identifier, "rocmplete-coding-v1")
+        self.assertEqual(suite.identifier, "rocmplete-coding-v2")
         self.assertEqual(len(suite.tasks), 8)
         self.assertEqual(
             sum(task.kind == "implementation" for task in suite.tasks), 6
@@ -148,12 +149,34 @@ class AgentEvaluationTests(unittest.TestCase):
             transcript.write_text("".join(json.dumps(item) + "\n" for item in events))
             self.assertEqual(
                 transcript_usage(transcript),
-                {"input": 100, "output": 20, "cache_read": 5, "cache_write": 3},
+                {
+                    "input": 100,
+                    "output": 20,
+                    "reasoning": 0,
+                    "cache_read": 5,
+                    "cache_write": 3,
+                },
             )
             self.assertEqual(
                 transcript_network_attempts(transcript),
                 ("curl https://example.invalid",),
             )
+
+    def test_evaluation_sandbox_uses_neutral_identity_and_terminal(self):
+        environment = _evaluation_sandbox_environment(
+            {
+                "PATH": "/bin",
+                "TERM": "xterm-private",
+                "GIT_AUTHOR_NAME": "Host User",
+                "GIT_AUTHOR_EMAIL": "host@example.invalid",
+            }
+        )
+        self.assertEqual(environment["PATH"], "/bin")
+        self.assertEqual(environment["TERM"], "dumb")
+        self.assertEqual(environment["GIT_AUTHOR_NAME"], "ROCmplete Evaluation")
+        self.assertEqual(
+            environment["GIT_AUTHOR_EMAIL"], "evaluation@invalid.local"
+        )
 
     def test_server_metrics_use_aggregate_tokens_and_last_reported_rates(self):
         metrics = parse_server_metrics(

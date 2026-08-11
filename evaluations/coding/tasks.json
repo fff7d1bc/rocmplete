@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "identifier": "rocmplete-coding-v1",
+  "identifier": "rocmplete-coding-v2",
   "description": "Frozen Go coding-agent acceptance tasks derived from reviewed repository changes.",
-  "fixture_instructions": "# Coding evaluation fixture\n\nThis is a disposable, single-commit evaluation checkout. Work only inside this repository. Do not use the network, inspect parent directories, or look for hidden tests or later repository history. Read the task carefully, inspect the implementation, make the smallest complete change, format Go sources with gofmt, and run `go test ./...` plus `go build ./...` before finishing. Do not weaken existing tests or dependency pins.\n",
+  "fixture_instructions": "# Coding evaluation fixture\n\nThis is a disposable, single-commit evaluation checkout. Work only inside this repository. Do not use the network, inspect parent directories, or look for hidden tests or later repository history. Read the task carefully, inspect the implementation, make the smallest complete change, format Go sources with gofmt, and run `go test ./...` before finishing. The controller performs an independent build after your work, so do not leave generated executables or other build artifacts in the repository. Do not weaken existing tests or dependency pins.\n",
   "tasks": [
     {
       "identifier": "re-align",

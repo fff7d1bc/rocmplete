@@ -49,6 +49,12 @@ RESULT_SCHEMA = "rocmplete.coding-agent-evaluation.v1"
 DEFAULT_CONTEXT = 131072
 DEFAULT_PORT = 8187
 ANSWER_FILE = "ROCMLETE_EVAL_ANSWER.md"
+_EVALUATION_GIT_IDENTITY = {
+    "GIT_AUTHOR_NAME": "ROCmplete Evaluation",
+    "GIT_AUTHOR_EMAIL": "evaluation@invalid.local",
+    "GIT_COMMITTER_NAME": "ROCmplete Evaluation",
+    "GIT_COMMITTER_EMAIL": "evaluation@invalid.local",
+}
 _HEX40 = re.compile(r"^[0-9a-f]{40}$")
 _IDENTIFIER = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _NETWORK_COMMAND = re.compile(
@@ -875,7 +881,13 @@ def transcript_network_attempts(path: Path) -> Tuple[str, ...]:
 
 
 def transcript_usage(path: Path) -> Mapping[str, int]:
-    totals: Dict[str, int] = {"input": 0, "output": 0, "cache_read": 0, "cache_write": 0}
+    totals: Dict[str, int] = {
+        "input": 0,
+        "output": 0,
+        "reasoning": 0,
+        "cache_read": 0,
+        "cache_write": 0,
+    }
     try:
         lines = path.read_text(errors="replace").splitlines()
     except OSError:
@@ -899,6 +911,7 @@ def transcript_usage(path: Path) -> Mapping[str, int]:
         for source, destination in (
             ("input", "input"),
             ("output", "output"),
+            ("reasoning", "reasoning"),
             ("cacheRead", "cache_read"),
             ("cacheWrite", "cache_write"),
         ):
@@ -906,6 +919,15 @@ def transcript_usage(path: Path) -> Mapping[str, int]:
             if isinstance(amount, int) and amount >= 0:
                 totals[destination] += amount
     return totals
+
+
+def _evaluation_sandbox_environment(
+    environ: Mapping[str, str],
+) -> Mapping[str, str]:
+    child = dict(environ)
+    child.update(_EVALUATION_GIT_IDENTITY)
+    child["TERM"] = "dumb"
+    return child
 
 
 def _run_pi(
@@ -946,11 +968,12 @@ def _run_pi(
     prepare_pi_state(plan, paths, options.data_dir)
     module_cache = _evaluation_root(options.data_dir) / "cache" / "go-mod"
     sandbox_module_cache = SANDBOX_RUNTIME / "go-mod"
+    sandbox_environment = _evaluation_sandbox_environment(os.environ)
     sandbox = create_pi_sandbox_plan(
         plan,
         options.data_dir,
         attempt.fixture,
-        os.environ,
+        sandbox_environment,
         read_only_mounts=((module_cache, sandbox_module_cache),),
         extra_environment={
             "GOMODCACHE": str(sandbox_module_cache),
