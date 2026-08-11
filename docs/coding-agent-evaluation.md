@@ -27,6 +27,8 @@ transcripts, generated patches, timing, or host-specific result JSON to the
 source tree. A curated result summary may be added to an appropriate research
 or hardware-acceptance record when it states the exact suite fingerprint,
 model artifact, runtime, harness, context, repetitions, and hardware.
+The current same-host family screen and full-suite reference are recorded in
+the [Fedora 44 Strix Halo coding-agent comparison](hardware-acceptance.md#coding-agent-comparison-2026-08-11).
 
 ## Frozen version 4 task set
 

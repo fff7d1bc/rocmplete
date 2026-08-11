@@ -143,6 +143,127 @@ Observed results:
   Exact inputs, backend controls, benchmarks, and retest criteria are in the
   [Ling feasibility snapshot](ling-3.0-flash-llama-cpp-feasibility.md).
 
+#### Coding-agent comparison (2026-08-11)
+
+This comparison used source commit
+`ad5a2ce730a63f4a145c23a7af44f55a9971fc92`, frozen suite
+`rocmplete-coding-v4` with fingerprint
+`8825f9235c854fdf693c4881faa035c5efe99a545f4111372ca95e6f2def1160`,
+Pi 0.84.1, ROCm, high thinking, 131072 context, and one fresh fixture and
+session per task. The runtime was
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r16` (image ID
+`15aa29c45b41f011f5edacd9f5fb761db26eae488d447453414e2d1b2a9e07a3`)
+on the Fedora 44 Strix Halo host described above. Each preset retained its
+reviewed model-specific sampling policy. This tests the practical managed
+configuration, not identical sampling across unrelated models.
+
+The first gate used the same easy implementation task, `re-align`. `Solved`
+means Pi exited normally, ordinary and hidden tests passed, the project built,
+and the attempt had no dependency change, retained build artifact, or network
+attempt. Tool calls are counted from Pi's structured transcript. Prompt and
+generation rates are aggregate server metrics for the complete attempt.
+
+| Managed preset | Outcome | Wall time | Tool calls | Input | Cache read | Output | Prompt tok/s | Generate tok/s |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | solved | 229.9 s | 23 | 17,752 | 394,740 | 12,596 | 111.30 | 70.03 |
+| `kat-coder-v2.5-dev-q8-0` | solved | 319.3 s | 25 | 18,020 | 199,431 | 12,321 | 493.52 | 41.42 |
+| `ornith-1.0-35b-q8-0` | solved | 484.2 s | 18 | 52,055 | 603,758 | 15,049 | 358.97 | 37.34 |
+| `muse-glimmer-30b-kquant-dynamic-dflash` | solved | 670.2 s | 40 | 18,566 | 958,355 | 14,080 | 161.33 | 18.69 |
+| `qwen3.6-27b-mtp-q8-0` | solved | 766.7 s | 22 | 42,722 | 814,547 | 8,699 | 48.43 | 15.57 |
+| `gemma4-31b-it-q8-0-mtp` | solved | 902.5 s | 17 | 55,580 | 595,333 | 6,389 | 70.87 | 11.38 |
+
+The exact managed artifacts and retained result records were:
+
+- Qwen3.6 35B-A3B MTP, 39,099,447,584 bytes, SHA-256
+  `6c6b816537abad90b250a0972b345466028d861ddfe316d5f0de31ca6440f781`;
+  result `apps/agent-evaluation/results/20260811T154638Z-qwen3.6-35b-a3b-mtp-ud-q8-k-xl.json`.
+- KAT Coder 2.5 Dev Q8_0, 36,914,690,464 bytes, SHA-256
+  `5fa510f44779b0e3d38a6678985f417a1c65e3000405ca5d6dcf7fd065e47a15`;
+  result `apps/agent-evaluation/results/20260811T175021Z-kat-coder-v2.5-dev-q8-0.json`.
+- Ornith 1.0 35B Q8_0, 36,903,138,880 bytes, SHA-256
+  `cbc992bca07901c1a51f33e65e6fc5d687de179c852a772dfd15e4c3261dbf5c`;
+  result `apps/agent-evaluation/results/20260811T164947Z-ornith-1.0-35b-q8-0.json`.
+- Muse Glimmer official dynamic K-quant, 19,653,957,984 bytes, SHA-256
+  `513109c8319115f69eb09fb7b118c97c8167d15bc014fd7670d2e30489bf106c`,
+  with its 1,631,205,312-byte DFlash draft, SHA-256
+  `27d9a805fa29b943cfb6ad4843367cd4eaaaf06bd452d8cc3e00a2cd18a677bc`;
+  result `apps/agent-evaluation/results/20260811T175621Z-muse-glimmer-30b-kquant-dynamic-dflash.json`.
+- Qwen3.6 27B MTP Q8_0, 29,047,084,160 bytes, SHA-256
+  `9408dcb356cc061a05c139e5647cbde0698ff980c6a69f7fc214e9989f86cfa8`;
+  result `apps/agent-evaluation/results/20260811T173701Z-qwen3.6-27b-mtp-q8-0.json`.
+- Gemma 4 31B Q8_0, 32,635,676,896 bytes, SHA-256
+  `fcd52cebacb165a98df5abe6fb70dbf076835f4a06e064ffb33dd739b8835c9c`,
+  with its 514,687,104-byte MTP draft, SHA-256
+  `6b52ab20af503aee320dc09e93f886133b18d89ffc9075c7d9dcaf681e20b375`;
+  result `apps/agent-evaluation/results/20260811T165827Z-gemma4-31b-it-q8-0-mtp.json`.
+
+All six completed the easy task correctly, so this screen rejects obvious
+agent-loop failures but does not establish broad correctness. Qwen3.6 35B-A3B
+MTP was fastest end to end. KAT Coder was the closest alternate at 1.39 times
+the wall time. Ornith was correct and used fewer tool calls, but read much
+more context and took 2.11 times as long. Muse's DFlash decode did not offset
+40 tool calls and repeated spacing probes. Qwen3.6 27B MTP and Gemma 4 were
+correct but took 3.34 and 3.93 times the reference wall time. These are
+single-repetition observations, not estimates of variance.
+
+Laguna XS 2.1 used its exact 20,274,300,032-byte Q4_K_M artifact, SHA-256
+`1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb`,
+under the same version 4 conditions. It identified the relevant formatter but
+made no edit in more than 21 minutes, repeatedly recalculated the same width
+boundary, and fell to about 5 generated tokens/s after reading roughly 20K
+context. The run was interrupted and cleaned up. Its checkpoint is
+`apps/agent-evaluation/results/20260811T171415Z-laguna-xs-2.1-q4-k-m.json`.
+Older version 2 screens are not part of the table: Laguna S 2.1 was
+interrupted after about 27 minutes without an edit, and DwarfStar DeepSeek V4
+Flash derived the likely fix but entered a repetitive loop before applying
+it. Their exact checkpoints are
+`20260811T135443Z-laguna-s-2.1-q4-k-m.json` and
+`20260811T142629Z-deepseek-v4-flash.json` in the same result directory.
+Those runs showed working runtime and Pi tool protocols, but not useful coding
+completion.
+
+Only Qwen3.6 35B-A3B MTP completed all six implementation and two review
+tasks under the final version 4 rules. The run took 2,046.8 seconds and used
+319,303 input, 7,627,558 cached, and 76,966 output tokens. Its strict
+implementation solve rate was 3/6:
+
+| Task | Result | Durable finding |
+| --- | --- | --- |
+| `re-align` | solved | correct shared-width change |
+| `fz-eintr` | solved | correct exact EINTR retry behavior |
+| `fz-symlink` | solved | correct symlink identity and lazy metadata behavior |
+| `re-cancel` | unsolved | all tests and build passed, but a generated `reencode` executable invalidated the attempt |
+| `fz-sort-cancel` | unsolved | hidden behavior failed because cancellation was checked only before and after the blocking stable sort |
+| `re-source-race` | unsolved | hidden behavior failed because output publication preceded source quarantine and quarantine did not reverify source identity |
+| `review-reencode-lifecycle` | review pending | useful review, but it overstated cancellation safety after validation |
+| `review-fzr-concurrency` | review pending | contained a material version-order error and missed that Enter can select from an older accepted snapshot before refresh |
+
+The current conclusion is therefore narrower than "Qwen is trustworthy."
+Qwen3.6 35B-A3B MTP is the best-supported and fastest managed coding choice
+on this host, while KAT and Ornith deserve a full-suite run before promotion.
+The reference still failed both hard safety implementations and made a
+material factual error in one review. Muse, Qwen 27B MTP, and Gemma passed the
+screen but offered no practical advantage here. Laguna XS, Laguna S, and
+DwarfStar did not pass the screen.
+
+For a newly integrated model, preserve the suite and host inputs and use the
+same promotion sequence:
+
+```bash
+./rocmplete benchmark agent --preset NEW_PRESET --task re-align
+./rocmplete benchmark agent --preset NEW_PRESET --task re-source-race
+./rocmplete benchmark agent --preset NEW_PRESET
+```
+
+The first command permits a direct comparison with the table. The safety
+screen prevents an easy formatting fix from qualifying a model by itself.
+Run the complete suite only after both bounded tasks converge, then repeat a
+finalist three times before changing the recommended default. Compare results
+only when suite fingerprint, host, image, backend, context, harness, thinking,
+and repetition count agree. A changed llama.cpp image or model-specific
+sampling policy remains useful practical evidence, but must be called out as
+a changed runtime rather than folded silently into this baseline.
+
 Two host-specific failures were also useful. The first shared SELinux mount of
 the newly installed DwarfStar file normalized its label after verification,
 changing ctime and making the durable receipt stale. Commit `a333de2` now
