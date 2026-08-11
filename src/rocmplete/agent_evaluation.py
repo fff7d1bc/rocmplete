@@ -748,6 +748,16 @@ def _dependency_changed(entries: Sequence[Tuple[str, str]]) -> bool:
     return any(Path(path).name in ("go.mod", "go.sum") for _, path in entries)
 
 
+def _generated_artifacts(
+    task: CodingTask, entries: Sequence[Tuple[str, str]]
+) -> Tuple[str, ...]:
+    # Both reviewed repositories are single-main-package Go projects. A bare
+    # root file named after the repository is the default output from `go
+    # build`, not source. The fixture tells the agent to leave builds to the
+    # controller; retain the artifact in evidence but do not accept the patch.
+    return tuple(path for _, path in entries if path == task.repository)
+
+
 def grade_implementation(
     attempt: PreparedAttempt,
     *,
@@ -789,12 +799,14 @@ def grade_implementation(
         ("go", "build", "./..."), grade, environment, attempt.root / "build.log"
     )
     dependency_changed = _dependency_changed(entries)
+    generated_artifacts = _generated_artifacts(attempt.task, entries)
     solved = (
         pi_exit == 0
         and regression == 0
         and hidden_exit == 0
         and build_exit == 0
         and not dependency_changed
+        and not generated_artifacts
         and not network_attempts
     )
     return {
@@ -804,6 +816,7 @@ def grade_implementation(
         "hidden_exit": hidden_exit,
         "build_exit": build_exit,
         "dependency_changed": dependency_changed,
+        "generated_artifacts": list(generated_artifacts),
         "network_attempts": list(network_attempts),
         "patch_sha256": patch_sha256,
         "changed_paths": [path for _, path in entries],

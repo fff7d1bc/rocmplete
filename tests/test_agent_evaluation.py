@@ -12,6 +12,7 @@ from rocmplete.agent_evaluation import (
     PreparedAttempt,
     _extract_git_archive,
     _evaluation_sandbox_environment,
+    _generated_artifacts,
     _git_fixture,
     _server_command,
     _server_readiness_url,
@@ -33,7 +34,7 @@ from rocmplete.errors import LauncherError
 class AgentEvaluationTests(unittest.TestCase):
     def test_frozen_definition_has_six_implementation_and_two_review_tasks(self):
         suite = load_coding_suite()
-        self.assertEqual(suite.identifier, "rocmplete-coding-v3")
+        self.assertEqual(suite.identifier, "rocmplete-coding-v4")
         self.assertEqual(len(suite.tasks), 8)
         self.assertEqual(
             sum(task.kind == "implementation" for task in suite.tasks), 6
@@ -191,6 +192,20 @@ class AgentEvaluationTests(unittest.TestCase):
         self.assertEqual(metrics["generation_tokens"], 30)
         self.assertEqual(metrics["prompt_tokens_per_second"], 900.0)
         self.assertEqual(metrics["generation_tokens_per_second"], 80.0)
+
+    def test_repository_named_build_output_is_a_generated_artifact(self):
+        task = next(
+            task
+            for task in load_coding_suite().tasks
+            if task.identifier == "fz-eintr"
+        )
+        self.assertEqual(
+            _generated_artifacts(
+                task,
+                ((" M", "scanner.go"), ("??", "fzr"), ("??", "notes.txt")),
+            ),
+            ("fzr",),
+        )
 
     def test_review_grade_preserves_answer_and_rejects_other_changes(self):
         suite = load_coding_suite()
