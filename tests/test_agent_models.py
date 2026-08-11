@@ -54,6 +54,14 @@ class AgentModelPolicyTests(unittest.TestCase):
                 1.0,
             ),
             "laguna-s-2.1-q4-k-m": (1.0, 1.0, 20, 0.0, 0.0, 1.0),
+            "laguna-xs-2.1-q4-k-m": (
+                1.0,
+                1.0,
+                20,
+                0.0,
+                0.0,
+                1.0,
+            ),
             "muse-glimmer-30b-kquant-dynamic": (
                 1.0,
                 0.95,

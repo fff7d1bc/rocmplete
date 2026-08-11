@@ -121,6 +121,17 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             ),
         ),
         ContentRecipe(
+            identifier="laguna-xs-2.1",
+            application="llama-cpp",
+            description="Laguna XS 2.1 Q4_K_M coding and agent model",
+            bundles=("llama-laguna-xs-2.1-q4-k-m",),
+            launch=RecipeLaunch(
+                "llama-cpp",
+                mode="server",
+                preset="laguna-xs-2.1-q4-k-m",
+            ),
+        ),
+        ContentRecipe(
             identifier="muse-glimmer",
             application="llama-cpp",
             description=(

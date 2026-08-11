@@ -58,6 +58,8 @@ finished. The public contribution path and baseline checks are summarized in
      snapshot](deepseek-v4-flash-llama-cpp-feasibility.md)
    - [Muse Glimmer llama.cpp agent feasibility
      snapshot](muse-glimmer-llama-cpp-agent-feasibility.md)
+   - [Ling 3.0 Flash llama.cpp feasibility
+     snapshot](ling-3.0-flash-llama-cpp-feasibility.md)
 
 ## Sources of truth
 

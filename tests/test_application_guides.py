@@ -118,6 +118,9 @@ class ApplicationGuideTests(unittest.TestCase):
             text,
         )
         self.assertIn(
+            "laguna-xs-2.1 recipe installs Poolside's official", text
+        )
+        self.assertIn(
             "Qwen3.6 35B-A3B MTP Q8_K_XL preset is the recommended "
             "OpenCode starting point",
             normalized,
@@ -129,12 +132,12 @@ class ApplicationGuideTests(unittest.TestCase):
         self.assertIn("MTP proposes and verifies extra tokens", text)
         self.assertIn("not a reasoning mode", text)
         self.assertIn(
-            "Qwen3.6, Ornith, KAT-Coder, Gemma 4, and Laguna start at "
-            "their native 256K",
-            text,
+            "Qwen3.6, Ornith, KAT-Coder, Gemma 4, and both Laguna "
+            "families start at their native 256K",
+            normalized,
         )
         self.assertIn("--context 131072", text)
-        self.assertIn("omit it for a mixed-model router", text)
+        self.assertIn("omit it for a mixed-model router", normalized)
         self.assertIn("Tool-using clients", text)
         self.assertIn("embedded Jinja", text)
         self.assertIn("./rocmplete agent opencode", text)

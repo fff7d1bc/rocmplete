@@ -75,6 +75,10 @@ revisions recorded in `catalog/catalog.json`.
   artifact. ROCmplete therefore records the GGUF as `NOASSERTION`, preserves
   the upstream OpenMDW lineage, and requires both terms acceptance and
   unverified-artifact acknowledgment. ROCmplete does not redistribute it.
+- Poolside's official Laguna XS 2.1 Q4_K_M GGUF is downloaded from one full
+  pinned revision. The conversion repository includes and declares the
+  OpenMDW-1.1 license. ROCmplete records the exact size and SHA-256, requires
+  acceptance of those terms, and does not redistribute the model.
 - Muse Glimmer 30B dynamic K-quant and its DFlash k-quant draft are downloaded
   together from one full pinned Meta GGUF revision. The repository declares
   Apache-2.0. ROCmplete records both files' exact sizes and SHA-256 hashes and

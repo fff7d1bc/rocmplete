@@ -99,7 +99,7 @@ class MakiLauncherTests(unittest.TestCase):
                     "has_auth": False,
                 },
             )
-            self.assertEqual(len(models), 11)
+            self.assertEqual(len(models), 12)
             by_id = {model["id"]: model for model in models}
             self.assertNotIn("qwen3-0.6b-q8-0", by_id)
             self.assertEqual(
@@ -113,6 +113,9 @@ class MakiLauncherTests(unittest.TestCase):
             )
             self.assertFalse(
                 by_id["laguna-s-2.1-q4-k-m"]["supports_thinking"]
+            )
+            self.assertFalse(
+                by_id["laguna-xs-2.1-q4-k-m"]["supports_thinking"]
             )
             muse = by_id[
                 "muse-glimmer-30b-kquant-dynamic-dflash-256k"

@@ -27,7 +27,8 @@ Recipes are organized by their consuming application:
 comfyui
   image  edit  t2v  i2v
 llama-cpp
-  qwen3.6  ornith  kat-coder  laguna-s-2.1  muse-glimmer
+  qwen3.6  ornith  kat-coder  laguna-s-2.1  laguna-xs-2.1
+  muse-glimmer
   shisa-v2.1  translation-gemma  translation-hy
 dwarfstar
   flash-0731-q2-imatrix
@@ -40,6 +41,7 @@ Install interactively, or select one recipe explicitly:
 ./rocmplete content install comfyui image
 ./rocmplete content install llama-cpp qwen3.6
 ./rocmplete content install llama-cpp laguna-s-2.1
+./rocmplete content install llama-cpp laguna-xs-2.1 --accept-license
 ./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete content install llama-cpp shisa-v2.1 --accept-license
 ./rocmplete content install llama-cpp translation-gemma --accept-license
@@ -64,6 +66,12 @@ default; the matching non-speculative preset remains available as a managed
 control, and an experimental forced-256K DFlash preset reuses both files.
 All three policies preserve parsed reasoning for multi-turn agent history.
 Switching among them downloads nothing twice.
+
+The two Laguna recipes are separate model families. `laguna-xs-2.1` installs
+the official 33B-total, 3B-active Q4_K_M model. It is the practical local
+candidate and requires acceptance of the OpenMDW-1.1 terms. The much larger
+`laguna-s-2.1` recipe remains an independent 118B-total, 8B-active experiment
+whose official GGUF also requires an unverified-license acknowledgment.
 
 If a recipe is not specific enough, choose the exact-bundle browser in the
 guided installer. It narrows the catalog by application and task before

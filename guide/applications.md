@@ -385,7 +385,7 @@ OpenCode, Pi, and OMP use these llama.cpp request defaults for coding turns:
 | Ornith 1.0 35B | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
 | KAT-Coder V2.5 Dev | 1.0 | 0.95 | 20 | 0 | 1.5 | 1 |
 | Gemma 4 31B IT | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
-| Laguna S 2.1 | 1.0 | 1.0 | 20 | 0 | 0 | 1 |
+| Laguna S and XS 2.1 | 1.0 | 1.0 | 20 | 0 | 0 | 1 |
 | Muse Glimmer 30B | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 
 The sources are Qwen's precise-coding recommendation for
@@ -399,7 +399,9 @@ KAT-Coder's
 Gemma 4's
 [standardized sampling guidance](https://huggingface.co/google/gemma-4-31B-it/blob/842da3794eaa0b77d5f08bae87a17459d91ff475/README.md),
 Laguna's
-[generation configuration](https://huggingface.co/poolside/Laguna-S-2.1/blob/00af5a51782109b587a3b3bbf11875e566036fa7/generation_config.json),
+[S generation configuration](https://huggingface.co/poolside/Laguna-S-2.1/blob/00af5a51782109b587a3b3bbf11875e566036fa7/generation_config.json)
+and
+[XS generation configuration](https://huggingface.co/poolside/Laguna-XS-2.1/blob/e9df9a59996d790b94b70f3fef343fe1d9e34bdf/generation_config.json),
 and Muse Glimmer's
 [model card](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/f84ecc3a0ea984a4c04542a84269e3d065350a6e/README.md).
 Neutral values make parameters omitted by an upstream configuration explicit
@@ -893,6 +895,61 @@ not delete persistent model content. After the official replacement installs
 and verifies successfully, remove the obsolete file manually if it is no
 longer needed. The forced-256K entry remains available for pre-release field
 testing, but its long-context quality and DFlash acceptance are experimental.
+
+### Laguna XS 2.1
+
+Laguna XS 2.1 is a 33B-total, 3B-active mixture-of-experts model for local
+agentic coding and long-horizon work. ROCmplete pins Poolside's official
+Q4_K_M GGUF at 20,274,300,032 bytes, approximately 18.88 GiB. The model's
+native context is 262144 tokens.
+
+Poolside's pinned GGUF card still says that llama.cpp support is pending. That
+note predates the merged
+[`llama.cpp` Laguna PR](https://github.com/ggml-org/llama.cpp/pull/25165).
+ROCmplete's existing llama.cpp pin already contains the merged architecture,
+so this model requires no source update or project patch.
+
+The managed preset enables Jinja tool templates and preserves parsed
+reasoning across multi-turn tool use. It does not advertise Qwen-style
+thinking levels because the model's native reasoning switch is not
+llama.cpp's patched reasoning-effort budget. The model appears as one entry
+in OpenCode, Pi, OMP, and Maki. Qwen3.6 remains the managed client default.
+
+ROCmplete disables Flash Attention for Laguna XS on Strix Halo and Strix
+Point. The tested `gfx1151` ROCm path rejected the model's head size with
+Flash Attention enabled, while Flash Attention off with F16 K/V cache was
+correct. RDNA4 retains llama.cpp's automatic policy. DFlash is not included
+in the initial recipe even though Poolside publishes a draft model. The base
+Q4_K_M path is the accepted control and avoids coupling the first integration
+to a second artifact and speculative-decoding policy.
+
+On a 128 GB Strix Halo host, a fresh 256K allocation used about 58.42 GB of
+container memory and left about 68 GiB available. A shallow request remained
+correct, but the experiment did not fill the complete window with prompt
+tokens. Use `--context 131072` or `--context 65536` when the native allocation
+is unnecessary or host headroom is tighter.
+
+The raw API produced clean arithmetic, a valid structured weather tool call,
+and a correct tool-result follow-up. A read-only Pi repository task completed
+valid tool loops and survived compaction at roughly 30K context, but an
+intentionally broad review prompt overexplored instead of converging. Treat
+that as a model and scaffold discipline caveat, not a server failure. Other
+managed clients inherit the reviewed protocol and sampling metadata but still
+need workload-specific field acceptance.
+
+Poolside's official GGUF repository includes and declares OpenMDW-1.1, so
+installation requires terms acceptance but not the unverified-artifact risk
+flag:
+
+```bash
+./rocmplete content install llama-cpp laguna-xs-2.1 --accept-license
+./rocmplete run llama-cpp server \
+  --preset laguna-xs-2.1-q4-k-m --profile strix-halo
+```
+
+The fixed ROCm pp512/tg128 test measured about 885.81 prompt tokens/s and
+60.59 generated tokens/s on the tested host. Those figures are one
+machine-specific baseline, not a cross-backend or cross-device guarantee.
 
 ### Laguna S 2.1
 

@@ -85,10 +85,10 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 50)
-        self.assertEqual(len(catalog.artifacts), 65)
+        self.assertEqual(len(catalog.bundles), 51)
+        self.assertEqual(len(catalog.artifacts), 66)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 15)
+        self.assertEqual(len(catalog.llama_presets), 16)
         self.assertFalse(
             [
                 artifact.identifier
@@ -333,6 +333,45 @@ class CatalogTests(unittest.TestCase):
             [
                 item.identifier
                 for item in catalog.bundle_agreements(laguna_bundle)
+            ],
+            ["openmdw-1.1"],
+        )
+        laguna_xs = catalog.llama_preset("laguna-xs-2.1-q4-k-m")
+        laguna_xs_bundle = catalog.bundle(laguna_xs.bundle)
+        laguna_xs_artifact = catalog.artifact(laguna_xs.artifact)
+        self.assertEqual(laguna_xs.default_context, 262144)
+        self.assertTrue(laguna_xs.jinja)
+        self.assertTrue(laguna_xs.agent_tools)
+        self.assertFalse(laguna_xs.reasoning_effort_budget)
+        self.assertTrue(laguna_xs.reasoning_preserve)
+        self.assertEqual(
+            laguna_xs.flash_attention,
+            {"strix-halo": "off", "strix-point": "off"},
+        )
+        self.assertEqual(
+            catalog.bundle_size(laguna_xs_bundle), 20274300032
+        )
+        self.assertEqual(
+            laguna_xs_artifact.source.repository,
+            "poolside/Laguna-XS-2.1-GGUF",
+        )
+        self.assertEqual(
+            laguna_xs_artifact.source.revision,
+            "1a37c0a5fb8c7a18e6106decb6be6327d1b63fa6",
+        )
+        self.assertEqual(
+            laguna_xs_artifact.sha256,
+            "1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb",
+        )
+        self.assertEqual(
+            laguna_xs_artifact.license.spdx,
+            "LicenseRef-OpenMDW-1.1",
+        )
+        self.assertEqual(laguna_xs_artifact.license.status, "verified")
+        self.assertEqual(
+            [
+                item.identifier
+                for item in catalog.bundle_agreements(laguna_xs_bundle)
             ],
             ["openmdw-1.1"],
         )

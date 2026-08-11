@@ -18,6 +18,7 @@ class ContentRecipeTests(unittest.TestCase):
         ornith = content_recipe("llama-cpp", "ornith")
         kat_coder = content_recipe("llama-cpp", "kat-coder")
         laguna = content_recipe("llama-cpp", "laguna-s-2.1")
+        laguna_xs = content_recipe("llama-cpp", "laguna-xs-2.1")
         muse = content_recipe("llama-cpp", "muse-glimmer")
         hy = content_recipe("llama-cpp", "translation-hy")
         gemma = content_recipe("llama-cpp", "translation-gemma")
@@ -59,6 +60,15 @@ class ContentRecipeTests(unittest.TestCase):
             laguna.next_command,
             "./rocmplete run llama-cpp server "
             "--preset laguna-s-2.1-q4-k-m",
+        )
+        self.assertEqual(
+            laguna_xs.next_command,
+            "./rocmplete run llama-cpp server "
+            "--preset laguna-xs-2.1-q4-k-m",
+        )
+        self.assertEqual(
+            laguna_xs.bundles,
+            ("llama-laguna-xs-2.1-q4-k-m",),
         )
         self.assertEqual(
             muse.next_command,

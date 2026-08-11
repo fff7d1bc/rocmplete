@@ -232,6 +232,10 @@ def _llama_guide() -> ApplicationGuide:
                     "official Ornith 1.0 35B Q8_0 GGUF or the plain "
                     "KAT-Coder V2.5 Dev Q8_0 conversion. They are comparison "
                     "candidates, not replacement defaults.",
+                    "The laguna-xs-2.1 recipe installs Poolside's official "
+                    "33B-total, 3B-active Q4_K_M coding model. It keeps "
+                    "Qwen as the client default and is independent of the "
+                    "much larger Laguna S family.",
                     "For local agent work on a high-memory host, compare "
                     "alternative presets on real repository tasks before "
                     "choosing a default.",
@@ -316,8 +320,9 @@ def _llama_guide() -> ApplicationGuide:
                 (
                     "Router mode exposes every complete managed preset. "
                     "The API model name is the ROCmplete preset name.",
-                    "Qwen3.6, Ornith, KAT-Coder, Gemma 4, and Laguna start "
-                    "at their native 256K context. Use --context 131072 "
+                    "Qwen3.6, Ornith, KAT-Coder, Gemma 4, and both Laguna "
+                    "families start at their native 256K context. Use "
+                    "--context 131072 "
                     "or --context 65536 for a smaller working set. In "
                     "router mode that option "
                     "overrides every loaded preset, so omit it for a "
@@ -335,12 +340,14 @@ def _llama_guide() -> ApplicationGuide:
             GuideSection(
                 "Tool-using clients",
                 (
-                    "Managed Qwen, Ornith, KAT-Coder, and Gemma 4 agent "
-                    "presets enable their "
+                    "Managed Qwen, Ornith, KAT-Coder, Gemma 4, Laguna, and "
+                    "Muse agent presets enable their "
                     "embedded Jinja templates for llama.cpp's structured "
                     "tool-call path. The Qwen templates include reviewed "
                     "developer-role fixes. Gemma uses Google's canonical "
-                    "tool-calling template.",
+                    "tool-calling template. Laguna XS and Muse preserve "
+                    "parsed reasoning without exposing Qwen-style effort "
+                    "levels.",
                     "Use the ROCmplete preset ID as the router model ID and "
                     "configure the client with that preset's actual context "
                     "limit. Qwen3 0.6B can smoke-test the protocol but is "

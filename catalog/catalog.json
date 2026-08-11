@@ -28,8 +28,8 @@
     },
     "openmdw-1.1": {
       "name": "OpenMDW License Agreement 1.1",
-      "url": "https://huggingface.co/poolside/Laguna-S-2.1/blob/b0a9fd7c850eea9d68cf3ffc5bd5d3c5dced43c0/LICENSE.md",
-      "summary": "Review the complete OpenMDW-1.1 terms before downloading or using Laguna S 2.1."
+      "url": "https://github.com/OpenMDW/OpenMDW/blob/b26b32b34ad2edcc29a7707abb68dcfb25a538c1/1.1/LICENSE.OpenMDW-1.1",
+      "summary": "Review the complete OpenMDW-1.1 terms before downloading or using Poolside Laguna model materials."
     },
     "tencent-hy-community-license": {
       "name": "Tencent HY Community License",
@@ -1113,6 +1113,26 @@
         "openmdw-1.1"
       ]
     },
+    "laguna-xs-2.1-q4-k-m-gguf": {
+      "description": "Official Laguna XS 2.1 Q4_K_M GGUF for llama.cpp",
+      "source": {
+        "repository": "poolside/Laguna-XS-2.1-GGUF",
+        "revision": "1a37c0a5fb8c7a18e6106decb6be6327d1b63fa6",
+        "path": "Laguna-XS-2.1-Q4_K_M.gguf"
+      },
+      "destination": "laguna-xs-2.1/Laguna-XS-2.1-Q4_K_M.gguf",
+      "target": "llama-models",
+      "size": 20274300032,
+      "sha256": "1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb",
+      "license": {
+        "spdx": "LicenseRef-OpenMDW-1.1",
+        "status": "verified",
+        "url": "https://huggingface.co/poolside/Laguna-XS-2.1-GGUF/blob/1a37c0a5fb8c7a18e6106decb6be6327d1b63fa6/LICENSE.md"
+      },
+      "agreements": [
+        "openmdw-1.1"
+      ]
+    },
     "muse-glimmer-30b-kquant-dynamic-gguf": {
       "description": "Official Muse Glimmer 30B dynamic K-quant GGUF for llama.cpp",
       "source": {
@@ -1919,6 +1939,17 @@
         "llama"
       ]
     },
+    "llama-laguna-xs-2.1-q4-k-m": {
+      "description": "Laguna XS 2.1 official Q4_K_M llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "laguna-xs-2.1-q4-k-m-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
     "llama-muse-glimmer-30b-kquant-dynamic-dflash": {
       "description": "Official Muse Glimmer 30B dynamic K-quant llama.cpp model with DFlash draft",
       "application": "llama-cpp",
@@ -2536,6 +2567,18 @@
       "default_context": 262144,
       "jinja": true,
       "agent_tools": true,
+      "flash_attention": {
+        "strix-halo": "off",
+        "strix-point": "off"
+      }
+    },
+    "laguna-xs-2.1-q4-k-m": {
+      "bundle": "llama-laguna-xs-2.1-q4-k-m",
+      "artifact": "laguna-xs-2.1-q4-k-m-gguf",
+      "default_context": 262144,
+      "jinja": true,
+      "agent_tools": true,
+      "reasoning_preserve": true,
       "flash_attention": {
         "strix-halo": "off",
         "strix-point": "off"

@@ -156,12 +156,13 @@ class OpenCodeLauncherTests(unittest.TestCase):
             provider["options"]["baseURL"],
             "http://127.0.0.1:9090/v1",
         )
-        self.assertEqual(len(provider["models"]), 11)
+        self.assertEqual(len(provider["models"]), 12)
         self.assertNotIn("qwen3-0.6b-q8-0", provider["models"])
         self.assertNotIn("translategemma-27b-it-q8-0", provider["models"])
         self.assertIn("qwen3.6-27b-mtp-q8-0", provider["models"])
         self.assertIn("ornith-1.0-35b-q8-0", provider["models"])
         self.assertIn("kat-coder-v2.5-dev-q8-0", provider["models"])
+        self.assertIn("laguna-xs-2.1-q4-k-m", provider["models"])
         self.assertEqual(
             provider["models"][
                 "muse-glimmer-30b-kquant-dynamic-dflash-256k"

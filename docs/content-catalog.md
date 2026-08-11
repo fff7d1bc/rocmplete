@@ -278,15 +278,17 @@ installed presets, ignores wholly missing presets, and refuses partial
 managed installs.
 
 The public llama.cpp recipes are the paired `qwen3.6` selection, the separate
-high-memory `ornith` and `kat-coder` families, the explicitly experimental
-`laguna-s-2.1`, the separate `muse-glimmer` family with its default 128K
+high-memory `ornith` and `kat-coder` families, the practical
+`laguna-xs-2.1`, the explicitly experimental `laguna-s-2.1`, the separate
+`muse-glimmer` family with its default 128K
 DFlash policy and experimental forced-256K preset, the high-memory Japanese
 and English `shisa-v2.1` family, and the focused `translation-hy` and
 `translation-gemma` choices. Shisa stays a model family rather than another
 generic translation role. The Qwen recipe
 deliberately installs the dense 27B MTP and sparse 35B-A3B MTP choices
-together. Ornith, KAT-Coder, and Muse Glimmer remain separate because they are
-unrelated model families. Non-MTP Qwen controls, the smoke-test model, and
+together. Ornith, KAT-Coder, each Laguna size, and Muse Glimmer keep separate
+family recipes instead of being grouped under a subjective coding role.
+Non-MTP Qwen controls, the smoke-test model, and
 other deliberately large models remain exact bundles and presets rather than
 multiplying beginner choices.
 The mandatory internal `all` and `llama` tags still support the literal global

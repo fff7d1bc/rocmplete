@@ -389,6 +389,9 @@ Try one of these:
   Start the experimental Laguna S 2.1 coding/agent model:
     ./rocmplete run llama-cpp server --preset laguna-s-2.1-q4-k-m
 
+  Start the smaller Laguna XS 2.1 coding/agent model:
+    ./rocmplete run llama-cpp server --preset laguna-xs-2.1-q4-k-m
+
   Route requests among all installed managed presets:
     ./rocmplete run llama-cpp server --router
 

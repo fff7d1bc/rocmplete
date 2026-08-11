@@ -34,7 +34,7 @@ passed.
 | Host | GPU target | Workloads exercised |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 llama.cpp MTP/tool, OMP, and ROCm/Vulkan paths; Muse Glimmer quant, DFlash, context, and Maki/OpenCode agent probes |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 llama.cpp MTP/tool, OMP, and ROCm/Vulkan paths; Muse Glimmer agent probes; Laguna XS and Ling feasibility controls |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -156,6 +156,16 @@ changing the default:
 ```bash
 ./rocmplete content install llama-cpp ornith
 ./rocmplete content install llama-cpp kat-coder
+```
+
+Laguna XS 2.1 is a separate, smaller sparse coding model. Its official
+Q4_K_M GGUF starts at 256K, preserves interleaved reasoning across tool turns,
+and is exposed by all managed agent clients without replacing Qwen as their
+default:
+
+```bash
+./rocmplete content install llama-cpp laguna-xs-2.1 --accept-license
+./rocmplete run llama-cpp server --preset laguna-xs-2.1-q4-k-m
 ```
 
 Muse Glimmer is a separate 30B family using Meta's official dynamic K-quant

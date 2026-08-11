@@ -22,7 +22,7 @@ this document.
 | Host | Architecture | Observed workload scope |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets; DwarfStar generation was about 3.9 tokens/s |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 MTP tool protocol, OMP probe, and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer quant, DFlash, context, and Maki/OpenCode agent probes |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 MTP tool protocol, OMP probe, and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer agent probes; Laguna XS and Ling feasibility controls |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -116,6 +116,32 @@ Observed results:
   DFlash section on demand, and returned exact content `ROUTER_OK`. Both
   containers stopped cleanly. This verifies the new wiring, but remains a
   field observation rather than a formal matrix `PASS`.
+- A 2026-08-11 Laguna XS 2.1 probe used the same pinned llama.cpp commit and
+  Fedora Strix Halo host with Poolside's official Q4_K_M GGUF. Under the
+  project's Strix policy, Flash Attention off, F16 K/V cache, batch 2048, and
+  microbatch 512, a fixed three-repetition pp512/tg128 run measured
+  885.81/60.59 tokens/s. The raw API returned exact arithmetic, a valid
+  structured tool call, and a correct tool-result continuation. A fresh 256K
+  allocation used about 58.42 GB of container memory and left about 68 GiB
+  available, but did not fill the window with a 256K prompt. A read-only Pi
+  task sustained valid tool loops through roughly 30K context and compaction;
+  an overly broad review prompt did not converge before manual interruption.
+  The candidate catalog then reused and rehashed the retained 18.88 GiB file
+  through the normal mirror installer. Direct managed startup completed a
+  structured tool-call/result round trip. Router startup exposed all 16
+  installed presets and loaded Laguna XS on demand with `--jinja`,
+  `--reasoning-preserve`, 262144 context, Flash Attention off, and
+  `--load-mode none`; its bounded tool request was also valid. Both startup
+  modes warned that `special_eos_id` and `special_eot_id` were absent from the
+  special EOG set, but the accepted requests terminated normally. Revisit the
+  warning if longer runs show premature or missing termination. Both
+  containers stopped and were removed. No run produced an OOM, GPU reset,
+  device loss, or kernel fault.
+- The same investigation rejected Ling 3.0 Flash on ROCm. Atomic Q4 and Q5
+  GGUFs were coherent through CPU and Vulkan, while the patched TurboQuant
+  ROCm path returned corrupted text and malformed tool arguments on `gfx1151`.
+  Exact inputs, backend controls, benchmarks, and retest criteria are in the
+  [Ling feasibility snapshot](ling-3.0-flash-llama-cpp-feasibility.md).
 
 Two host-specific failures were also useful. The first shared SELinux mount of
 the newly installed DwarfStar file normalized its label after verification,
@@ -204,6 +230,7 @@ local source image.
 | llama.cpp assistant | `llama-qwen3.6-27b-mtp-q8-0` | pending | pending | pending | pending |
 | llama.cpp Qwen tool protocol | `qwen3.6-35b-a3b-mtp-ud-q8-k-xl`, complete nested tool round trip | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp 35B-A3B agent evaluation | `qwen3.6-35b-a3b-ud-q8-k-xl` first, then `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
+| llama.cpp Laguna XS coding/agent | `llama-laguna-xs-2.1-q4-k-m`, 256K allocation and smaller deep task | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp coding/agent | `llama-laguna-s-2.1-q4-k-m`, 256K context | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
 | llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-dflash` against `muse-glimmer-30b-kquant-dynamic` at 128K, then forced `muse-glimmer-30b-kquant-dynamic-dflash-256k` beyond 128K | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
@@ -222,8 +249,10 @@ it, so memory-capacity acceptance and IOMMU performance remain separate
 questions. DSpark, MTP, multi-GPU, distributed
 execution, and SSD streaming are not part of the current application contract.
 
-Laguna remains experimental even after basic startup until chat templating,
-tool use, sustained generation, and output sanity are accepted.
+Laguna S remains experimental even after basic startup until chat templating,
+tool use, sustained generation, and output sanity are accepted. Laguna XS has
+useful Strix Halo field evidence, but still needs formal row acceptance and
+coverage on the other applicable hardware profiles.
 
 For the Qwen tool-protocol row, start the managed router and inspect `/props`
 for the expected template capabilities and context. Send a developer message

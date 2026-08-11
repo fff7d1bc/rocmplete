@@ -80,7 +80,7 @@ class PiLauncherTests(unittest.TestCase):
             },
         )
         models = {model["id"]: model for model in provider["models"]}
-        self.assertEqual(len(models), 11)
+        self.assertEqual(len(models), 12)
         self.assertNotIn("qwen3-0.6b-q8-0", models)
         self.assertNotIn("translategemma-27b-it-q8-0", models)
         self.assertEqual(
@@ -102,6 +102,10 @@ class PiLauncherTests(unittest.TestCase):
         self.assertFalse(models["laguna-s-2.1-q4-k-m"]["reasoning"])
         self.assertNotIn(
             "thinkingLevelMap", models["laguna-s-2.1-q4-k-m"]
+        )
+        self.assertFalse(models["laguna-xs-2.1-q4-k-m"]["reasoning"])
+        self.assertNotIn(
+            "thinkingLevelMap", models["laguna-xs-2.1-q4-k-m"]
         )
         muse = models["muse-glimmer-30b-kquant-dynamic-dflash-256k"]
         self.assertEqual(muse["contextWindow"], 262144)
