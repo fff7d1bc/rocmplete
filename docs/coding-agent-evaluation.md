@@ -147,9 +147,18 @@ A clear repetitive loop may be stopped earlier and recorded as
 non-convergence. Do not wrap a complete multi-task suite in one 45-minute
 timeout: the ceiling belongs to each active attempt, not to the aggregate
 suite. If an attempt in a full-suite promotion reaches the ceiling, interrupt
-the suite and reject that promotion rather than allowing the model unlimited
-time. Preserve older 20-minute and 60-minute records under their actual
-policies instead of relabeling them.
+the suite and stop that promotion rather than allowing the model unlimited
+time.
+
+Interpret a progressing timeout as a performance-bounded, inconclusive result,
+not evidence that the model cannot solve the task. Record what stage it
+reached, its tool calls, live context, and whether it was still making forward
+progress. Keep the model eligible for a deliberate retest when faster hardware,
+a materially faster backend, or a stronger quantization becomes available. A
+completed hidden-test failure establishes an incorrect candidate, while a
+repetitive loop establishes non-convergence in the tested model, harness, and
+runtime configuration. Preserve older 20-minute and 60-minute records under
+their actual policies instead of relabeling them.
 
 The model process must reach a loopback HTTP server, so the shared Pi sandbox
 retains the host network. Pi startup is offline, Go's proxy is disabled for Go

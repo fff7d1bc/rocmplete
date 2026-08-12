@@ -345,7 +345,10 @@ question.
 This calibration sets the operator ceiling for future coding-model evaluation
 at 45 minutes per attempt. It is not an aggregate suite timeout and does not
 change the historical policies recorded above. A clearly repetitive loop may
-still be interrupted earlier.
+still be interrupted earlier. A progressing timeout blocks promotion on the
+tested host but remains inconclusive about model capability; retain its
+checkpoint and revisit it when hardware or runtime throughput changes
+materially.
 
 All result paths are below `apps/agent-evaluation/results/`. No challenger
 passed the hard gate, so none consumed a full-suite run. Laguna and DwarfStar
