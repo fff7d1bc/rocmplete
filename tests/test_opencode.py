@@ -163,6 +163,17 @@ class OpenCodeLauncherTests(unittest.TestCase):
         self.assertIn("ornith-1.0-35b-q8-0", provider["models"])
         self.assertIn("kat-coder-v2.5-dev-q8-0", provider["models"])
         self.assertIn("laguna-xs-2.1-q4-k-m", provider["models"])
+        laguna_s = provider["models"]["laguna-s-2.1-q4-k-m"]
+        self.assertTrue(laguna_s["reasoning"])
+        self.assertEqual(
+            laguna_s["variants"],
+            {
+                "instant": {"reasoningEffort": "none"},
+                "low": {"reasoningEffort": "low"},
+                "medium": {"reasoningEffort": "medium"},
+                "high": {"reasoningEffort": "high"},
+            },
+        )
         self.assertEqual(
             provider["models"][
                 "muse-glimmer-30b-kquant-dynamic-dflash-256k"

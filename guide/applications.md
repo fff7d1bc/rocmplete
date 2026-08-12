@@ -960,7 +960,10 @@ keeping the attention, shared experts, and embeddings at Q8_0. The official
 Q8_0 file is about 129 GB before allocating a KV cache or runtime buffers, so
 it is not a viable 128 GiB-host alternative. ROCmplete starts Laguna at its
 recommended 262144 tokens, enables Jinja for chat and tool templates, and
-disables Flash Attention on both RDNA 3.5 APU profiles
+preserves its interleaved reasoning between tool turns. Managed agent clients
+offer bounded low, medium, and high reasoning levels; the llama.cpp server
+maps those levels to 1024, 4096, and 8192 reasoning tokens. ROCmplete disables
+Flash Attention on both RDNA 3.5 APU profiles
 because that backend/model combination has conflicting early reports. RDNA4
 retains llama.cpp's automatic Flash Attention policy. DFlash is not enabled
 because the pinned upstream llama.cpp supports the base Laguna architecture

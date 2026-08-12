@@ -2884,7 +2884,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--ctx-size 262144", command)
         self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
         self.assertIn(
-            "ROCMLETE_LLAMA_REASONING_PRESERVE=0", command
+            "ROCMLETE_LLAMA_REASONING_PRESERVE=1", command
         )
         self.assertIn(
             "ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO=off", command

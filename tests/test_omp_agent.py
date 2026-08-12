@@ -99,6 +99,12 @@ class OmpLauncherTests(unittest.TestCase):
         laguna_xs = models["laguna-xs-2.1-q4-k-m"]
         self.assertFalse(laguna_xs["reasoning"])
         self.assertNotIn("thinking", laguna_xs)
+        laguna_s = models["laguna-s-2.1-q4-k-m"]
+        self.assertTrue(laguna_s["reasoning"])
+        self.assertEqual(laguna_s["thinking"], qwen["thinking"])
+        self.assertTrue(
+            laguna_s["compat"]["supportsReasoningEffort"]
+        )
         for identifier, model in models.items():
             self.assertEqual(
                 model["compat"]["extraBody"],

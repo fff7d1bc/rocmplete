@@ -2567,6 +2567,8 @@
       "default_context": 262144,
       "jinja": true,
       "agent_tools": true,
+      "reasoning_effort_budget": true,
+      "reasoning_preserve": true,
       "flash_attention": {
         "strix-halo": "off",
         "strix-point": "off"

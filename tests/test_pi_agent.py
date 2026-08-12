@@ -99,9 +99,10 @@ class PiLauncherTests(unittest.TestCase):
                 "max": None,
             },
         )
-        self.assertFalse(models["laguna-s-2.1-q4-k-m"]["reasoning"])
-        self.assertNotIn(
-            "thinkingLevelMap", models["laguna-s-2.1-q4-k-m"]
+        self.assertTrue(models["laguna-s-2.1-q4-k-m"]["reasoning"])
+        self.assertEqual(
+            models["laguna-s-2.1-q4-k-m"]["thinkingLevelMap"],
+            models[self.default_model]["thinkingLevelMap"],
         )
         self.assertFalse(models["laguna-xs-2.1-q4-k-m"]["reasoning"])
         self.assertNotIn(

@@ -111,7 +111,7 @@ class MakiLauncherTests(unittest.TestCase):
             self.assertTrue(
                 by_id[self.default_model]["supports_thinking"]
             )
-            self.assertFalse(
+            self.assertTrue(
                 by_id["laguna-s-2.1-q4-k-m"]["supports_thinking"]
             )
             self.assertFalse(

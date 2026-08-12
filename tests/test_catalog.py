@@ -320,6 +320,9 @@ class CatalogTests(unittest.TestCase):
         laguna_artifact = catalog.artifact(laguna.artifact)
         self.assertEqual(laguna.default_context, 262144)
         self.assertTrue(laguna.jinja)
+        self.assertTrue(laguna.agent_tools)
+        self.assertTrue(laguna.reasoning_effort_budget)
+        self.assertTrue(laguna.reasoning_preserve)
         self.assertEqual(
             laguna.flash_attention,
             {"strix-halo": "off", "strix-point": "off"},
