@@ -311,6 +311,37 @@ timeout --foreground --signal=INT --kill-after=90s 20m \
 - Qwen3.6 27B MTP had a substantial patch but had not reached tests after 20
   minutes and 31 tool calls. Result: `v5-qwen27-mtp-source-race.json`.
 
+An extended capability probe then isolated those two interrupted models on
+the same task. It used source commit
+`75cd17ce43b8ded05d2e6ec096b452f927ae724a`, the unchanged suite fingerprint,
+Pi 0.84.1, ROCm backend, high thinking, 131072 context, and the same model
+presets and grading contract. The only policy change was a 60-minute outer
+ceiling:
+
+```bash
+timeout --foreground --signal=INT --kill-after=90s 60m \
+  ./rocmplete benchmark agent --preset PRESET --task re-source-race
+```
+
+- Qwen3.6 27B MTP exited normally after 1,674.5 seconds and 49 tool calls.
+  Ordinary tests and the build passed, while the hidden suite failed to
+  compile because `snapshotSource` was absent and the verification and
+  quarantine contracts were incompatible. Live context peaked at 98,943
+  tokens without compaction. Result:
+  `v5-capability-qwen27-mtp-source-race.json`.
+- Muse Glimmer 30B DFlash exited normally after 1,929.2 seconds and 82 tool
+  calls. Ordinary tests and the build passed, while the hidden suite failed to
+  compile because `snapshotSource` was absent and `quarantineSource` had an
+  incompatible signature. Live context peaked at 80,558 tokens without
+  compaction. Result: `v5-capability-muse-dflash-source-race.json`.
+
+The longer runs show that both models can eventually produce a coherent,
+ordinary-test-passing candidate. Neither solved the withheld source-safety
+contract, neither approached the context limit, and neither qualifies for a
+full-suite promotion. The 20-minute records remain the practical-runtime
+comparison; these 60-minute records answer only the narrower capability
+question.
+
 All result paths are below `apps/agent-evaluation/results/`. No challenger
 passed the hard gate, so none consumed a full-suite run. Laguna and DwarfStar
 were not repeated because their unchanged earlier runs had already established

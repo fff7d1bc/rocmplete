@@ -33,6 +33,13 @@ other five screened models then received the hard `re-source-race` promotion
 gate with a 20-minute practical ceiling. A remote SIGINT preserved an
 interrupted checkpoint and let ROCmplete remove the server cleanly.
 
+To distinguish practical completion from eventual capability, Qwen3.6 27B
+MTP and Muse Glimmer 30B DFlash later received one additional `re-source-race`
+attempt with a 60-minute outer ceiling. The suite fingerprint, Pi version,
+model presets, 131072 context, and grading contract were unchanged. These
+single attempts are capability probes, not replacements for the 20-minute
+promotion gate.
+
 ## Current quality groups
 
 These groups put demonstrated repository-level quality before token speed.
@@ -49,11 +56,12 @@ looked plausible or the model exited normally.
    Gemma left the cleanest fixture and used the fewest tool calls. Ornith and
    KAT also retained generated executables. None qualifies for a full-suite
    promotion.
-3. **Correct easy patch, impractical hard-task completion: Muse Glimmer 30B
-   DFlash and Qwen3.6 27B MTP.** Muse reached its own tests and Qwen had a
-   substantial patch in progress, but neither completed the gate within 20
-   minutes. Qwen 27B still owns the best-designed easy patch, but an unfinished
-   hard task cannot support an overall first-place claim.
+3. **Correct easy patch, slow and incorrect hard-task completion: Muse
+   Glimmer 30B DFlash and Qwen3.6 27B MTP.** Neither completed the practical
+   gate within 20 minutes. Both later completed a candidate inside a 60-minute
+   capability probe, passed ordinary tests and the build, and failed the
+   withheld safety contract. Qwen 27B still owns the best-designed easy patch,
+   but that task-local result cannot support an overall first-place claim.
 
 Laguna XS, Laguna S, and DwarfStar DeepSeek V4 Flash are outside this order.
 They did not complete the bounded autonomous coding task in the tested
@@ -81,6 +89,14 @@ repository broadly, began a substantial file-identity patch after roughly
 SIGINT. It had made 31 tool calls and had not reached tests. The checkpoint is
 therefore `interrupted`, not a hidden-test result. This is a practical failure
 for bounded autonomous work even though the partial design was sensible.
+
+The extended capability probe exited normally after 1,674.5 seconds and 49
+tool calls. Ordinary tests and the build passed, but the hidden suite did not
+compile against the patch: the required `snapshotSource` helper was absent,
+and the verification and quarantine helpers had incompatible contracts. Live
+context peaked at 98,943 tokens without compaction. More time let Qwen produce
+a coherent candidate, but did not make it solve the task, and the run was not
+limited by the 131072-token context.
 
 The run took 766.7 seconds, 3.34 times the Qwen 35B reference time. It used 22
 tool calls, generated 8,699 tokens at 15.57 tokens per second, and processed
@@ -162,6 +178,14 @@ substantial patch, and reached ordinary tests, but did not exit before the
 20-minute ceiling. Earlier testing also showed substantial harness
 sensitivity. Use Muse where its behavior has been accepted with the chosen
 harness, and keep a human close enough to notice loss of convergence.
+
+The extended capability probe exited normally after 1,929.2 seconds and 82
+tool calls. Ordinary tests and the build passed. The hidden suite still did
+not compile because `snapshotSource` was absent and `quarantineSource` had an
+incompatible signature. Live context peaked at 80,558 tokens without
+compaction. Muse can eventually turn this prompt into a plausible tested
+patch, but it did not demonstrate the required safety behavior, and more
+context would not have addressed the observed failure.
 
 ### Gemma4 31B MTP
 
