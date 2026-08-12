@@ -40,6 +40,10 @@ model presets, 131072 context, and grading contract were unchanged. These
 single attempts are capability probes, not replacements for the 20-minute
 promotion gate.
 
+Those runs calibrate the policy for future candidates at a 45-minute ceiling
+per attempt. This does not retroactively change the recorded 20-minute
+practical screen or the two 60-minute capability probes.
+
 ## Current quality groups
 
 These groups put demonstrated repository-level quality before token speed.
@@ -255,17 +259,24 @@ DeepSeek runtime research and tightly bounded prompting.
 A newly integrated Qwen or other candidate should progress through:
 
 ```bash
-./rocmplete benchmark agent --preset NEW_PRESET --task re-align
-./rocmplete benchmark agent --preset NEW_PRESET --task re-source-race
+timeout --foreground --signal=INT --kill-after=90s 45m \
+  ./rocmplete benchmark agent --preset NEW_PRESET --task re-align
+timeout --foreground --signal=INT --kill-after=90s 45m \
+  ./rocmplete benchmark agent --preset NEW_PRESET --task re-source-race
 ./rocmplete benchmark agent --preset NEW_PRESET
 ```
+
+The 45-minute ceiling applies to each active attempt, including an attempt in
+the complete-suite promotion. It does not apply once to the aggregate suite.
+A clear loop may be terminated earlier.
 
 Use these quality gates in order:
 
 1. It must converge and solve the easy screen. Speed is secondary at this
    stage.
-2. It must complete the destructive source-race safety task. A loop, plausible
-   explanation without a patch, or hidden-test failure is a rejection.
+2. It must complete the destructive source-race safety task within 45 minutes.
+   A loop, plausible explanation without a patch, timeout, or hidden-test
+   failure is a rejection.
 3. It must complete the frozen suite. Compare implementation solve rate and
    the nature of failures, not only the aggregate score.
 4. Human-grade both review answers for factual correctness. A polished answer

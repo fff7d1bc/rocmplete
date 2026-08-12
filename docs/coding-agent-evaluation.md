@@ -133,6 +133,24 @@ practical runtime configuration, not proof that speculation preserved task
 quality; retain the matching non-speculative control when that distinction
 matters.
 
+Use a 45-minute wall-clock ceiling for each future model-evaluation attempt.
+Apply it at the operator boundary so ordinary benchmark execution remains
+intentionally unbounded:
+
+```bash
+timeout --foreground --signal=INT --kill-after=90s 45m \
+  ./rocmplete benchmark agent --preset PRESET --task TASK
+```
+
+The runner checkpoints an interrupted attempt and removes its model container.
+A clear repetitive loop may be stopped earlier and recorded as
+non-convergence. Do not wrap a complete multi-task suite in one 45-minute
+timeout: the ceiling belongs to each active attempt, not to the aggregate
+suite. If an attempt in a full-suite promotion reaches the ceiling, interrupt
+the suite and reject that promotion rather than allowing the model unlimited
+time. Preserve older 20-minute and 60-minute records under their actual
+policies instead of relabeling them.
+
 The model process must reach a loopback HTTP server, so the shared Pi sandbox
 retains the host network. Pi startup is offline, Go's proxy is disabled for Go
 tasks, the Python task has no prepared third-party environment, and every task
