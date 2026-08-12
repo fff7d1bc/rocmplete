@@ -217,8 +217,10 @@ MoE model can be installed independently on a high-memory host:
 | `ornith-1.0-35b-q8-0` | DeepReinforce's official Ornith 1.0 GGUF | Agentic-coding candidate |
 | `kat-coder-v2.5-dev-q8-0` | Bartowski's plain Q8_0 conversion of Kwaipilot's public text-only checkpoint | Newer agentic-coding candidate kept separate from APEX and MTP derivatives |
 
-Both presets use their embedded tool-aware Jinja template and native 256K
-context. They appear in both managed client model pickers after installation, but
+Both presets use their native 256K context. Ornith uses its embedded
+tool-aware Jinja template. KAT-Coder uses the later pinned upstream template
+that accepts system messages introduced by an agent after the first turn.
+They appear in both managed client model pickers after installation, but
 neither replaces ROCmplete's Qwen3.6 default. Treat benchmark claims as leads,
 then compare tool-call correctness, task completion, repetition, wall time,
 and recovery from long sessions on the same repositories. ROCmplete does not

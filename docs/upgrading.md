@@ -244,6 +244,25 @@ the unchanged official GGUF. On upgrades, compare the base-model template and
 GGUF metadata independently, then repeat direct and router rendering plus a
 complete structured tool round trip before changing or removing the override.
 
+The bundled `kat-coder-v2.5.jinja` is byte-for-byte Kwaipilot's template from
+base-model revision `3a7d874090df0cd4399401982eca67df2c5a7e82`, SHA-256
+`e409e9daee03f51b2612d96f0a253027baec06abd1c2429e184380479662d416`.
+The official Bartowski GGUF predates its one-line non-leading-system-message
+fix. On an upgrade, test template rendering with a system message after the
+first turn, then complete a multi-turn structured tool exchange. Do not infer
+that the template's optional historical-thinking support should be enabled:
+the 2026-08-12 trial described in the hardware-acceptance record did not
+establish a quality benefit from reasoning preservation.
+
+The bundled `qwen3-0.6b.jinja` is byte-for-byte the `chat_template` value from
+Qwen base-model revision `7e4ae267688d671ddfca3122e4528ee980cf3234`, SHA-256
+`a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8`.
+The unchanged official GGUF predates its safer handling of non-string message
+content, reasoning values, and tool responses. This remains a small smoke
+model rather than a managed coding agent. On an upgrade, render both ordinary
+text messages and the hardened non-string history before removing the
+override.
+
 For an upstream source update:
 
 1. Resolve and review a full llama.cpp commit and its license.

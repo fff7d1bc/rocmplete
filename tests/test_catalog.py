@@ -109,6 +109,8 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(llama.bundle, "llama-qwen3-0.6b-q8-0")
         self.assertEqual(llama.artifact, "qwen3-0.6b-q8-gguf")
         self.assertEqual(llama.default_context, 4096)
+        self.assertFalse(llama.jinja)
+        self.assertEqual(llama.chat_template, "qwen3-0.6b")
         self.assertEqual(
             catalog.artifact(llama.artifact).target, "llama-models"
         )
@@ -214,7 +216,6 @@ class CatalogTests(unittest.TestCase):
                 preset = catalog.llama_preset(identifier)
                 artifact = catalog.artifact(preset.artifact)
                 self.assertEqual(preset.default_context, 262144)
-                self.assertTrue(preset.jinja)
                 self.assertTrue(preset.agent_tools)
                 self.assertTrue(preset.reasoning_effort_budget)
                 self.assertEqual(artifact.source.repository, expected[0])
@@ -222,6 +223,14 @@ class CatalogTests(unittest.TestCase):
                 self.assertEqual(artifact.sha256, expected[2])
                 self.assertEqual(artifact.license.spdx, expected[3])
                 self.assertEqual(artifact.license.status, "verified")
+        ornith = catalog.llama_preset("ornith-1.0-35b-q8-0")
+        self.assertTrue(ornith.jinja)
+        self.assertEqual(ornith.chat_template, "")
+        self.assertFalse(ornith.reasoning_preserve)
+        kat = catalog.llama_preset("kat-coder-v2.5-dev-q8-0")
+        self.assertFalse(kat.jinja)
+        self.assertEqual(kat.chat_template, "kat-coder-v2.5")
+        self.assertFalse(kat.reasoning_preserve)
         gemma = catalog.llama_preset("gemma4-31b-it-q8-0-mtp")
         self.assertEqual(gemma.default_context, 262144)
         self.assertEqual(gemma.speculative_type, "draft-mtp")
@@ -324,9 +333,26 @@ class CatalogTests(unittest.TestCase):
             "cfc67e5f349f37690dfd31ed1f18bc44"
             "42a9dd32fe39a648f993cb4eb3cae678",
         )
+        managed_template_hashes = {
+            "kat-coder-v2.5.jinja": (
+                "e409e9daee03f51b2612d96f0a253027"
+                "baec06abd1c2429e184380479662d416"
+            ),
+            "qwen3-0.6b.jinja": (
+                "a55ee1b1660128b7098723e0abcd92caa"
+                "0788061051c62d51cbe87d9cf1974d8"
+            ),
+        }
+        for filename, expected_hash in managed_template_hashes.items():
+            with self.subTest(template=filename):
+                template = muse_template.parent / filename
+                self.assertEqual(
+                    hashlib.sha256(template.read_bytes()).hexdigest(),
+                    expected_hash,
+                )
         qwen_presets = (
-            llama,
             assistant,
+            assistant_mtp,
             qwen35,
             qwen35_mtp,
         )

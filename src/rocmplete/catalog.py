@@ -868,12 +868,15 @@ def _load_llama_preset(
     # independent validation; the catalog must not become a path loader.
     if not isinstance(chat_template, str) or chat_template not in (
         "",
+        "kat-coder-v2.5",
         "muse-glimmer-atem",
+        "qwen3-0.6b",
         "translategemma-manual",
     ):
         raise LauncherError(
             "llama.cpp preset {} chat_template must be empty, "
-            "muse-glimmer-atem, or translategemma-manual".format(identifier)
+            "kat-coder-v2.5, muse-glimmer-atem, qwen3-0.6b, or "
+            "translategemma-manual".format(identifier)
         )
     if chat_template and jinja:
         raise LauncherError(

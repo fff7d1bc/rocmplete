@@ -780,7 +780,9 @@ class RuntimeCommandTests(unittest.TestCase):
             entrypoint,
         )
         self.assertIn(
-            '""|muse-glimmer-atem|translategemma-manual', entrypoint
+            '""|kat-coder-v2.5|muse-glimmer-atem|qwen3-0.6b|'
+            'translategemma-manual',
+            entrypoint,
         )
 
     def test_llama_production_image_uses_the_modular_rocm_runtime(self):

@@ -128,6 +128,39 @@ Observed results:
   `apps/agent-evaluation/results/20260812T152234Z-muse-glimmer-30b-kquant-dynamic-dflash.json`.
   This is a template-regression field observation, not a new comparative
   quality ranking or a formal matrix `PASS`.
+- A 2026-08-12 KAT-Coder template audit used the same Fedora Strix Halo host,
+  llama.cpp commit, KAT Q8_0 artifact, Pi 0.84.1, ROCm backend, 131072-token
+  evaluation context, and high thinking. Candidate image
+  `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r18` had image
+  ID `98b81f0ab4b1cf948de4564e3c01bd722acc360a1c25538380e1b9f9361f0a04`.
+  Its managed template matched Kwaipilot base revision
+  `3a7d874090df0cd4399401982eca67df2c5a7e82` byte for byte and rendered a
+  non-leading system message that the template embedded in the unchanged
+  GGUF rejects. A direct server completed a required structured tool call and
+  tool-result continuation. The final router policy loaded KAT on demand with
+  the exact managed template, without `--reasoning-preserve`, then completed
+  another required tool call and continuation before stopping cleanly. The
+  same image's Qwen3 0.6B override rendered array-form text content and
+  returned exact bounded content `TEMPLATE_OK`.
+
+  An exploratory KAT `re-align` comparison separated the embedded template,
+  updated template, and updated template with reasoning preservation. All
+  three attempts produced the same patch SHA-256
+  `cea8b4bc7fc8ba2cfd5c7952bf22b2a15fa1fafe37c186eabda7bca0fed1e215`
+  and passed ordinary tests, hidden tests, build, dependency, artifact, and
+  network checks. Their wall times and generated-token counts were 684.8
+  seconds/23,221, 458.5/15,493, and 349.0/10,224 respectively. The companion
+  `fz-eintr` attempts took 193.0 seconds with the embedded template, 110.5
+  with the updated template, and 194.6 with the updated template plus
+  preservation. Only the embedded-template attempt remained valid; both
+  updated-template attempts ran `go build ./...` and left a forbidden `fzr`
+  executable even though all code tests passed. Since KAT sampling remained
+  stochastic and the upstream diff affects only non-leading system messages,
+  the timing spread is not attributed to the template. The compatibility fix
+  is retained, but reasoning preservation is not enabled and no quality or
+  speed promotion is claimed. Raw results are retained as
+  `apps/agent-evaluation/results/kat-template-ab-*.json` and
+  `apps/agent-evaluation/results/kat-template-fz-*.json`.
 - A 2026-08-11 Laguna XS 2.1 probe used the same pinned llama.cpp commit and
   Fedora Strix Halo host with Poolside's official Q4_K_M GGUF. Under the
   project's Strix policy, Flash Attention off, F16 K/V cache, batch 2048, and

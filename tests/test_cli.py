@@ -2543,7 +2543,10 @@ class CliTests(unittest.TestCase):
             self.assertIn(
                 "/content/models/{}".format(artifact.destination), command
             )
-            self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
+            self.assertIn("ROCMLETE_LLAMA_JINJA=0", command)
+            self.assertIn(
+                "ROCMLETE_LLAMA_CHAT_TEMPLATE=qwen3-0.6b", command
+            )
 
     def test_llama_router_dry_run_does_not_write_generated_preset(self):
         catalog = load_catalog()
@@ -2715,6 +2718,66 @@ class CliTests(unittest.TestCase):
         self.assertIn("[{}]".format(identifier), contents)
         self.assertIn("c = 262144", contents)
         self.assertIn("jinja = true", contents)
+
+    def test_llama_router_renders_updated_kat_template_policy(self):
+        catalog = load_catalog()
+        identifier = "kat-coder-v2.5-dev-q8-0"
+        preset = catalog.llama_preset(identifier)
+        artifact = catalog.artifact(preset.artifact)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            path = (
+                data_dir
+                / "content"
+                / "llama-cpp"
+                / "models"
+                / artifact.destination
+            )
+            path.parent.mkdir(parents=True)
+            with path.open("wb") as handle:
+                handle.truncate(artifact.size)
+            _record_managed_file(data_dir, path, artifact)
+            contents, installed = _render_llama_router_preset(
+                catalog, data_dir
+            )
+        self.assertEqual(installed, (identifier,))
+        self.assertIn(
+            "chat-template-file = "
+            "/usr/local/share/rocmplete/llama-chat-templates/"
+            "kat-coder-v2.5.jinja",
+            contents,
+        )
+        self.assertNotIn("reasoning-preserve", contents)
+
+    def test_llama_router_renders_updated_qwen_smoke_template(self):
+        catalog = load_catalog()
+        identifier = "qwen3-0.6b-q8-0"
+        preset = catalog.llama_preset(identifier)
+        artifact = catalog.artifact(preset.artifact)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            path = (
+                data_dir
+                / "content"
+                / "llama-cpp"
+                / "models"
+                / artifact.destination
+            )
+            path.parent.mkdir(parents=True)
+            with path.open("wb") as handle:
+                handle.truncate(artifact.size)
+            _record_managed_file(data_dir, path, artifact)
+            contents, installed = _render_llama_router_preset(
+                catalog, data_dir
+            )
+        self.assertEqual(installed, (identifier,))
+        self.assertIn(
+            "chat-template-file = "
+            "/usr/local/share/rocmplete/llama-chat-templates/"
+            "qwen3-0.6b.jinja",
+            contents,
+        )
+        self.assertNotIn("reasoning-preserve", contents)
 
     def test_llama_router_renders_profile_aware_laguna_policy(self):
         catalog = load_catalog()

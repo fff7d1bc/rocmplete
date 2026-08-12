@@ -2496,7 +2496,7 @@
       "bundle": "llama-qwen3-0.6b-q8-0",
       "artifact": "qwen3-0.6b-q8-gguf",
       "default_context": 4096,
-      "jinja": true
+      "chat_template": "qwen3-0.6b"
     },
     "ornith-1.0-35b-q8-0": {
       "bundle": "llama-ornith-1.0-35b-q8-0",
@@ -2510,7 +2510,7 @@
       "bundle": "llama-kat-coder-v2.5-dev-q8-0",
       "artifact": "kat-coder-v2.5-dev-q8-gguf",
       "default_context": 262144,
-      "jinja": true,
+      "chat_template": "kat-coder-v2.5",
       "agent_tools": true,
       "reasoning_effort_budget": true
     },

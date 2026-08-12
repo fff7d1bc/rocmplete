@@ -50,7 +50,10 @@ revisions recorded in `catalog/catalog.json`.
 - Qwen Image, Qwen Image Edit, and the selected lightx2v acceleration LoRAs
   declare Apache-2.0 at the pinned Hugging Face revisions in the catalog.
 - The managed Qwen3 0.6B Q8_0 GGUF is downloaded directly from Qwen's pinned
-  official Hugging Face revision and declares Apache-2.0.
+  official Hugging Face revision and declares Apache-2.0. The llama.cpp image
+  includes Qwen's Apache-2.0 chat template from base-model revision
+  `7e4ae267688d671ddfca3122e4528ee980cf3234` so the older unchanged GGUF
+  receives the later content-type and tool-response hardening.
 - Managed Qwen3.6 27B and Qwen3.6 35B-A3B GGUF
   conversions are downloaded from full pinned Unsloth revisions. Each pinned
   model card explicitly declares Apache-2.0 and links its corresponding Qwen
@@ -64,7 +67,10 @@ revisions recorded in `catalog/catalog.json`.
   revision derived from Kwaipilot's public text-only checkpoint. The
   conversion repository declares Apache-2.0 and records its upstream model
   lineage. ROCmplete records the exact size and SHA-256 and does not
-  redistribute the model.
+  redistribute the model. The llama.cpp image includes Kwaipilot's Apache-2.0
+  chat template from base-model revision
+  `3a7d874090df0cd4399401982eca67df2c5a7e82`, which accepts non-leading system
+  messages instead of rejecting the agent conversation.
 - The managed Gemma 4 31B IT Q8_0 target and matching Q8_0 MTP draft are
   downloaded together from one full pinned llama.cpp project revision. The
   repository declares Apache-2.0. ROCmplete records both files' exact sizes
