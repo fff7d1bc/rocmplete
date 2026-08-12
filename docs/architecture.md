@@ -576,7 +576,7 @@ name exact GGUF architecture prefixes whose `context_length` metadata is
 overridden to that launch's selected context. Presence of this narrow policy
 also disables llama.cpp automatic fitting; it does not expose general metadata
 or argument overrides. Presets can additionally enable Jinja, select a
-project-owned chat template from a closed allowlist, and select `on`, `off`,
+project-bundled chat template from a closed allowlist, and select `on`, `off`,
 or `auto` Flash Attention behavior for a concrete GPU profile. Managed
 templates are copied into the image and never read from host content. The
 launcher renders only installed presets into a private atomic INI, rejects

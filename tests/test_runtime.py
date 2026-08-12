@@ -779,6 +779,9 @@ class RuntimeCommandTests(unittest.TestCase):
             '[[ -f "$chat_template_path" && -r "$chat_template_path" ]]',
             entrypoint,
         )
+        self.assertIn(
+            '""|muse-glimmer-atem|translategemma-manual', entrypoint
+        )
 
     def test_llama_production_image_uses_the_modular_rocm_runtime(self):
         root = Path(__file__).resolve().parents[1]

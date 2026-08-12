@@ -1,3 +1,4 @@
+import hashlib
 import json
 import tempfile
 import unittest
@@ -274,7 +275,10 @@ class CatalogTests(unittest.TestCase):
         )
         for preset in (muse_base, muse, muse_256k):
             with self.subTest(preset=preset.identifier):
-                self.assertTrue(preset.jinja)
+                self.assertFalse(preset.jinja)
+                self.assertEqual(
+                    preset.chat_template, "muse-glimmer-atem"
+                )
                 self.assertTrue(preset.agent_tools)
                 self.assertFalse(preset.reasoning_effort_budget)
                 self.assertTrue(preset.reasoning_preserve)
@@ -307,6 +311,18 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(muse.bundle)),
             21285163296,
+        )
+        muse_template = (
+            DEFAULT_CATALOG_PATH.parent.parent
+            / "applications"
+            / "llama-cpp"
+            / "chat-templates"
+            / "muse-glimmer-atem.jinja"
+        )
+        self.assertEqual(
+            hashlib.sha256(muse_template.read_bytes()).hexdigest(),
+            "cfc67e5f349f37690dfd31ed1f18bc44"
+            "42a9dd32fe39a648f993cb4eb3cae678",
         )
         qwen_presets = (
             llama,

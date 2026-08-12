@@ -116,6 +116,18 @@ Observed results:
   DFlash section on demand, and returned exact content `ROUTER_OK`. Both
   containers stopped cleanly. This verifies the new wiring, but remains a
   field observation rather than a formal matrix `PASS`.
+- The 2026-08-12 Muse ATEM template correction was accepted with image
+  `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r17` (image ID
+  `98369219e680a5e44517ba1955a4fb3ce18fbcbf80cc3d89961e76648ddcb193`).
+  Direct and routed 128K DFlash servers both received the pinned managed
+  template and completed required structured tool calls; the direct path also
+  completed a tool-result continuation. Pi 0.84.1 then solved the version 5
+  `re-align` task in 597.8 seconds and 36 tool calls. Ordinary and hidden
+  tests, the build, and dependency and artifact checks passed. The result is
+  retained as
+  `apps/agent-evaluation/results/20260812T152234Z-muse-glimmer-30b-kquant-dynamic-dflash.json`.
+  This is a template-regression field observation, not a new comparative
+  quality ranking or a formal matrix `PASS`.
 - A 2026-08-11 Laguna XS 2.1 probe used the same pinned llama.cpp commit and
   Fedora Strix Halo host with Poolside's official Q4_K_M GGUF. Under the
   project's Strix policy, Flash Attention off, F16 K/V cache, batch 2048, and

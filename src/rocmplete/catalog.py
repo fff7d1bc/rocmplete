@@ -863,6 +863,23 @@ def _load_llama_preset(
         raise LauncherError(
             "llama.cpp preset {} jinja must be a boolean".format(identifier)
         )
+    chat_template = data.get("chat_template", "")
+    # Keep this closed set aligned with the image files and the entrypoint's
+    # independent validation; the catalog must not become a path loader.
+    if not isinstance(chat_template, str) or chat_template not in (
+        "",
+        "muse-glimmer-atem",
+        "translategemma-manual",
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} chat_template must be empty, "
+            "muse-glimmer-atem, or translategemma-manual".format(identifier)
+        )
+    if chat_template and jinja:
+        raise LauncherError(
+            "llama.cpp preset {} custom chat_template already enables "
+            "Jinja".format(identifier)
+        )
     agent_tools = data.get("agent_tools", False)
     if not isinstance(agent_tools, bool):
         raise LauncherError(
@@ -870,7 +887,9 @@ def _load_llama_preset(
                 identifier
             )
         )
-    if agent_tools and (not jinja or default_context < 16384):
+    if agent_tools and (
+        not (jinja or chat_template) or default_context < 16384
+    ):
         raise LauncherError(
             "llama.cpp preset {} agent_tools requires Jinja and at least "
             "16384 context tokens".format(identifier)
@@ -898,22 +917,6 @@ def _load_llama_preset(
         raise LauncherError(
             "llama.cpp preset {} reasoning_preserve requires "
             "agent_tools".format(identifier)
-        )
-    chat_template = data.get("chat_template", "")
-    # Keep this closed set aligned with the image files and the entrypoint's
-    # independent validation; the catalog must not become a path loader.
-    if not isinstance(chat_template, str) or chat_template not in (
-        "",
-        "translategemma-manual",
-    ):
-        raise LauncherError(
-            "llama.cpp preset {} chat_template must be empty, "
-            "or translategemma-manual".format(identifier)
-        )
-    if chat_template and jinja:
-        raise LauncherError(
-            "llama.cpp preset {} custom chat_template already enables "
-            "Jinja".format(identifier)
         )
     flash_attention_value = data.get("flash_attention", {})
     if not isinstance(flash_attention_value, dict):

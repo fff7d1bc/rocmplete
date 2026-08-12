@@ -236,6 +236,14 @@ protected behavior is fixed.
 | `quantized-kv-flash-attention.patch` | Provides reviewed Vulkan q8_0 and HIP q8_0/q4_0 dequantize-on-load paths. It combines commits `4edaca09`, `4355d03e`, and `2a24abc6` from the `strix-halo-fa-fixes` branch. | Matching upstream code passes the same f16 and q8_0 cache, backend, context-depth, performance, and output checks on every applicable hardware class. |
 | `vulkan-f16-kv-contiguize.patch` | Adds the environment-gated f16 KV contiguization path derived from commit `b1a10f981`. ROCmplete enables it only for Vulkan on `gfx1151`. | Equivalent upstream behavior retains the measured long-context improvement without shallow-context or output regressions. Do not broaden the profile gate without results from the additional architecture. |
 
+The bundled `muse-glimmer-atem.jinja` is byte-for-byte Meta's template from
+base-model revision `a4e59da52a7bc87ae7251dd5545c0dd437c44b68`, SHA-256
+`cfc67e5f349f37690dfd31ed1f18bc4442a9dd32fe39a648f993cb4eb3cae678`.
+It corrects duplicate reasoning directives in the older template embedded in
+the unchanged official GGUF. On upgrades, compare the base-model template and
+GGUF metadata independently, then repeat direct and router rendering plus a
+complete structured tool round trip before changing or removing the override.
+
 For an upstream source update:
 
 1. Resolve and review a full llama.cpp commit and its license.

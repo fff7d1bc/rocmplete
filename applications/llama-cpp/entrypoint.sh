@@ -51,7 +51,7 @@ case "$reasoning_preserve" in
 esac
 # This mirrors the host catalog allowlist so neither boundary accepts paths.
 case "$chat_template" in
-    ""|translategemma-manual) ;;
+    ""|muse-glimmer-atem|translategemma-manual) ;;
     *) die "unknown managed llama.cpp chat template '$chat_template'" ;;
 esac
 case "$speculative_type" in

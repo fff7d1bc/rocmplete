@@ -219,8 +219,9 @@ acceptance for every non-default profile policy.
 If the embedded GGUF template cannot express the managed API contract, add a
 named `chat_template` only when one fixed, reviewable adapter is enough. Keep
 the catalog allowlist, image file, entrypoint validation, single-model mapping,
-and router preset in sync. Do not turn this into a host path or arbitrary
-template loader.
+and router preset in sync. For a copied upstream template, pin its immutable
+revision, preserve its license notice, and hash the exact bundled bytes in a
+test. Do not turn this into a host path or arbitrary template loader.
 
 ### 6. Test it
 

@@ -2590,7 +2590,7 @@
       "bundle": "llama-muse-glimmer-30b-kquant-dynamic-dflash",
       "artifact": "muse-glimmer-30b-kquant-dynamic-gguf",
       "default_context": 131072,
-      "jinja": true,
+      "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
       "reasoning_preserve": true
     },
@@ -2601,7 +2601,7 @@
       "default_context": 131072,
       "speculative_type": "draft-dflash",
       "draft_tokens": 15,
-      "jinja": true,
+      "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
       "reasoning_preserve": true
     },
@@ -2616,7 +2616,7 @@
         "muse-glimmer",
         "dflash"
       ],
-      "jinja": true,
+      "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
       "reasoning_preserve": true
     },

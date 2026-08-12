@@ -262,6 +262,67 @@ settings, and the 256K section retained its two architecture overrides plus
 `fit = off`. This closes the stale-entrypoint failure found during research
 and verifies both runtime paths without another long agent evaluation.
 
+## 2026-08-12 ATEM template correction
+
+Meta updated the base-model
+[`chat_template.jinja`](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/a4e59da52a7bc87ae7251dd5545c0dd437c44b68/chat_template.jinja)
+at revision `a4e59da52a7bc87ae7251dd5545c0dd437c44b68` after the official GGUF bytes
+were published. The new 9,992-byte file has SHA-256
+`cfc67e5f349f37690dfd31ed1f18bc4442a9dd32fe39a648f993cb4eb3cae678`.
+Most of the source diff reformats the original one-line template without
+changing its whitespace-stripped output. The substantive change handles an
+existing reasoning directive in a caller's system message: it normalizes
+`Reasoning effort` to Muse's `Reasoning strength` terminology and does not
+append a second default-high directive.
+
+The selected target GGUF still embeds the original 7,167-byte template from
+the initial base-model release. No GGUF or draft file changed after
+ROCmplete's pinned GGUF revision; later commits in that repository changed
+only its model card. Updating the model artifact pin would therefore not
+deliver the template correction. ROCmplete instead bundles Meta's exact
+immutable template and selects it through the existing closed managed-template
+policy for all three Muse presets. The target and DFlash artifact revisions,
+sizes, and hashes remain unchanged.
+
+A temporary override against the existing managed image established the
+behavior before integration. With the embedded template, a system prompt
+containing `Reasoning effort: medium.` rendered that instruction followed by
+`Reasoning strength: high.`. With Meta's corrected template, it rendered only
+`Reasoning strength: medium.`. llama.cpp reported the same tool, parallel-call,
+system-role, and reasoning-preservation capabilities, and a bounded request
+returned a correctly structured `echo_text` call with the required argument.
+The server stopped cleanly, and the host recorded no OOM, GPU reset, page
+fault, ring timeout, or device loss.
+
+The completed integration was built as
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r17`, image ID
+`98369219e680a5e44517ba1955a4fb3ce18fbcbf80cc3d89961e76648ddcb193`.
+The bundled template in the image matched the recorded SHA-256, and
+`pip check` reported no broken requirements. A direct managed server rendered
+only the normalized medium-strength directive and completed both a required
+tool call and a tool-result continuation. The router loaded the same 128K DFlash
+preset on demand, passed the managed template path to its child, and returned
+a required structured tool call. Both paths stopped cleanly without a matching
+kernel fault.
+
+A separate Pi 0.84.1 evaluation then ran the frozen version 5 `re-align` task
+with the 128K DFlash preset, high thinking, and ROCm. It solved the task in
+597.8 seconds with 36 tool calls. All ordinary and hidden tests, the build, and
+the dependency and artifact checks passed. The attempt generated 12,749 tokens
+at 23.89 tokens/s and processed prompts at 74.92 tokens/s. Its retained result
+is
+`apps/agent-evaluation/results/20260812T152234Z-muse-glimmer-30b-kquant-dynamic-dflash.json`.
+The patch used matching width-10 literals in the header and row rather than a
+named shared constant, so this remains an easy-task compatibility result, not
+evidence of stronger design judgment. The previous comparable run took 670.2
+seconds and 40 tool calls, but two single repetitions cannot attribute the
+difference to the template.
+
+This correction removes contradictory prompt formatting but does not change
+the model weights, DFlash decoder, tool protocol, sampler policy, or harness
+scaffold. It is therefore a correctness retest trigger, not evidence by itself
+that Muse's repository-level coding quality or OpenCode behavior has improved.
+
 ## Retest triggers
 
 Repeat the comparison when any of these changes materially:

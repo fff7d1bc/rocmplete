@@ -82,7 +82,10 @@ revisions recorded in `catalog/catalog.json`.
 - Muse Glimmer 30B dynamic K-quant and its DFlash k-quant draft are downloaded
   together from one full pinned Meta GGUF revision. The repository declares
   Apache-2.0. ROCmplete records both files' exact sizes and SHA-256 hashes and
-  does not redistribute them.
+  does not redistribute them. The llama.cpp image includes Meta's Apache-2.0
+  Muse Glimmer ATEM chat template from base-model revision
+  `a4e59da52a7bc87ae7251dd5545c0dd437c44b68` so the unchanged GGUF receives
+  Meta's later duplicate-reasoning-directive correction.
 - Tencent's official HY-MT1.5 7B Q8_0 GGUF is downloaded from one full pinned
   revision under the Tencent HY Community License. That license excludes the
   EU, United Kingdom, and South Korea from its territory. ROCmplete requires

@@ -2672,7 +2672,15 @@ class CliTests(unittest.TestCase):
             "dflash.context_length=int:262144",
             extended_section,
         )
-        self.assertIn("jinja = true", contents)
+        self.assertEqual(contents.count("jinja = true"), 3)
+        self.assertEqual(
+            contents.count(
+                "chat-template-file = "
+                "/usr/local/share/rocmplete/llama-chat-templates/"
+                "muse-glimmer-atem.jinja"
+            ),
+            3,
+        )
         self.assertEqual(contents.count("reasoning-preserve = true"), 3)
         self.assertIn("spec-type = draft-dflash", contents)
         self.assertIn("spec-draft-n-max = 15", contents)
@@ -3025,7 +3033,10 @@ class CliTests(unittest.TestCase):
             command,
         )
         self.assertIn("--ctx-size 262144", command)
-        self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
+        self.assertIn("ROCMLETE_LLAMA_JINJA=0", command)
+        self.assertIn(
+            "ROCMLETE_LLAMA_CHAT_TEMPLATE=muse-glimmer-atem", command
+        )
         self.assertIn(
             "ROCMLETE_LLAMA_REASONING_PRESERVE=1", command
         )

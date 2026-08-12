@@ -322,11 +322,12 @@ reasoning choices as the managed Qwen agents.
 ### Tool-using clients
 
 Managed Qwen, Gemma 4, and Muse Glimmer agent presets enable llama.cpp's Jinja
-engine and use the chat template embedded in their pinned GGUF. This is
-required for structured OpenAI-style tool calls. The pinned Unsloth Qwen3.6
-templates include their developer-role and tool-calling fixes. Gemma 4 uses
-Google's canonical tool-calling template, and Muse retains Meta's tool and
-reasoning framing. ROCmplete does not replace them with a generic one.
+engine. This is required for structured OpenAI-style tool calls. The pinned
+Unsloth Qwen3.6 GGUFs include their developer-role and tool-calling fixes, and
+Gemma 4 uses Google's canonical embedded template. Muse uses Meta's later
+pinned ATEM template from the base repository because its unchanged official
+GGUF still embeds the original release template. ROCmplete does not replace
+these model-specific protocols with a generic one.
 
 The Qwen3 0.6B preset follows the same protocol and is useful for a cheap API
 smoke test, but it is too small to treat as a dependable repository agent.
@@ -886,8 +887,10 @@ unattended write access.
 All three presets enable llama.cpp reasoning preservation so parsed reasoning
 remains available to multi-turn history. This is separate from a bounded
 reasoning-effort selector: Muse does not advertise the Qwen-style effort
-variants. Meta's `Reasoning strength: high` guidance is still a prompt-level
-instruction owned by the active agent or project scaffold.
+variants. The managed Meta template normalizes an existing `Reasoning effort`
+system directive to Muse's `Reasoning strength` terminology and avoids adding
+a contradictory default-high directive. With no such system directive it
+retains Meta's `Reasoning strength: high` default.
 
 ROCmplete previously installed
 `Muse-Glimmer-30B-UD-Q8_K_XL.gguf` for this recipe. Upgrading the catalog does

@@ -216,11 +216,13 @@ an override the recipe default. `--context 0` is rejected for such a preset
 because it would silently discard the managed override.
 
 `jinja` is an optional boolean that enables llama.cpp's Jinja chat-template
-engine for a preset. `chat_template` selects one project-owned template from
+engine for a preset. `chat_template` selects one project-bundled template from
 the loader's small allowlist. Add the template to the llama.cpp image, the
 Containerfile context, the entrypoint validation, and router rendering
-together. A managed template enables Jinja itself, so do not also set
-`jinja`. `flash_attention` is an optional object whose keys are
+together. Pin and record an upstream template's revision, license, and exact
+hash; do not assume unchanged GGUF bytes acquire a later tokenizer template.
+A managed template enables Jinja itself, so do not also set `jinja`.
+`flash_attention` is an optional object whose keys are
 the concrete hardware profiles `rdna4`, `strix-halo`, or `strix-point` and
 whose values are `on`, `off`, or `auto`. The container resolves `auto`
 hardware detection before applying this policy. These narrow fields must be
