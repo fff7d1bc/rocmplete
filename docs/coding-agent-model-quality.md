@@ -239,25 +239,40 @@ model, template, runtime, or harness change justifies retesting.
 
 ### Laguna S 2.1
 
-The older version 2 screen interrupted `laguna-s-2.1-q4-k-m` after about 27
-minutes without an edit. A current version 5 `re-align` rerun at 131072 context
-then used the new 45-minute ceiling. Laguna made 13 distinct tool calls,
-located the exact formatter and tests, and derived the correct width-10 policy,
-but never changed the worktree.
+The older version 2 screen and the first version 5 `re-align` follow-up did not
+preserve Laguna's interleaved reasoning. The preset also advertised no
+reasoning-effort support, so Pi's requested `high` level was ignored. The
+server explicitly warned that the template supported reasoning preservation.
+Treat the resulting 27-minute and 45-minute no-edit runs as useful controls,
+not the final Laguna quality result.
 
-The decisive failure was inside its final assistant turn. It decoded 9,011
-tokens over nearly 30 minutes at 5.08 tokens per second while repeatedly
-reconsidering the same width-10 conclusion and exact expected strings. The
-run was interrupted cleanly with no edit or grade, so `re-source-race` was not
-started. Its checkpoint is
-`apps/agent-evaluation/results/v5-45m-laguna-s-re-align.json`.
+Commit `a2256eb` corrected both boundaries. The server now preserves reasoning
+between tool turns, while managed agent clients expose the project's bounded
+low, medium, and high levels. A first corrected trial reached the right
+width-10 implementation and was beginning an edit tool call when it was
+manually interrupted after about 40 minutes. That operator-interrupted trial
+is evidence of capability but is not a pass.
 
-This is non-convergence in the tested model, Pi, template, quantization, and
-runtime configuration, not proof that every future deployment will fail.
-Substantially faster decoding would make the same long reasoning trajectory
-cheaper, while a changed model, template, or harness could change the
-trajectory itself. Retest after one of those material changes, but do not use
-Laguna S as a repository agent in the current configuration.
+A fresh corrected trial then received the full 45-minute ceiling. Laguna used
+11 completed read or shell calls, exhausted one high-effort turn at 8,329
+decoded tokens, and repeatedly derived the correct width-10 policy. It still
+never edited the worktree. The retained reasoning grew the live history to
+about 29K tokens; generation fell from 16.53 tokens per second on the first
+turn to 5.65 on the bounded turn and 3.93 near timeout. The final 3,906-token
+reasoning turn was still incomplete when the normal timeout checkpointed the
+attempt. Its result is
+`apps/agent-evaluation/results/v5-45m-laguna-s-preserved-re-align-r2.json`.
+The hard gate was not started.
+
+The integration is now behaving as intended, but Laguna S is not promoted as
+a Pi repository agent on this host. Faster hardware could convert the
+near-edit trajectory into a pass and would make retained context cheaper; it
+would not remove the model's excessive reasoning-token use. The official
+hybrid Q4_K_M quantization may contribute, but this test does not isolate
+quantization and the official Q8_0 artifact does not fit this 128 GiB host
+with runtime state. Retest after materially faster hardware, a practical
+higher-precision control, or a model/template/harness change. A bounded
+medium-effort run is also a useful follow-up now that the selector is wired.
 
 ### DwarfStar DeepSeek V4 Flash
 
