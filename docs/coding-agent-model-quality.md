@@ -226,7 +226,7 @@ after 1,000.6 seconds and 54 tool calls. Ordinary tests passed, but its hidden
 contract did not compile and it retained a generated executable. Ornith is a
 reasonable second opinion, not a safe autonomous choice.
 
-## Disqualified models
+## Not promoted under the current configuration
 
 ### Laguna XS 2.1
 
@@ -239,11 +239,25 @@ model, template, runtime, or harness change justifies retesting.
 
 ### Laguna S 2.1
 
-`laguna-s-2.1-q4-k-m` was interrupted after about 27 minutes without making an
-edit in the older version 2 screen. This is not comparable version 4
-performance data, but it is sufficient negative evidence for the current use
-case. It remains an experimental inference model rather than a dependable
-repository agent.
+The older version 2 screen interrupted `laguna-s-2.1-q4-k-m` after about 27
+minutes without an edit. A current version 5 `re-align` rerun at 131072 context
+then used the new 45-minute ceiling. Laguna made 13 distinct tool calls,
+located the exact formatter and tests, and derived the correct width-10 policy,
+but never changed the worktree.
+
+The decisive failure was inside its final assistant turn. It decoded 9,011
+tokens over nearly 30 minutes at 5.08 tokens per second while repeatedly
+reconsidering the same width-10 conclusion and exact expected strings. The
+run was interrupted cleanly with no edit or grade, so `re-source-race` was not
+started. Its checkpoint is
+`apps/agent-evaluation/results/v5-45m-laguna-s-re-align.json`.
+
+This is non-convergence in the tested model, Pi, template, quantization, and
+runtime configuration, not proof that every future deployment will fail.
+Substantially faster decoding would make the same long reasoning trajectory
+cheaper, while a changed model, template, or harness could change the
+trajectory itself. Retest after one of those material changes, but do not use
+Laguna S as a repository agent in the current configuration.
 
 ### DwarfStar DeepSeek V4 Flash
 

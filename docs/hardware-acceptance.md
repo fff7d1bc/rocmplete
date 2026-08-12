@@ -226,6 +226,27 @@ it. Their exact checkpoints are
 Those runs showed working runtime and Pi tool protocols, but not useful coding
 completion.
 
+A 2026-08-12 Laguna S follow-up used source commit
+`74477f25cca6b3491e74e33dec72a06bef0309d5`, frozen suite fingerprint
+`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`, Pi
+0.84.1, ROCm, high thinking, 131072 context, one fresh repetition, and the
+current 45-minute per-attempt ceiling. The 68,248,760,064-byte Laguna S Q4_K_M
+artifact had SHA-256
+`a34c74e46688122bef83122f4133031bababbefcf57436dde97048c91e2cc6ff`.
+The runtime was image
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r16`, image ID
+`15aa29c45b41f011f5edacd9f5fb761db26eae488d447453414e2d1b2a9e07a3`.
+
+On `re-align`, Laguna made 13 distinct tool calls, read the exact formatter and
+tests, and reached the correct width-10 conclusion, but made no edit. Its final
+assistant turn decoded 9,011 tokens over nearly 30 minutes at 5.08 tokens per
+second while repeatedly reconsidering that same answer. The timeout
+checkpointed the attempt and removed the container. Result:
+`apps/agent-evaluation/results/v5-45m-laguna-s-re-align.json`. The hard gate
+was not run. Treat this as configuration-specific non-convergence with a
+retest trigger for substantially faster decoding or a changed model, template,
+or harness, not as proof of permanent model incapability.
+
 Only Qwen3.6 35B-A3B MTP completed all six implementation and two review
 tasks under the final version 4 rules. The run took 2,046.8 seconds and used
 319,303 input, 7,627,558 cached, and 76,966 output tokens. Its strict
