@@ -52,6 +52,14 @@ Observed results:
   33.87 prompt tokens/s and 15.68 generated tokens/s. Its retained result is
   `apps/acceptance/results/20260809T191506Z-79592f44.json`, with the adjacent
   Markdown report.
+- A 2026-08-13 provider-identity probe on the same image started the managed
+  model at 4K context and sent
+  `model: deepseek-v4-flash-0731-q2-imatrix` through Chat Completions. The
+  server accepted and echoed that exact ID, returned the requested
+  `DWARFSTAR_ID_OK` response at 15.67 generated tokens/s, and stopped cleanly
+  without a recorded GPU fault. Its `/v1/models` endpoint continued to expose
+  the generic engine aliases; request compatibility, not discovery output,
+  establishes the exact harness identity.
 - The managed 131072-context DwarfStar server planned 83.80 GiB. Direct-answer
   and normal-thinking requests passed, a two-turn continuation reused 78
   cached tokens, and a 640-token direct decode completed at 15.78 tokens/s.

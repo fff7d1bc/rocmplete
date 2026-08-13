@@ -1173,11 +1173,17 @@ server, then choose it explicitly in a client:
 
 ```bash
 ./rocmplete run dwarfstar server
-opencode -m dwarfstar/deepseek-v4-flash
-pi --provider dwarfstar --model deepseek-v4-flash --thinking high
-omp --model rocmplete-dwarfstar/deepseek-v4-flash --thinking high
-maki -m dwarfstar/deepseek-v4-flash
+opencode -m dwarfstar/deepseek-v4-flash-0731-q2-imatrix
+pi --provider dwarfstar --model deepseek-v4-flash-0731-q2-imatrix --thinking high
+omp --model rocmplete-dwarfstar/deepseek-v4-flash-0731-q2-imatrix --thinking high
+maki -m dwarfstar/deepseek-v4-flash-0731-q2-imatrix
 ```
+
+The harness model ID identifies the managed 0731 Q2 imatrix bundle rather
+than DwarfStar's generic `deepseek-v4-flash` discovery alias. The server
+accepts the exact managed ID in Chat Completions requests; its own
+`/v1/models` response remains an engine-owned alias list and does not encode
+the installed release or quantization.
 
 Its OpenCode variants are `instant` and `thinking`. Instant sends
 `reasoning_effort: none`; thinking sends `reasoning_effort: high`, which is

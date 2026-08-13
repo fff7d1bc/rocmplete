@@ -221,11 +221,11 @@ preset; that is not managed content and should not be selected during the
 smoke test.
 
 For DwarfStar agent-client integration, start the managed 128K DwarfStar
-server, select `dwarfstar/deepseek-v4-flash` in OpenCode and the matching
-provider/model in Pi and Maki. Select
-`rocmplete-dwarfstar/deepseek-v4-flash` in OMP, then complete one read plus
-function-tool round trip in each. Confirm disabled reasoning and normal
-thinking through OpenCode and Pi, OMP's high thinking path, and normal
+server, select `dwarfstar/deepseek-v4-flash-0731-q2-imatrix` in OpenCode and
+the matching provider/model in Pi and Maki. Select
+`rocmplete-dwarfstar/deepseek-v4-flash-0731-q2-imatrix` in OMP, then complete
+one read plus function-tool round trip in each. Confirm disabled reasoning and
+normal thinking through OpenCode and Pi, OMP's high thinking path, and normal
 server-side thinking through Maki. Confirm the generated providers follow
 `--dwarfstar-port`. Do not claim agent
 compatibility from `/v1/models` or a plain text response alone.

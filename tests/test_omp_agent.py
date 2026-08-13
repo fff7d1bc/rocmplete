@@ -156,7 +156,7 @@ class OmpLauncherTests(unittest.TestCase):
         )
         self.assertEqual(len(overlay["enabledModels"]), 16)
         self.assertIn(
-            "rocmplete-dwarfstar/deepseek-v4-flash",
+            "rocmplete-dwarfstar/deepseek-v4-flash-0731-q2-imatrix",
             overlay["enabledModels"],
         )
         self.assertEqual(overlay["disabledProviders"], ["llama.cpp"])
@@ -215,7 +215,10 @@ class OmpLauncherTests(unittest.TestCase):
                 {"PATH": str(binary_dir)},
             )
             self.assertEqual(plan.default_provider, "rocmplete-dwarfstar")
-            self.assertEqual(plan.default_model, "deepseek-v4-flash")
+            self.assertEqual(
+                plan.default_model,
+                "deepseek-v4-flash-0731-q2-imatrix",
+            )
             self.assertEqual(plan.default_thinking, "high")
 
     def test_launch_requires_a_maintained_installed_model(self):

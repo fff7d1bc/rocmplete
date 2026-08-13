@@ -643,25 +643,29 @@ def _dwarfstar_guide() -> ApplicationGuide:
                     ),
                     _action(
                         "./rocmplete agent opencode -- "
-                        "-m dwarfstar/deepseek-v4-flash",
+                        "-m dwarfstar/"
+                        "deepseek-v4-flash-0731-q2-imatrix",
                         "Use the running server through ROCmplete's guarded "
                         "OpenCode launcher.",
                     ),
                     _action(
                         "./rocmplete agent pi -- --provider dwarfstar "
-                        "--model deepseek-v4-flash --thinking high",
+                        "--model deepseek-v4-flash-0731-q2-imatrix "
+                        "--thinking high",
                         "Use the same server through ROCmplete's guarded "
                         "Pi launcher.",
                     ),
                     _action(
                         "./rocmplete agent omp -- --model "
-                        "rocmplete-dwarfstar/deepseek-v4-flash --thinking high",
+                        "rocmplete-dwarfstar/"
+                        "deepseek-v4-flash-0731-q2-imatrix --thinking high",
                         "Use the same server through ROCmplete's guarded "
                         "OMP launcher.",
                     ),
                     _action(
                         "./rocmplete agent maki -- "
-                        "-m dwarfstar/deepseek-v4-flash",
+                        "-m dwarfstar/"
+                        "deepseek-v4-flash-0731-q2-imatrix",
                         "Use the same server through ROCmplete's guarded "
                         "Maki launcher.",
                     ),

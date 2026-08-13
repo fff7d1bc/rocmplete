@@ -726,8 +726,13 @@ Maki would ignore; Maki requests retain llama.cpp's defaults until upstream
 exposes a clean model or request setting.
 
 DwarfStar is a separate provider at its own loopback endpoint, with the one
-reviewed `deepseek-v4-flash` model advertising the same 131072-token runtime
-allocation and 16000-token output ceiling as the managed server. It offers
+reviewed `deepseek-v4-flash-0731-q2-imatrix` model advertising the same
+131072-token runtime allocation and 16000-token output ceiling as the managed
+server. This public model ID follows the exact managed release and bundle
+identity. It deliberately does not copy the pinned server's generic
+`deepseek-v4-flash` discovery alias, which omits both the 0731 release and the
+reviewed Q2 imatrix selection; the server accepts and echoes the exact managed
+ID in Chat Completions requests. It offers
 only `instant` (`reasoning_effort: none`) and `thinking`
 (`reasoning_effort: high`). At this context DwarfStar maps low, medium, and
 high to the same normal thinking mode; Think Max needs a substantially larger

@@ -322,7 +322,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
             self.assertEqual(plan.default_model, DWARFSTAR_MODEL)
             self.assertEqual(
                 json.loads(plan.config_content)["model"],
-                "dwarfstar/deepseek-v4-flash",
+                "dwarfstar/deepseek-v4-flash-0731-q2-imatrix",
             )
 
     def test_launch_requires_an_installed_agent_model(self):

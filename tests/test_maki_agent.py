@@ -136,7 +136,9 @@ class MakiLauncherTests(unittest.TestCase):
             model = json.loads(
                 subprocess.check_output([dwarfstar, "models"], text=True)
             )[0]
-            self.assertEqual(model["id"], "deepseek-v4-flash")
+            self.assertEqual(
+                model["id"], "deepseek-v4-flash-0731-q2-imatrix"
+            )
             self.assertEqual(
                 model["context_window"], DWARFSTAR_DEFAULT_CONTEXT
             )
@@ -187,7 +189,10 @@ class MakiLauncherTests(unittest.TestCase):
                 {"PATH": str(binary_dir)},
             )
             self.assertEqual(plan.default_provider, "dwarfstar")
-            self.assertEqual(plan.default_model, "deepseek-v4-flash")
+            self.assertEqual(
+                plan.default_model,
+                "deepseek-v4-flash-0731-q2-imatrix",
+            )
             self.assertEqual(plan.default_thinking, "high")
 
     def test_session_requires_a_maintained_installed_model(self):

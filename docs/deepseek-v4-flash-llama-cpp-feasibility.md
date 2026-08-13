@@ -82,9 +82,9 @@ verification receipt was recorded before runtime testing.
 - the roughly 90.9 GB decimal IQ2 choices leave more headroom but make a
   larger quality concession.
 
-The provisional catalog work used one four-artifact bundle, one
-`deepseek-v4-flash` family recipe, Jinja chat templating, and a conservative
-32,768-token default. It was completely reverted after the hold decision.
+The provisional catalog work used one four-artifact bundle, one family recipe,
+Jinja chat templating, and a conservative 32,768-token default. It was
+completely reverted after the hold decision.
 
 ## Capacity control before downloading
 

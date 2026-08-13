@@ -276,12 +276,12 @@ medium-effort run is also a useful follow-up now that the selector is wired.
 
 ### DwarfStar DeepSeek V4 Flash
 
-DwarfStar `deepseek-v4-flash` derived the likely fix in the older version 2
-screen, then entered a repetitive loop and was interrupted. The runtime and Pi
-tool protocol worked. The failure was the model's inability to turn its
-reasoning into a finished patch. That loop disqualifies it from dependable
-autonomous coding in the current configuration, while leaving it useful for
-DeepSeek runtime research and tightly bounded prompting.
+DwarfStar's then-public `deepseek-v4-flash` identity derived the likely fix in
+the older version 2 screen, then entered a repetitive loop and was interrupted.
+The runtime and Pi tool protocol worked. The failure was the model's inability
+to turn its reasoning into a finished patch. That loop disqualifies it from
+dependable autonomous coding in the current configuration, while leaving it
+useful for DeepSeek runtime research and tightly bounded prompting.
 
 ## Decision rule for a new model
 

@@ -131,7 +131,9 @@ class PiLauncherTests(unittest.TestCase):
             dwarfstar["baseUrl"], "http://127.0.0.1:8001/v1"
         )
         model = dwarfstar["models"][0]
-        self.assertEqual(model["id"], "deepseek-v4-flash")
+        self.assertEqual(
+            model["id"], "deepseek-v4-flash-0731-q2-imatrix"
+        )
         self.assertEqual(model["contextWindow"], DWARFSTAR_DEFAULT_CONTEXT)
         self.assertEqual(
             model["maxTokens"], DWARFSTAR_DEFAULT_OUTPUT_TOKENS
@@ -205,7 +207,10 @@ class PiLauncherTests(unittest.TestCase):
                 {"PATH": str(binary_dir)},
             )
             self.assertEqual(plan.default_provider, "dwarfstar")
-            self.assertEqual(plan.default_model, "deepseek-v4-flash")
+            self.assertEqual(
+                plan.default_model,
+                "deepseek-v4-flash-0731-q2-imatrix",
+            )
             self.assertEqual(plan.default_thinking, "high")
 
     def test_launch_requires_a_maintained_installed_model(self):

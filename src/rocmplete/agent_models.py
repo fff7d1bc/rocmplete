@@ -13,7 +13,7 @@ from .errors import LauncherError
 
 PROVIDER_ID = "rocmplete"
 DWARFSTAR_PROVIDER_ID = "dwarfstar"
-DWARFSTAR_MODEL = "deepseek-v4-flash"
+DWARFSTAR_MODEL = "deepseek-v4-flash-0731-q2-imatrix"
 RECOMMENDED_MODEL = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
 
 

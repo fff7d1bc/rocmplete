@@ -171,7 +171,7 @@ Forward normal OpenCode arguments through the launcher:
 Use a separately running DwarfStar server:
 
   ./rocmplete run dwarfstar server
-  opencode -m dwarfstar/deepseek-v4-flash
+  opencode -m dwarfstar/deepseek-v4-flash-0731-q2-imatrix
 
 For a router on another local port:
 
@@ -199,7 +199,7 @@ Forward normal Pi arguments through the launcher:
 Use a separately running DwarfStar server:
 
   ./rocmplete run dwarfstar server
-  pi --provider dwarfstar --model deepseek-v4-flash --thinking high
+  pi --provider dwarfstar --model deepseek-v4-flash-0731-q2-imatrix --thinking high
 
 For a router on another local port:
 
@@ -227,7 +227,7 @@ Forward normal OMP arguments through the launcher:
 Use a separately running DwarfStar server:
 
   ./rocmplete run dwarfstar server
-  omp --model rocmplete-dwarfstar/deepseek-v4-flash --thinking high
+  omp --model rocmplete-dwarfstar/deepseek-v4-flash-0731-q2-imatrix --thinking high
 
 For servers on other local ports, set ROCMLETE_OMP_PORT or
 ROCMLETE_OMP_DWARFSTAR_PORT.
@@ -250,7 +250,7 @@ Forward normal Maki arguments through the launcher:
 Use a separately running DwarfStar server:
 
   ./rocmplete run dwarfstar server
-  maki -m dwarfstar/deepseek-v4-flash
+  maki -m dwarfstar/deepseek-v4-flash-0731-q2-imatrix
 
 For servers on other local ports, set ROCMLETE_MAKI_PORT or
 ROCMLETE_MAKI_DWARFSTAR_PORT.
