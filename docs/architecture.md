@@ -577,7 +577,10 @@ overridden to that launch's selected context. Presence of this narrow policy
 also disables llama.cpp automatic fitting; it does not expose general metadata
 or argument overrides. Presets can additionally enable Jinja, select a
 project-bundled chat template from a closed allowlist, and select `on`, `off`,
-or `auto` Flash Attention behavior for a concrete GPU profile. Managed
+or `auto` Flash Attention behavior for a concrete GPU profile. A preset can
+also select a symmetric target K/V cache from the closed `f16`, `q8_0`, and
+`q4_0` set for an accepted profile. Quantized cache policy requires Flash
+Attention explicitly on and does not alter the speculative draft cache. Managed
 templates are copied into the image and never read from host content. The
 launcher renders only installed presets into a private atomic INI, rejects
 partial managed content, and mounts both that exact file and the model

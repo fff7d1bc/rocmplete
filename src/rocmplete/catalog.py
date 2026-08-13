@@ -135,6 +135,7 @@ class LlamaPreset:
     reasoning_preserve: bool = False
     chat_template: str = ""
     flash_attention: Mapping[str, str] = field(default_factory=dict)
+    kv_cache: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -759,6 +760,7 @@ def _load_llama_preset(
         "reasoning_preserve",
         "chat_template",
         "flash_attention",
+        "kv_cache",
     }
     unsupported_fields = sorted(set(data) - supported_fields)
     if unsupported_fields:
@@ -944,6 +946,34 @@ def _load_llama_preset(
                 "off, or auto".format(identifier)
             )
         flash_attention[profile] = value
+    kv_cache_value = data.get("kv_cache", {})
+    if not isinstance(kv_cache_value, dict):
+        raise LauncherError(
+            "llama.cpp preset {} kv_cache must be an object".format(
+                identifier
+            )
+        )
+    kv_cache: Dict[str, str] = {}
+    for raw_profile, value in kv_cache_value.items():
+        profile = _identifier(
+            raw_profile, "{}.kv_cache profile".format(identifier)
+        )
+        if profile not in GPU_PROFILES:
+            raise LauncherError(
+                "llama.cpp preset {} kv_cache profile must be one of "
+                "{}".format(identifier, ", ".join(GPU_PROFILES))
+            )
+        if value not in ("f16", "q8_0", "q4_0"):
+            raise LauncherError(
+                "llama.cpp preset {} kv_cache value must be f16, q8_0, "
+                "or q4_0".format(identifier)
+            )
+        if value != "f16" and flash_attention.get(profile) != "on":
+            raise LauncherError(
+                "llama.cpp preset {} quantized kv_cache for {} requires "
+                "flash_attention on".format(identifier, profile)
+            )
+        kv_cache[profile] = value
     return LlamaPreset(
         identifier=identifier,
         bundle=_identifier(data.get("bundle"), "{}.bundle".format(identifier)),
@@ -963,6 +993,7 @@ def _load_llama_preset(
         reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
         flash_attention=flash_attention,
+        kv_cache=kv_cache,
     )
 
 

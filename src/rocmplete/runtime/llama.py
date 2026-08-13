@@ -41,6 +41,7 @@ class LlamaOptions:
     reasoning_preserve: bool = False
     chat_template: str = ""
     profile_flash_attention: Mapping[str, str] = field(default_factory=dict)
+    profile_kv_cache: Mapping[str, str] = field(default_factory=dict)
     router_preset: Optional[Path] = None
     models_max: int = 2
     render_nodes: Sequence[str] = field(default_factory=tuple)
@@ -151,6 +152,15 @@ def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
                 "ROCMLETE_LLAMA_FLASH_ATTN_{}={}".format(
                     profile.upper().replace("-", "_"),
                     options.profile_flash_attention.get(profile, ""),
+                ),
+            ]
+        )
+        command.extend(
+            [
+                "--env",
+                "ROCMLETE_LLAMA_KV_CACHE_{}={}".format(
+                    profile.upper().replace("-", "_"),
+                    options.profile_kv_cache.get(profile, ""),
                 ),
             ]
         )

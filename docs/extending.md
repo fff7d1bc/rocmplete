@@ -216,6 +216,13 @@ profile map. Only `rdna4`, `strix-halo`, and `strix-point` keys and `on`,
 mapping and generated router INI behavior equivalent, and add target-hardware
 acceptance for every non-default profile policy.
 
+A measured symmetric target K/V-cache policy belongs in the preset's closed
+`kv_cache` profile map. Only `f16`, `q8_0`, and `q4_0` are accepted, and a
+quantized cache requires Flash Attention explicitly on for the same profile.
+Keep draft-cache behavior independent. Validate long-context retrieval and
+generation on every listed architecture rather than carrying a Strix Halo
+result to Strix Point or RDNA 4.
+
 If the embedded GGUF template cannot express the managed API contract, add a
 named `chat_template` only when one fixed, reviewable adapter is enough. Keep
 the catalog allowlist, image file, entrypoint validation, single-model mapping,

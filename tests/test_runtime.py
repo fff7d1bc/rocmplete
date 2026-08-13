@@ -1034,6 +1034,7 @@ class RuntimeCommandTests(unittest.TestCase):
                     "strix-halo": "off",
                     "strix-point": "off",
                 },
+                profile_kv_cache={"strix-halo": "q8_0"},
             ),
             ":rw,Z",
         )
@@ -1045,8 +1046,37 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn(
             "ROCMLETE_LLAMA_FLASH_ATTN_STRIX_POINT=off", command
         )
+        self.assertIn(
+            "ROCMLETE_LLAMA_KV_CACHE_STRIX_HALO=q8_0", command
+        )
+        self.assertIn("ROCMLETE_LLAMA_KV_CACHE_RDNA4=", command)
+        self.assertIn("ROCMLETE_LLAMA_KV_CACHE_STRIX_POINT=", command)
         self.assertNotIn("--jinja", command)
         self.assertNotIn("--flash-attn", command)
+        self.assertNotIn("--cache-type-k", command)
+        self.assertNotIn("--cache-type-v", command)
+
+    def test_llama_entrypoint_maps_profile_kv_cache_to_direct_and_router(self):
+        entrypoint = (
+            Path(__file__).resolve().parents[1]
+            / "applications"
+            / "llama-cpp"
+            / "entrypoint.sh"
+        ).read_text()
+        self.assertIn(
+            'case "$kv_cache_strix_halo" in', entrypoint
+        )
+        self.assertIn(
+            '--cache-type-k "$kv_cache"', entrypoint
+        )
+        self.assertIn(
+            '--cache-type-v "$kv_cache"', entrypoint
+        )
+        self.assertIn(
+            '/^rocmplete-kv-cache-strix-halo = /', entrypoint
+        )
+        self.assertIn('print "cache-type-k = " $0', entrypoint)
+        self.assertIn('print "cache-type-v = " $0', entrypoint)
 
     def test_llama_managed_chat_template_is_constrained_by_environment(self):
         command = llama_command(

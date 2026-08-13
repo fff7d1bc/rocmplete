@@ -363,8 +363,9 @@ To measure the memory and long-context effects of a quantized KV cache, set
 require `--flash-attn on` and ROCmplete rejects an ambiguous or incompatible
 combination before starting the container. Treat q4 cache measurements as
 experimental and check task output as well as throughput. These flags affect
-only the one-shot benchmark; they do not silently change the selected
-application preset.
+only the one-shot benchmark. A managed application preset changes cache type
+only when its catalog entry contains an explicit profile-specific `kv_cache`
+policy; inspect that policy with `content list --models --details`.
 
 Treat the result as specific to that non-MTP preset too. Nearby variants are
 not interchangeable performance evidence. Quantization, dense or

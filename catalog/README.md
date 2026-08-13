@@ -28,11 +28,11 @@ media. Use `./rocmplete content list --bundles` for the current exact inventory.
   stable router model ID and a conservative `default_context`. A preset may
   additionally own constrained `draft-mtp` or `draft-dflash` speculative
   decoding, embedded Jinja or project-bundled chat-template policy,
-  profile-specific Flash Attention policy, and one verified draft GGUF from
-  the same bundle. A reviewed experimental preset may narrowly override the
-  target and draft `context_length` metadata while disabling automatic
-  fitting. `agent_tools` records the smaller reviewed set maintained for
-  function-tool agent clients.
+  profile-specific Flash Attention and symmetric K/V-cache policy, and one
+  verified draft GGUF from the same bundle. A reviewed experimental preset
+  may narrowly override the target and draft `context_length` metadata while
+  disabling automatic fitting. `agent_tools` records the smaller reviewed set
+  maintained for function-tool agent clients.
   `reasoning_effort_budget` records presets whose client reasoning selectors
   are backed by enforced llama.cpp thinking-token ceilings.
 

@@ -16,6 +16,7 @@ from rocmplete.agent_evaluation import (
     _evaluation_sandbox_environment,
     _generated_artifacts,
     _git_fixture,
+    _model_identity,
     _server_command,
     _server_readiness_url,
     _snapshot_protected,
@@ -57,6 +58,20 @@ class AgentEvaluationTests(unittest.TestCase):
             else:
                 self.assertEqual(task.answer, "ROCMLETE_EVAL_ANSWER.md")
                 self.assertIn("between 200 and 2,000 words", task.prompt)
+
+    def test_model_identity_records_profile_runtime_policy(self):
+        identity = _model_identity(
+            load_catalog(),
+            AgentEvaluationOptions(
+                data_dir=Path("/unused"),
+                preset="qwen3.6-27b-mtp-q8-0",
+            ),
+        )
+        self.assertEqual(identity["draft_tokens"], 3)
+        self.assertEqual(
+            identity["flash_attention"], {"strix-halo": "on"}
+        )
+        self.assertEqual(identity["kv_cache"], {"strix-halo": "q8_0"})
 
     def test_toolchains_select_fixed_controller_commands(self):
         tasks = {task.identifier: task for task in load_coding_suite().tasks}

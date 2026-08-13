@@ -3405,6 +3405,17 @@ def _llama_flash_attention_policy(preset: LlamaPreset) -> str:
     return "{}; otherwise llama.cpp default".format(", ".join(policies))
 
 
+def _llama_kv_cache_policy(preset: LlamaPreset) -> str:
+    policies = [
+        "{}={}".format(profile, preset.kv_cache[profile])
+        for profile in GPU_PROFILES
+        if profile in preset.kv_cache
+    ]
+    if not policies:
+        return "llama.cpp default"
+    return "{}; otherwise llama.cpp default".format(", ".join(policies))
+
+
 def _print_llama_model_details(
     catalog: Catalog, models: Sequence[LlamaModel], root: Path
 ) -> None:
@@ -3444,6 +3455,7 @@ def _print_llama_model_details(
                         "Flash Attention",
                         _llama_flash_attention_policy(preset),
                     ),
+                    ("K/V cache", _llama_kv_cache_policy(preset)),
                 ),
                 columns=(ColumnSpec(role="label"), ColumnSpec()),
                 indent="    ",
@@ -5718,6 +5730,13 @@ def _render_llama_router_preset(
                         profile, flash_attention
                     )
                 )
+            kv_cache = preset.kv_cache.get(profile, "")
+            if kv_cache:
+                section.append(
+                    "rocmplete-kv-cache-{} = {}".format(
+                        profile, kv_cache
+                    )
+                )
         if preset.speculative_type:
             section.extend(
                 [
@@ -5825,6 +5844,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
     reasoning_preserve = False
     chat_template = ""
     profile_flash_attention = {}
+    profile_kv_cache = {}
     display_model = str(model) if model is not None else ""
     context = arguments.context
     router_preset = None
@@ -5848,6 +5868,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         reasoning_preserve = preset.reasoning_preserve
         chat_template = preset.chat_template
         profile_flash_attention = preset.flash_attention
+        profile_kv_cache = preset.kv_cache
         if context is None:
             context = preset.default_context
         if preset.context_override_architectures and context == 0:
@@ -5905,6 +5926,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
         profile_flash_attention=profile_flash_attention,
+        profile_kv_cache=profile_kv_cache,
         router_preset=router_preset,
         models_max=models_max,
         render_nodes=render_nodes,

@@ -21,6 +21,7 @@ from rocmplete.cli import (
     _interactive_content_target,
     _llama_context_policy,
     _llama_flash_attention_policy,
+    _llama_kv_cache_policy,
     _llama_speculation_policy,
     _llama_template_policy,
     _parse_gpu_diagnostic_output,
@@ -2719,6 +2720,36 @@ class CliTests(unittest.TestCase):
         self.assertIn("c = 262144", contents)
         self.assertIn("jinja = true", contents)
 
+    def test_llama_router_renders_qwen27_strix_cache_policy(self):
+        catalog = load_catalog()
+        identifier = "qwen3.6-27b-mtp-q8-0"
+        preset = catalog.llama_preset(identifier)
+        artifact = catalog.artifact(preset.artifact)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            path = (
+                data_dir
+                / "content"
+                / "llama-cpp"
+                / "models"
+                / artifact.destination
+            )
+            path.parent.mkdir(parents=True)
+            with path.open("wb") as handle:
+                handle.truncate(artifact.size)
+            _record_managed_file(data_dir, path, artifact)
+            contents, installed = _render_llama_router_preset(
+                catalog, data_dir
+            )
+        self.assertEqual(installed, (identifier,))
+        self.assertIn("spec-draft-n-max = 3", contents)
+        self.assertIn(
+            "rocmplete-flash-attn-strix-halo = on", contents
+        )
+        self.assertIn(
+            "rocmplete-kv-cache-strix-halo = q8_0", contents
+        )
+
     def test_llama_router_renders_updated_kat_template_policy(self):
         catalog = load_catalog()
         identifier = "kat-coder-v2.5-dev-q8-0"
@@ -4339,6 +4370,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("model metadata; Jinja enabled", text)
         self.assertIn("Speculation", text)
         self.assertIn("Flash Attention", text)
+        self.assertIn("K/V cache", text)
         self.assertIn("llama.cpp default", text)
 
     def test_content_model_policy_details_cover_special_presets(self):
@@ -4356,6 +4388,7 @@ class CliTests(unittest.TestCase):
             "muse-glimmer-30b-kquant-dynamic-dflash-256k"
         )
         laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
+        qwen27 = catalog.llama_preset("qwen3.6-27b-mtp-q8-0")
         translate = catalog.llama_preset("translategemma-27b-it-q8-0")
 
         self.assertEqual(
@@ -4381,6 +4414,13 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             _llama_flash_attention_policy(laguna),
             "strix-halo=off, strix-point=off; otherwise llama.cpp default",
+        )
+        self.assertEqual(
+            _llama_kv_cache_policy(qwen27),
+            "strix-halo=q8_0; otherwise llama.cpp default",
+        )
+        self.assertEqual(
+            _llama_kv_cache_policy(laguna), "llama.cpp default"
         )
         self.assertEqual(
             _llama_template_policy(translate),

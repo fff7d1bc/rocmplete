@@ -2545,10 +2545,16 @@
       "artifact": "qwen3.6-27b-mtp-q8-0-gguf",
       "default_context": 262144,
       "speculative_type": "draft-mtp",
-      "draft_tokens": 2,
+      "draft_tokens": 3,
       "jinja": true,
       "agent_tools": true,
-      "reasoning_effort_budget": true
+      "reasoning_effort_budget": true,
+      "flash_attention": {
+        "strix-halo": "on"
+      },
+      "kv_cache": {
+        "strix-halo": "q8_0"
+      }
     },
     "gemma4-31b-it-q8-0-mtp": {
       "bundle": "llama-gemma4-31b-it-q8-0-mtp",

@@ -133,8 +133,13 @@ For a useful general assistant:
 ```
 
 The default preset is approximately 27.05 GiB with a 262144-token starting
-context. It uses the dense Qwen3.6 27B MTP Q8_0 model. `--context` overrides
-the catalog default.
+context. It uses the dense Qwen3.6 27B MTP Q8_0 model and verifies up to three
+tokens from its embedded prediction heads. On Strix Halo, the preset also
+enables Flash Attention and a symmetric Q8_0 target K/V cache. That
+long-context policy is separate from the Q8_0 model weights and leaves the MTP
+draft cache at llama.cpp's F16 default. Other profiles retain llama.cpp's
+cache and Flash Attention defaults until separately accepted. `--context`
+overrides the catalog default.
 
 All managed Qwen3.6 presets start at their native 256K. The pinned
 [Qwen3.6 model card](https://huggingface.co/unsloth/Qwen3.6-27B-MTP-GGUF/blob/5cb35eb3dcbf52dbce5f87dbc64df6aaffadcace/README.md)
@@ -173,7 +178,7 @@ A model and a ROCmplete preset are related, but they are not interchangeable:
 | Layer | What it owns | Examples |
 | --- | --- | --- |
 | GGUF model | Architecture, trained weights, and quantization | Qwen3.6 27B Q6_K, Q8_0, or Dynamic Q8_K_XL |
-| ROCmplete preset | Model artifact, context size, and required model runtime policy | Chat template, Jinja, profile-specific Flash Attention, MTP or DFlash settings |
+| ROCmplete preset | Model artifact, context size, and required model runtime policy | Chat template, Jinja, profile-specific Flash Attention and K/V cache, MTP or DFlash settings |
 | Server launch | Machine and service policy for this run | ROCm or Vulkan, hardware profile, render nodes, listen address, port |
 | API request or client | The current task and generation behavior | System message, conversation history, temperature, top-p, maximum tokens |
 
@@ -829,6 +834,13 @@ catalog-owned settings. Qwen GGUFs contain their MTP heads; Gemma installs a
 separate pinned draft. Performance and output behavior depend on the llama.cpp
 revision, context, backend, and hardware. Use the server API for end-to-end MTP
 measurements as described in the Qwen section.
+
+The dense Qwen3.6 27B preset uses three draft tokens. On Strix Halo it combines
+that depth with Q8_0 target K/V and Flash Attention based on the project's
+37K- and 94K-context acceptance. The sparse Qwen35-A3B preset retains F16 K/V
+because the same cache change was neutral there. Inspect the resolved policy
+with `content list --models --details` instead of assuming one setting applies
+to every Qwen model.
 
 ### Muse Glimmer and DFlash
 

@@ -187,7 +187,13 @@ class CatalogTests(unittest.TestCase):
         )
         self.assertEqual(assistant_mtp.default_context, 262144)
         self.assertEqual(assistant_mtp.speculative_type, "draft-mtp")
-        self.assertEqual(assistant_mtp.draft_tokens, 2)
+        self.assertEqual(assistant_mtp.draft_tokens, 3)
+        self.assertEqual(
+            assistant_mtp.flash_attention, {"strix-halo": "on"}
+        )
+        self.assertEqual(
+            assistant_mtp.kv_cache, {"strix-halo": "q8_0"}
+        )
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(assistant_mtp.bundle)),
             29047084160,
@@ -727,6 +733,48 @@ class CatalogTests(unittest.TestCase):
                 "strix-point": "off",
             },
         )
+
+        preset["kv_cache"] = []
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "kv_cache must be an object"
+            ):
+                load_catalog(path)
+
+        preset["kv_cache"] = {"auto": "q8_0"}
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError,
+                "kv_cache profile must be one of rdna4, strix-halo, "
+                "strix-point",
+            ):
+                load_catalog(path)
+
+        preset["kv_cache"] = {"strix-halo": "q5_0"}
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "value must be f16, q8_0, or q4_0"
+            ):
+                load_catalog(path)
+
+        preset["kv_cache"] = {"strix-halo": "q8_0"}
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "requires flash_attention on"
+            ):
+                load_catalog(path)
+
+        preset["flash_attention"]["strix-halo"] = "on"
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            loaded = load_catalog(path).llama_preset(
+                "laguna-s-2.1-q4-k-m"
+            )
+        self.assertEqual(loaded.kv_cache, {"strix-halo": "q8_0"})
 
         preset["chat_template"] = "some-file"
         with tempfile.TemporaryDirectory() as directory:

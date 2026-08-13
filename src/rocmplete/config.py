@@ -73,7 +73,7 @@ APPLICATIONS = {
         identifier="llama-cpp",
         image=(
             "localhost/rocmplete:"
-            "llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r18"
+            "llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r19"
         ),
         container_name="rocmplete-llama-cpp",
         build_target="llama-cpp",

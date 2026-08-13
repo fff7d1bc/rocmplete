@@ -1386,6 +1386,8 @@ def _model_identity(
         "sampling": dict(agent_sampling_parameters(preset.identifier)),
         "speculative_type": preset.speculative_type,
         "draft_tokens": preset.draft_tokens,
+        "flash_attention": dict(preset.flash_attention),
+        "kv_cache": dict(preset.kv_cache),
     }
 
 

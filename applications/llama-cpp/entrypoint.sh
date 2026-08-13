@@ -20,6 +20,9 @@ chat_template="${ROCMLETE_LLAMA_CHAT_TEMPLATE:-}"
 flash_attn_rdna4="${ROCMLETE_LLAMA_FLASH_ATTN_RDNA4:-}"
 flash_attn_strix_halo="${ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO:-}"
 flash_attn_strix_point="${ROCMLETE_LLAMA_FLASH_ATTN_STRIX_POINT:-}"
+kv_cache_rdna4="${ROCMLETE_LLAMA_KV_CACHE_RDNA4:-}"
+kv_cache_strix_halo="${ROCMLETE_LLAMA_KV_CACHE_STRIX_HALO:-}"
+kv_cache_strix_point="${ROCMLETE_LLAMA_KV_CACHE_STRIX_POINT:-}"
 router="${ROCMLETE_LLAMA_ROUTER:-0}"
 models_max="${ROCMLETE_LLAMA_MODELS_MAX:-2}"
 listen="${ROCMLETE_LISTEN:-0.0.0.0}"
@@ -96,6 +99,18 @@ case "$flash_attn_rdna4" in
     ""|on|off|auto) ;;
     *) die "invalid RDNA4 Flash Attention setting '$flash_attn_rdna4'" ;;
 esac
+case "$kv_cache_rdna4" in
+    ""|f16|q8_0|q4_0) ;;
+    *) die "invalid RDNA4 K/V cache setting '$kv_cache_rdna4'" ;;
+esac
+case "$kv_cache_strix_halo" in
+    ""|f16|q8_0|q4_0) ;;
+    *) die "invalid Strix Halo K/V cache setting '$kv_cache_strix_halo'" ;;
+esac
+case "$kv_cache_strix_point" in
+    ""|f16|q8_0|q4_0) ;;
+    *) die "invalid Strix Point K/V cache setting '$kv_cache_strix_point'" ;;
+esac
 case "$router" in
     0)
         [[ -n "$model" ]] || die "no GGUF model was selected"
@@ -170,6 +185,11 @@ else
         die "profile '$profile' does not match detected architecture '$architecture'"
     fi
     profile="$detected_profile"
+    case "$profile" in
+        rdna4) kv_cache="$kv_cache_rdna4" ;;
+        strix-halo) kv_cache="$kv_cache_strix_halo" ;;
+        strix-point) kv_cache="$kv_cache_strix_point" ;;
+    esac
     case "$backend" in
         rocm) device_prefix=ROCm ;;
         vulkan) device_prefix=Vulkan ;;
@@ -192,6 +212,12 @@ else
     bench_profile_args+=(--device "$backend_devices")
     if [[ -n "$speculative_type" ]]; then
         speculative_args+=(--device-draft "$backend_devices")
+    fi
+    if [[ "$router" == 0 && -n "$kv_cache" ]]; then
+        model_policy_args+=(
+            --cache-type-k "$kv_cache"
+            --cache-type-v "$kv_cache"
+        )
     fi
     printf -v device '%s; ' "${devices[@]}"
     device="${device%; }"
@@ -258,6 +284,9 @@ else
     if [[ -n "$context_override" ]]; then
         printf '  context policy: forced metadata; automatic fitting off\n'
     fi
+    if [[ -n "${kv_cache:-}" ]]; then
+        printf '  K/V cache:     %s\n' "$kv_cache"
+    fi
 fi
 if [[ "$mode" == server ]]; then
     printf '  container bind: %s:%s\n' "$listen" "$port"
@@ -298,6 +327,30 @@ if [[ "$mode" == server ]]; then
                         if (profile == "strix-point") {
                             sub(/^rocmplete-flash-attn-strix-point = /, "")
                             print "flash-attn = " $0
+                        }
+                        next
+                    }
+                    /^rocmplete-kv-cache-rdna4 = / {
+                        if (profile == "rdna4") {
+                            sub(/^rocmplete-kv-cache-rdna4 = /, "")
+                            print "cache-type-k = " $0
+                            print "cache-type-v = " $0
+                        }
+                        next
+                    }
+                    /^rocmplete-kv-cache-strix-halo = / {
+                        if (profile == "strix-halo") {
+                            sub(/^rocmplete-kv-cache-strix-halo = /, "")
+                            print "cache-type-k = " $0
+                            print "cache-type-v = " $0
+                        }
+                        next
+                    }
+                    /^rocmplete-kv-cache-strix-point = / {
+                        if (profile == "strix-point") {
+                            sub(/^rocmplete-kv-cache-strix-point = /, "")
+                            print "cache-type-k = " $0
+                            print "cache-type-v = " $0
                         }
                         next
                     }

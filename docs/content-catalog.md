@@ -178,8 +178,11 @@ connect it to a stable router identity:
     "agent_tools": true,
     "reasoning_effort_budget": true,
     "flash_attention": {
-      "strix-halo": "off",
+      "strix-halo": "on",
       "strix-point": "off"
+    },
+    "kv_cache": {
+      "strix-halo": "q8_0"
     }
   }
 }
@@ -228,6 +231,15 @@ whose values are `on`, `off`, or `auto`. The container resolves `auto`
 hardware detection before applying this policy. These narrow fields must be
 rendered for both single-model and router startup; do not replace them with a
 generic arguments list.
+
+`kv_cache` is an optional profile map for a reviewed symmetric target K/V
+cache type. Its values are `f16`, `q8_0`, or `q4_0`. A quantized value requires
+the same profile to declare `flash_attention: "on"`; the loader rejects a
+configuration that would leave llama.cpp's required kernel choice ambiguous.
+This policy does not change the separate speculative draft cache. Add a
+profile only after long-context throughput and retrieval acceptance on that
+hardware class. Omitted profiles retain llama.cpp's default rather than
+inheriting a nearby architecture's result.
 
 `agent_tools` is an optional, explicit compatibility decision. Set it only
 when the model, pinned GGUF template, and llama.cpp policy are maintained for
