@@ -12,7 +12,7 @@ intentionally omitted.
 
 ## Conclusions
 
-Two settings merit a focused integration follow-up for the dense
+Two settings merited a focused integration follow-up for the dense
 `qwen3.6-27b-mtp-q8-0` preset:
 
 1. Increase MTP draft depth from two to three. This improved shallow
@@ -41,7 +41,53 @@ show a quality difference in the small two-turn control. It remains a
 separate harness-level quality and total-token-efficiency question, not a
 demonstrated inference-speed optimization.
 
-No runtime or catalog default was changed by this study.
+The initial measurement study changed no runtime or catalog default. The
+subsequent accepted integration is recorded below.
+
+## Integration acceptance
+
+Commit `9fa54a5` integrated the two Qwen27 findings without generalizing them:
+
+- the preset now verifies up to three MTP draft tokens on every profile; and
+- only Strix Halo selects Flash Attention on with symmetric Q8_0 target K/V.
+
+The speculative draft cache remains F16. Qwen35-A3B, Strix Point, and RDNA 4
+retain their previous cache and Flash Attention defaults. The catalog rejects
+a quantized K/V declaration unless the same profile explicitly enables Flash
+Attention, and direct and router startup derive equivalent llama.cpp policy.
+
+The exact candidate bytes were built as
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r19`, image ID
+`d4b7065b465a85efbfc5ff0aa10895283bdc5e79b2aae5b528f9f1b6e9647147`, on
+the Fedora 44 Strix Halo host. Package verification passed. Direct ROCm
+startup at the preset's default 262144 context resolved
+`--spec-draft-n-max 3`, `--cache-type-k q8_0`, `--cache-type-v q8_0`, and
+`--flash-attn on`. It returned exact bounded content while accepting 124 of
+135 MTP proposals. Router startup generated the same model policy at 262144
+context and returned exact content while accepting 125 of 132 proposals. A
+131072-context Vulkan control also loaded the same policy and returned exact
+content, accepting 114 of 117 proposals. All containers stopped cleanly, and
+the kernel recorded no GPU fault, reset, or device loss.
+
+Pi 0.84.1 then ran the version 5 `re-align` coding task through the managed
+ROCm server at 131072 context and high thinking. The frozen
+`rocmplete-coding-v5` suite fingerprint was
+`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`.
+The model changed only `probe.go` and `reencode_test.go`; Pi, ordinary tests,
+hidden tests, and the build all exited zero. No dependency change, generated
+artifact, or network attempt was recorded. The resulting patch SHA-256 was
+`cea8b4bc7fc8ba2cfd5c7952bf22b2a15fa1fafe37c186eabda7bca0fed1e215`.
+The run completed in 451.4 seconds, processed 21,125 prompt tokens at 187.13
+tokens/s, and generated 7,169 tokens at 19.16 tokens/s. Its retained result is
+`apps/agent-evaluation/results/qwen27-mtp3-q8-kv-re-align.json` below the
+managed data directory.
+
+For context, the earlier version 4 Qwen27 result solved the same task with the
+same patch hash in 766.7 seconds and generated at 15.57 tokens/s. The accepted
+run was 41.1% shorter and its reported generation rate was 23.1% higher. This
+is useful end-to-end confirmation, not a controlled variance estimate: the
+suite revision, image, and stochastic agent path differed. The direct
+same-image measurements above remain the attributable performance evidence.
 
 ## Snapshot under test
 
@@ -231,20 +277,18 @@ repetitive edits. It was not tested because the simpler MTP depth and cache
 changes already produced an interpretable result, while multiple speculative
 strategies would require a catalog and entrypoint policy extension.
 
-## Recommended follow-up
+## Remaining follow-up
 
-Keep follow-up changes separate so their evidence remains attributable:
+Keep remaining follow-up changes separate so their evidence remains
+attributable:
 
-1. Change only Qwen27 MTP depth from two to three and run the existing coding
-   agent acceptance tasks through at least one maintained harness.
-2. Decide whether cache type belongs to per-preset catalog policy. If so, add
-   a Qwen27-only Q8 K/V declaration that requires Flash Attention, then repeat
-   repository interrogation, tool calls, exact retrieval, and 128K/256K
-   startup on `gfx1150` and `gfx1151`.
-3. Evaluate Qwen preserved reasoning separately with multi-turn tool loops and
+1. Repeat exact retrieval and coding-agent acceptance on `gfx1150` before
+   extending the Q8 K/V policy to Strix Point. Do the same independently for
+   either RDNA 4 architecture before extending it there.
+2. Evaluate Qwen preserved reasoning separately with multi-turn tool loops and
    compare correctness, total prompt tokens, generated reasoning tokens, and
    wall time. Do not infer benefit from per-token speed.
-4. Re-run the focused cases after a llama.cpp pin, ROCm release, Qwen template,
+3. Re-run the focused cases after a llama.cpp pin, ROCm release, Qwen template,
    MTP implementation, or Strix kernel change. These results are coupled to
    the tested tuple.
 

@@ -187,6 +187,24 @@ Observed results:
   ROCm path returned corrupted text and malformed tool arguments on `gfx1151`.
   Exact inputs, backend controls, benchmarks, and retest criteria are in the
   [Ling feasibility snapshot](ling-3.0-flash-llama-cpp-feasibility.md).
+- The 2026-08-13 Qwen27 tuning acceptance used the candidate bytes subsequently
+  committed as `9fa54a5` and image
+  `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r19` (image ID
+  `d4b7065b465a85efbfc5ff0aa10895283bdc5e79b2aae5b528f9f1b6e9647147`).
+  Direct and router ROCm startup at the default 262144 context both resolved
+  MTP depth three, Flash Attention on, and symmetric Q8_0 target K/V while
+  leaving the draft cache F16. Exact bounded requests passed through both
+  paths. A 131072-context Vulkan control also returned exact content and
+  accepted 114 of 117 MTP proposals. Pi 0.84.1 then solved version 5
+  `re-align` with high thinking in 451.4 seconds. Pi, ordinary tests, hidden
+  tests, and the build exited zero; only `probe.go` and `reencode_test.go`
+  changed, with no dependency, generated artifact, or network violation. The
+  server processed 21,125 prompt tokens at 187.13 tokens/s and generated 7,169
+  tokens at 19.16 tokens/s. The retained result is
+  `apps/agent-evaluation/results/qwen27-mtp3-q8-kv-re-align.json`. Containers
+  stopped cleanly and the kernel recorded no GPU fault. Qwen35-A3B and other
+  hardware profiles remain unchanged. Full controls and caveats are in the
+  [Qwen tuning snapshot](qwen3.6-strix-halo-llama-cpp-tuning-feasibility.md).
 
 #### Coding-agent comparison (2026-08-11)
 
