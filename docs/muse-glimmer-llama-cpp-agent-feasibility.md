@@ -35,13 +35,15 @@ managed target with Meta's official dynamic K-quant GGUF**:
 - the exact BF16 task also completed correctly, but its much larger resident
   memory, slower decode, and similar final utility did not justify a second
   catalog choice; and
-- llama.cpp's `--reasoning-preserve` policy is now owned by all three managed
-  Muse presets, while Muse remains distinct from models that support a
-  client-selectable reasoning-effort budget.
+- llama.cpp's `--reasoning-preserve` policy was applied to all three
+  then-managed dynamic-target Muse presets, while Muse remained distinct from
+  models that support a client-selectable reasoning-effort budget.
 
-The result is one installed model and draft with three orthogonal launch
-policies: a non-speculative 128K control, the default 128K DFlash policy, and
-an experimental forced-256K DFlash policy.
+The result at that stage was one installed model and draft with three
+orthogonal launch policies: a non-speculative 128K control, the default 128K
+DFlash policy, and an experimental forced-256K DFlash policy. A later section
+records the current 17 GB target comparison and its subsequent promotion into
+the same guided family without changing the default.
 
 ## Snapshot under test
 
@@ -218,12 +220,12 @@ BF16 preset, a second Muse recipe, a llama.cpp source update, or client prompt
 hacks. It keeps model family, precision, speculation, context, and harness
 policy orthogonal.
 
-All three Muse presets enable Jinja, advertise the reviewed function-tool
-contract, and set `reasoning_preserve`. The 128K DFlash preset remains the
-recipe default. The 256K preset still forces both target and draft
-`context_length` metadata and remains experimental until useful prompts
-beyond 128K pass retrieval, quality, draft-acceptance, latency, and memory
-checks.
+At this stage, all three dynamic-target Muse presets enabled Jinja, advertised
+the reviewed function-tool contract, and set `reasoning_preserve`. The 128K
+DFlash preset remained the recipe default. The 256K preset forced both target
+and draft `context_length` metadata and remained experimental until useful
+prompts beyond 128K pass retrieval, quality, draft-acceptance, latency, and
+memory checks.
 
 The removed Q8 file is managed content from an older catalog, but ROCmplete
 does not silently delete persistent model bytes during an upgrade. After the
@@ -281,8 +283,8 @@ ROCmplete's pinned GGUF revision; later commits in that repository changed
 only its model card. Updating the model artifact pin would therefore not
 deliver the template correction. ROCmplete instead bundles Meta's exact
 immutable template and selects it through the existing closed managed-template
-policy for all three Muse presets. The target and DFlash artifact revisions,
-sizes, and hashes remain unchanged.
+policy for all three then-managed dynamic-target Muse presets. The target and
+DFlash artifact revisions, sizes, and hashes remain unchanged.
 
 A temporary override against the existing managed image established the
 behavior before integration. With the embedded template, a system prompt
@@ -473,8 +475,8 @@ time calculating and independently checking the boundary cases before making
 the same change. This is not a correctness or tool-protocol failure, but it
 does show that fixed decode benchmarks do not predict agent efficiency. One
 stochastic attempt also cannot attribute the extra deliberation to the
-quantization. The smaller target remains an exact advanced bundle rather than
-replacing the guided dynamic recipe: Meta's
+quantization. These results do not support replacing the guided dynamic
+default: Meta's
 [current model card](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/43c7eadd41352a299ea8e0a36b3157978dd63596/README.md)
 reports a larger average benchmark loss for the 17 GB quantization than for
 dynamic K-quant, and this single solved probe cannot close that general
@@ -501,6 +503,46 @@ reset, page fault, or ring timeout in the kernel journal. llama.cpp did emit a
 ROCm host-buffer size-mismatch warning while destroying the evaluation
 context; it followed the successful result write and exit status 0, so it is
 retained as a cleanup warning rather than classified as an inference failure.
+
+### Two-variant family and forced-256K acceptance
+
+The 17 GB pair was subsequently promoted from an exact advanced choice into
+the existing `muse-glimmer` recipe to make direct A/B selection practical.
+This did not change the quality judgment or create another family: the recipe
+still launches the dynamic 128K DFlash preset by default. A guided install now
+selects both official target/draft pairs, 39,673,055,328 bytes or about 36.95
+GiB. Each pair retains its own immutable upstream DFlash artifact rather than
+introducing cross-revision coupling solely to remove one duplicate 1.52 GiB
+draft.
+
+The 17 GB pair gained the same three policies as dynamic: a non-speculative
+128K control, 128K DFlash, and experimental forced-256K DFlash. All six are
+generated for OpenCode, Pi, OMP, and Maki with the same reviewed Muse sampler,
+managed ATEM template, tool contract, and reasoning-preservation policy.
+Focused catalog, router, and client-generation tests cover all six identities.
+
+Final `gfx1151` acceptance used the same revision and `r19` image as the
+controlled comparison. A direct ROCm forced-256K server loaded four 262144
+token slots with depth 15, both architecture metadata overrides, and automatic
+fitting disabled. It returned exact content `MUSE_256K_OK`, generated 143
+tokens at 37.90 tokens/s, and accepted 118 of 375 draft candidates. The
+container reported 24.49 GB after the request.
+
+The managed ROCm router advertised all six Muse IDs among its 19 installed
+presets, loaded the 17 GB forced-256K section on demand, and returned exact
+content `ROUTER_256K_OK`. That request generated 148 tokens at 39.59 tokens/s
+and accepted 123 of 375 draft candidates; the container reported 24.53 GB.
+A direct Vulkan run selected depth 4, loaded the same four 262144-token slots,
+and returned exact content `VULKAN_256K_OK` at 31.67 tokens/s, accepting 92 of
+160 candidates. Rootless container accounting does not include Vulkan device
+allocation, so its reported memory was not used.
+
+These tiny exact-answer requests are wiring probes rather than comparable
+performance benchmarks. All three services stopped and were removed cleanly,
+and the matching kernel-journal window contained no GPU reset, page fault,
+ring timeout, or device-loss report. The forced policy remains experimental
+because startup and shallow generation do not establish useful retrieval or
+quality beyond 128K.
 
 ## Retest triggers
 

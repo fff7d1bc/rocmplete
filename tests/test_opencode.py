@@ -156,7 +156,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
             provider["options"]["baseURL"],
             "http://127.0.0.1:9090/v1",
         )
-        self.assertEqual(len(provider["models"]), 13)
+        self.assertEqual(len(provider["models"]), 15)
         self.assertNotIn("qwen3-0.6b-q8-0", provider["models"])
         self.assertNotIn("translategemma-27b-it-q8-0", provider["models"])
         self.assertIn("qwen3.6-27b-mtp-q8-0", provider["models"])
@@ -177,6 +177,12 @@ class OpenCodeLauncherTests(unittest.TestCase):
         self.assertEqual(
             provider["models"][
                 "muse-glimmer-30b-kquant-dynamic-dflash-256k"
+            ]["limit"],
+            {"context": 262144, "output": 16384},
+        )
+        self.assertEqual(
+            provider["models"][
+                "muse-glimmer-30b-kquant-17gb-dflash-256k"
             ]["limit"],
             {"context": 262144, "output": 16384},
         )

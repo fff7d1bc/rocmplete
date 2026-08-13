@@ -2678,6 +2678,14 @@
       "agent_tools": true,
       "reasoning_preserve": true
     },
+    "muse-glimmer-30b-kquant-17gb": {
+      "bundle": "llama-muse-glimmer-30b-kquant-17gb-dflash",
+      "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
+      "default_context": 131072,
+      "chat_template": "muse-glimmer-atem",
+      "agent_tools": true,
+      "reasoning_preserve": true
+    },
     "muse-glimmer-30b-kquant-17gb-dflash": {
       "bundle": "llama-muse-glimmer-30b-kquant-17gb-dflash",
       "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
@@ -2688,6 +2696,24 @@
       "draft_tokens_by_backend": {
         "vulkan": 4
       },
+      "chat_template": "muse-glimmer-atem",
+      "agent_tools": true,
+      "reasoning_preserve": true
+    },
+    "muse-glimmer-30b-kquant-17gb-dflash-256k": {
+      "bundle": "llama-muse-glimmer-30b-kquant-17gb-dflash",
+      "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
+      "draft_artifact": "muse-glimmer-30b-dflash-q4-k-m-gguf",
+      "default_context": 262144,
+      "speculative_type": "draft-dflash",
+      "draft_tokens": 15,
+      "draft_tokens_by_backend": {
+        "vulkan": 4
+      },
+      "context_override_architectures": [
+        "muse-glimmer",
+        "dflash"
+      ],
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
       "reasoning_preserve": true

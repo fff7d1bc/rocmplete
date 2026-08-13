@@ -99,7 +99,7 @@ class MakiLauncherTests(unittest.TestCase):
                     "has_auth": False,
                 },
             )
-            self.assertEqual(len(models), 13)
+            self.assertEqual(len(models), 15)
             by_id = {model["id"]: model for model in models}
             self.assertNotIn("qwen3-0.6b-q8-0", by_id)
             self.assertEqual(
@@ -122,6 +122,11 @@ class MakiLauncherTests(unittest.TestCase):
             ]
             self.assertEqual(muse["context_window"], 262144)
             self.assertFalse(muse["supports_thinking"])
+            muse_17gb = by_id[
+                "muse-glimmer-30b-kquant-17gb-dflash-256k"
+            ]
+            self.assertEqual(muse_17gb["context_window"], 262144)
+            self.assertFalse(muse_17gb["supports_thinking"])
             self.assertEqual(
                 resolved,
                 {"base_url": "http://127.0.0.1:9090/v1", "headers": {}},

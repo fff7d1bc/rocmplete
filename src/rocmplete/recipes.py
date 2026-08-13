@@ -135,10 +135,12 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             identifier="muse-glimmer",
             application="llama-cpp",
             description=(
-                "Muse Glimmer 30B official dynamic K-quant with DFlash"
+                "Muse Glimmer 30B official dynamic and 17GB K-quants "
+                "with DFlash"
             ),
             bundles=(
                 "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+                "llama-muse-glimmer-30b-kquant-17gb-dflash",
             ),
             launch=RecipeLaunch(
                 "llama-cpp",

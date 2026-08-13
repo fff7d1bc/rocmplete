@@ -86,7 +86,23 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
+            "muse-glimmer-30b-kquant-17gb": (
+                1.0,
+                0.95,
+                64,
+                0.0,
+                0.0,
+                1.0,
+            ),
             "muse-glimmer-30b-kquant-17gb-dflash": (
+                1.0,
+                0.95,
+                64,
+                0.0,
+                0.0,
+                1.0,
+            ),
+            "muse-glimmer-30b-kquant-17gb-dflash-256k": (
                 1.0,
                 0.95,
                 64,

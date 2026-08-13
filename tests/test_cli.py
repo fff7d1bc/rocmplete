@@ -2699,6 +2699,71 @@ class CliTests(unittest.TestCase):
             contents,
         )
 
+    def test_llama_router_renders_every_17gb_muse_policy(self):
+        catalog = load_catalog()
+        preset = catalog.llama_preset(
+            "muse-glimmer-30b-kquant-17gb-dflash"
+        )
+        bundle = catalog.bundle(preset.bundle)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            for identifier in bundle.artifacts:
+                artifact = catalog.artifact(identifier)
+                path = (
+                    data_dir
+                    / "content"
+                    / "llama-cpp"
+                    / "models"
+                    / artifact.destination
+                )
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with path.open("wb") as handle:
+                    handle.truncate(artifact.size)
+                _record_managed_file(data_dir, path, artifact)
+            contents, installed = _render_llama_router_preset(
+                catalog, data_dir
+            )
+            vulkan_contents, _ = _render_llama_router_preset(
+                catalog, data_dir, "vulkan"
+            )
+        self.assertEqual(
+            installed,
+            (
+                "muse-glimmer-30b-kquant-17gb",
+                "muse-glimmer-30b-kquant-17gb-dflash",
+                "muse-glimmer-30b-kquant-17gb-dflash-256k",
+            ),
+        )
+        base_section = contents.split(
+            "[muse-glimmer-30b-kquant-17gb]", 1
+        )[1].split(
+            "[muse-glimmer-30b-kquant-17gb-dflash]", 1
+        )[0]
+        self.assertNotIn("spec-type", base_section)
+        extended_section = contents.split(
+            "[muse-glimmer-30b-kquant-17gb-dflash-256k]", 1
+        )[1]
+        self.assertIn("c = 131072", contents)
+        self.assertIn("c = 262144", extended_section)
+        self.assertIn("fit = off", extended_section)
+        self.assertIn(
+            "override-kv = "
+            "muse-glimmer.context_length=int:262144,"
+            "dflash.context_length=int:262144",
+            extended_section,
+        )
+        self.assertEqual(contents.count("jinja = true"), 3)
+        self.assertEqual(contents.count("reasoning-preserve = true"), 3)
+        self.assertIn("spec-draft-n-max = 15", contents)
+        self.assertIn("spec-draft-n-max = 4", vulkan_contents)
+        self.assertNotIn("spec-draft-n-max = 15", vulkan_contents)
+        self.assertIn(
+            "model-draft = /content/models/"
+            "muse-glimmer-30b-17gb/"
+            "dflash-Muse-Glimmer-30B-Q4_K_M.gguf",
+            contents,
+        )
+
     def test_llama_router_renders_qwen_embedded_jinja_policy(self):
         catalog = load_catalog()
         identifier = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
@@ -5007,7 +5072,10 @@ class CliTests(unittest.TestCase):
             (
                 "llama-cpp",
                 "muse-glimmer",
-            ): ("llama-muse-glimmer-30b-kquant-dynamic-dflash",),
+            ): (
+                "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+                "llama-muse-glimmer-30b-kquant-17gb-dflash",
+            ),
             (
                 "llama-cpp",
                 "translation-hy",

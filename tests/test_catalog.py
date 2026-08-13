@@ -89,7 +89,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(len(catalog.bundles), 52)
         self.assertEqual(len(catalog.artifacts), 68)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 17)
+        self.assertEqual(len(catalog.llama_presets), 19)
         self.assertFalse(
             [
                 artifact.identifier
@@ -270,8 +270,14 @@ class CatalogTests(unittest.TestCase):
         muse_256k = catalog.llama_preset(
             "muse-glimmer-30b-kquant-dynamic-dflash-256k"
         )
+        muse_17gb_base = catalog.llama_preset(
+            "muse-glimmer-30b-kquant-17gb"
+        )
         muse_17gb = catalog.llama_preset(
             "muse-glimmer-30b-kquant-17gb-dflash"
+        )
+        muse_17gb_256k = catalog.llama_preset(
+            "muse-glimmer-30b-kquant-17gb-dflash-256k"
         )
         muse_artifact = catalog.artifact(muse.artifact)
         muse_draft = catalog.artifact(muse.draft_artifact)
@@ -296,7 +302,14 @@ class CatalogTests(unittest.TestCase):
             muse_256k.context_override_architectures,
             ("muse-glimmer", "dflash"),
         )
-        for preset in (muse_base, muse, muse_256k, muse_17gb):
+        for preset in (
+            muse_base,
+            muse,
+            muse_256k,
+            muse_17gb_base,
+            muse_17gb,
+            muse_17gb_256k,
+        ):
             with self.subTest(preset=preset.identifier):
                 self.assertFalse(preset.jinja)
                 self.assertEqual(
@@ -336,9 +349,25 @@ class CatalogTests(unittest.TestCase):
             21285163296,
         )
         self.assertEqual(muse_17gb.default_context, 131072)
+        self.assertEqual(muse_17gb_base.default_context, 131072)
+        self.assertEqual(muse_17gb_base.speculative_type, "")
+        self.assertEqual(muse_17gb_base.artifact, muse_17gb.artifact)
+        self.assertEqual(muse_17gb_base.bundle, muse_17gb.bundle)
         self.assertEqual(muse_17gb.speculative_type, "draft-dflash")
         self.assertEqual(muse_17gb.draft_tokens_for_backend("rocm"), 15)
         self.assertEqual(muse_17gb.draft_tokens_for_backend("vulkan"), 4)
+        self.assertEqual(muse_17gb_256k.artifact, muse_17gb.artifact)
+        self.assertEqual(
+            muse_17gb_256k.draft_artifact, muse_17gb.draft_artifact
+        )
+        self.assertEqual(muse_17gb_256k.bundle, muse_17gb.bundle)
+        self.assertEqual(muse_17gb_256k.default_context, 262144)
+        self.assertEqual(
+            muse_17gb_256k.context_override_architectures,
+            ("muse-glimmer", "dflash"),
+        )
+        self.assertNotEqual(muse_17gb.artifact, muse.artifact)
+        self.assertNotEqual(muse_17gb.draft_artifact, muse.draft_artifact)
         self.assertEqual(
             muse_17gb_artifact.source.revision,
             "43c7eadd41352a299ea8e0a36b3157978dd63596",

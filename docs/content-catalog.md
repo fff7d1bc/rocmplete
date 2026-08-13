@@ -331,13 +331,13 @@ managed installs.
 The public llama.cpp recipes are the paired `qwen3.6` selection, the separate
 high-memory `ornith` and `kat-coder` families, the practical
 `laguna-xs-2.1`, the explicitly experimental `laguna-s-2.1`, the separate
-`muse-glimmer` family with its default 128K
-DFlash policy and experimental forced-256K preset, the high-memory Japanese
+`muse-glimmer` family with two reviewed quantizations, a default dynamic 128K
+DFlash policy, and experimental forced-256K presets, the high-memory Japanese
 and English `shisa-v2.1` family, and the focused `translation-hy` and
-`translation-gemma` choices. Muse's more aggressively quantized 17 GB target
-remains an exact advanced bundle rather than changing the dynamic recipe
-default. Shisa stays a model family rather than another generic translation
-role. The Qwen recipe
+`translation-gemma` choices. Muse installs both target/draft pairs for direct
+A/B selection while keeping the less aggressively quantized dynamic target as
+its launch default. Shisa stays a model family rather than another generic
+translation role. The Qwen recipe
 deliberately installs the dense 27B MTP and sparse 35B-A3B MTP choices
 together. Ornith, KAT-Coder, each Laguna size, and Muse Glimmer keep separate
 family recipes instead of being grouped under a subjective coding role.

@@ -77,7 +77,10 @@ class ContentRecipeTests(unittest.TestCase):
         )
         self.assertEqual(
             muse.bundles,
-            ("llama-muse-glimmer-30b-kquant-dynamic-dflash",),
+            (
+                "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+                "llama-muse-glimmer-30b-kquant-17gb-dflash",
+            ),
         )
         self.assertEqual(
             hy.next_command,

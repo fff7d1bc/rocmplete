@@ -77,7 +77,7 @@ class OmpLauncherTests(unittest.TestCase):
         self.assertEqual(provider["discovery"], {"type": "llama.cpp"})
         self.assertEqual(provider["baseUrl"], "http://127.0.0.1:9090/v1")
         models = {model["id"]: model for model in provider["models"]}
-        self.assertEqual(len(models), 13)
+        self.assertEqual(len(models), 15)
         self.assertNotIn("qwen3-0.6b-q8-0", models)
         self.assertNotIn("translategemma-27b-it-q8-0", models)
         qwen = models[self.default_model]
@@ -96,6 +96,10 @@ class OmpLauncherTests(unittest.TestCase):
         self.assertEqual(muse["contextWindow"], 262144)
         self.assertFalse(muse["reasoning"])
         self.assertNotIn("thinking", muse)
+        muse_17gb = models["muse-glimmer-30b-kquant-17gb-dflash-256k"]
+        self.assertEqual(muse_17gb["contextWindow"], 262144)
+        self.assertFalse(muse_17gb["reasoning"])
+        self.assertNotIn("thinking", muse_17gb)
         laguna_xs = models["laguna-xs-2.1-q4-k-m"]
         self.assertFalse(laguna_xs["reasoning"])
         self.assertNotIn("thinking", laguna_xs)
@@ -146,7 +150,7 @@ class OmpLauncherTests(unittest.TestCase):
                 "advisor": "@default",
             },
         )
-        self.assertEqual(len(overlay["enabledModels"]), 14)
+        self.assertEqual(len(overlay["enabledModels"]), 16)
         self.assertIn(
             "rocmplete-dwarfstar/deepseek-v4-flash",
             overlay["enabledModels"],

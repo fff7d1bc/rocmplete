@@ -142,6 +142,19 @@ Observed results:
   kernel journal showed no matching GPU fault. Exact inputs, the AMD reference
   caveats, complete matrix, and cleanup warning are in the
   [Muse feasibility record](muse-glimmer-llama-cpp-agent-feasibility.md).
+- The 2026-08-13 two-variant Muse follow-up promoted both separately pinned
+  target/draft pairs into the guided family while retaining dynamic 128K
+  DFlash as its launch default. The new 17 GB base and forced-256K policies
+  appear with the existing 128K DFlash policy in all four agent-client
+  catalogs. Direct ROCm, routed ROCm, and direct Vulkan forced-256K servers
+  loaded four 262144-token slots with automatic fitting disabled. ROCm used
+  draft depth 15 and returned exact content `MUSE_256K_OK` and
+  `ROUTER_256K_OK`; Vulkan used depth 4 and returned `VULKAN_256K_OK`. The
+  short requests generated at 37.90, 39.59, and 31.67 tokens/s respectively,
+  but are wiring probes rather than performance comparisons. All containers
+  were removed cleanly and the kernel journal contained no matching GPU
+  fault. Full details are in the
+  [Muse feasibility record](muse-glimmer-llama-cpp-agent-feasibility.md).
 - A 2026-08-12 KAT-Coder template audit used the same Fedora Strix Halo host,
   llama.cpp commit, KAT Q8_0 artifact, Pi 0.84.1, ROCm backend, 131072-token
   evaluation context, and high thinking. Candidate image
@@ -585,7 +598,7 @@ local source image.
 | llama.cpp 35B-A3B agent evaluation | `qwen3.6-35b-a3b-ud-q8-k-xl` first, then `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp Laguna XS coding/agent | `llama-laguna-xs-2.1-q4-k-m`, 256K allocation and smaller deep task | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp coding/agent | `llama-laguna-s-2.1-q4-k-m`, 256K context | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
-| llama.cpp Muse DFlash | dynamic target against no draft at 128K, ROCm depth 15 or Vulkan depth 4, advanced 17 GB target, then forced 256K beyond 128K | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
+| llama.cpp Muse DFlash | both guided target/draft pairs at 128K, ROCm depth 15 or Vulkan depth 4, then forced 256K beyond 128K | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
 
 DwarfStar remains experimental after the bounded smoke. Before promoting it,

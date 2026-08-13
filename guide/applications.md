@@ -847,7 +847,9 @@ to every Qwen model.
 Muse Glimmer is a separate 30B model family rather than another Qwen variant.
 The recipe installs [Meta's official dynamic K-quant target and DFlash
 draft](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md),
-approximately 19.82 GiB in total:
+plus Meta's current smaller 17 GB
+Q4_K_M target with its own matching Q4_K_M DFlash draft, approximately 36.95
+GiB in total:
 
 ```bash
 ./rocmplete content install llama-cpp muse-glimmer
@@ -858,13 +860,13 @@ approximately 19.82 GiB in total:
 The DFlash preset is the recipe default. It starts at 131072 tokens and uses
 fifteen draft tokens on ROCm, matching the draft's 16-token block, or four on
 Vulkan where the deeper setting regressed controlled Strix Halo workloads.
-The same installed bundle also exposes
+The dynamic bundle also exposes
 `muse-glimmer-30b-kquant-dynamic` as a non-speculative control. This makes it
 possible to compare output, draft acceptance, wall time, and memory without
 changing the target GGUF.
 
-The bundle also exposes an experimental forced-window policy without another
-download:
+The dynamic bundle also exposes an experimental forced-window policy without
+another download:
 
 ```bash
 ./rocmplete run llama-cpp server \
@@ -879,12 +881,10 @@ pass beyond 128K. The 128K DFlash preset therefore remains the recipe default.
 `--context 0` is intentionally refused for the forced preset; a positive
 override such as `--context 196608` applies to both target and draft metadata.
 
-Meta's current official repository also provides a smaller 17 GB Q4_K_M
-target and a matching current Q4_K_M DFlash draft. ROCmplete exposes that pair
-as an exact advanced bundle rather than changing the guided recipe:
+The 17 GB pair is installed by the same family recipe and has matching base,
+128K DFlash, and forced-256K DFlash policies:
 
 ```bash
-./rocmplete content install llama-muse-glimmer-30b-kquant-17gb-dflash
 ./rocmplete run llama-cpp server \
   --preset muse-glimmer-30b-kquant-17gb-dflash
 ```
@@ -892,7 +892,8 @@ as an exact advanced bundle rather than changing the guided recipe:
 On the accepted Strix Halo workloads it improved fixed long-prompt generation
 and reduced ROCm unified-memory use, and it completed the maintained Pi coding
 probe. Its more aggressive quantization still carries a larger quality risk
-than the dynamic target, so the recipe remains the quality-oriented default.
+than the dynamic target, so the dynamic 128K DFlash preset remains the recipe
+launch default. Each target keeps its own pinned upstream DFlash artifact.
 
 On one `gfx1151` host, a fixed pp512/tg128 ROCm benchmark measured the
 official K-quant at 341.17 prompt and 10.32 generated tokens/s. The previously
@@ -903,10 +904,9 @@ versus 37.5 seconds and 66.77 GB for BF16. These are one-host observations,
 not cross-hardware promises. The complete immutable inputs and caveats are in
 the [maintainer feasibility record](../docs/muse-glimmer-llama-cpp-agent-feasibility.md).
 
-The base, 128K DFlash, forced-256K DFlash, and exact 17 GB DFlash presets are
-advertised to the managed OpenCode, Pi, OMP, and Maki clients. OpenCode, Pi,
-and OMP use the
-pinned upstream temperature 1.0, top-p 0.95, and top-k 64 defaults; Maki
+Both targets' base, 128K DFlash, and forced-256K DFlash presets are advertised
+to the managed OpenCode, Pi, OMP, and Maki clients. OpenCode, Pi, and OMP use
+the pinned upstream temperature 1.0, top-p 0.95, and top-k 64 defaults; Maki
 retains the server sampler defaults because its dynamic-provider schema cannot
 express per-model sampling. Live Maki tasks completed substantial repository
 reviews with official K-quant at 128K, the former Q8 target at both 128K and
@@ -915,7 +915,7 @@ turn, not a server crash: repository-review depth remains sensitive to the
 client scaffold and prompt. Test the actual workflow before granting
 unattended write access.
 
-All four presets enable llama.cpp reasoning preservation so parsed reasoning
+All six presets enable llama.cpp reasoning preservation so parsed reasoning
 remains available to multi-turn history. This is separate from a bounded
 reasoning-effort selector: Muse does not advertise the Qwen-style effort
 variants. The managed Meta template normalizes an existing `Reasoning effort`
