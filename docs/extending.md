@@ -201,6 +201,12 @@ preset-arguments collection: every new optimized policy needs an explicit
 schema, validation, runtime mapping, router rendering, and hardware
 acceptance.
 
+When controlled measurements establish different speculative depths for the
+ROCm and Vulkan builds, `draft_tokens_by_backend` may override the preset's
+fallback for either exact backend. Keep the common value in `draft_tokens`,
+limit override keys to `rocm` and `vulkan`, and verify both direct and router
+startup. Backend policy remains separate from hardware-profile policy.
+
 When an upstream release explicitly advertises a window beyond the GGUF
 target or draft metadata, `context_override_architectures` may name only the
 affected GGUF architecture prefixes. Its presence maps the selected context to

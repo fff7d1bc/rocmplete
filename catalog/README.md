@@ -27,9 +27,10 @@ media. Use `./rocmplete content list --bundles` for the current exact inventory.
 - `llama_presets` connects one llama.cpp bundle and target GGUF artifact to a
   stable router model ID and a conservative `default_context`. A preset may
   additionally own constrained `draft-mtp` or `draft-dflash` speculative
-  decoding, embedded Jinja or project-bundled chat-template policy,
-  profile-specific Flash Attention and symmetric K/V-cache policy, and one
-  verified draft GGUF from the same bundle. A reviewed experimental preset
+  decoding with an optional closed ROCm/Vulkan draft-depth override, embedded
+  Jinja or project-bundled chat-template policy, profile-specific Flash
+  Attention and symmetric K/V-cache policy, and one verified draft GGUF from
+  the same bundle. A reviewed experimental preset
   may narrowly override the target and draft `context_length` metadata while
   disabling automatic fitting. `agent_tools` records the smaller reviewed set
   maintained for function-tool agent clients.

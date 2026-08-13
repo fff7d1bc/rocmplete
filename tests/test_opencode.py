@@ -156,7 +156,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
             provider["options"]["baseURL"],
             "http://127.0.0.1:9090/v1",
         )
-        self.assertEqual(len(provider["models"]), 12)
+        self.assertEqual(len(provider["models"]), 13)
         self.assertNotIn("qwen3-0.6b-q8-0", provider["models"])
         self.assertNotIn("translategemma-27b-it-q8-0", provider["models"])
         self.assertIn("qwen3.6-27b-mtp-q8-0", provider["models"])

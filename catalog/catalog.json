@@ -1167,6 +1167,40 @@
         "url": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md"
       }
     },
+    "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf": {
+      "description": "Official Muse Glimmer 30B 17GB Q4_K_M GGUF for llama.cpp",
+      "source": {
+        "repository": "meta-models/Muse-Glimmer-30B-GGUF",
+        "revision": "43c7eadd41352a299ea8e0a36b3157978dd63596",
+        "path": "Muse-Glimmer-30B-KQuant-17GB-Q4_K_M.gguf"
+      },
+      "destination": "muse-glimmer-30b-17gb/Muse-Glimmer-30B-KQuant-17GB-Q4_K_M.gguf",
+      "target": "llama-models",
+      "size": 16756683904,
+      "sha256": "4cc57c0f51040a226e5a72cc47b7613f7772950e460a665f7083de89f183f60e",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/43c7eadd41352a299ea8e0a36b3157978dd63596/README.md"
+      }
+    },
+    "muse-glimmer-30b-dflash-q4-k-m-gguf": {
+      "description": "Official Muse Glimmer 30B DFlash Q4_K_M draft GGUF for llama.cpp",
+      "source": {
+        "repository": "meta-models/Muse-Glimmer-30B-GGUF",
+        "revision": "43c7eadd41352a299ea8e0a36b3157978dd63596",
+        "path": "dflash-Muse-Glimmer-30B-Q4_K_M.gguf"
+      },
+      "destination": "muse-glimmer-30b-17gb/dflash-Muse-Glimmer-30B-Q4_K_M.gguf",
+      "target": "llama-models",
+      "size": 1631208128,
+      "sha256": "b2e808bf656086fe86bd0d0bd990f01d33e377537a07c02d45371517c8b264ef",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/43c7eadd41352a299ea8e0a36b3157978dd63596/README.md"
+      }
+    },
     "qwen3.6-35b-a3b-ud-q8-k-xl-gguf": {
       "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
       "source": {
@@ -1962,6 +1996,18 @@
         "llama"
       ]
     },
+    "llama-muse-glimmer-30b-kquant-17gb-dflash": {
+      "description": "Official Muse Glimmer 30B 17GB Q4_K_M llama.cpp model with DFlash draft",
+      "application": "llama-cpp",
+      "artifacts": [
+        "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
+        "muse-glimmer-30b-dflash-q4-k-m-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
     "llama-hy-mt1.5-7b-q8-0": {
       "description": "Tencent HY-MT1.5 7B Q8_0 llama.cpp model",
       "application": "llama-cpp",
@@ -2607,6 +2653,9 @@
       "default_context": 131072,
       "speculative_type": "draft-dflash",
       "draft_tokens": 15,
+      "draft_tokens_by_backend": {
+        "vulkan": 4
+      },
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
       "reasoning_preserve": true
@@ -2618,10 +2667,27 @@
       "default_context": 262144,
       "speculative_type": "draft-dflash",
       "draft_tokens": 15,
+      "draft_tokens_by_backend": {
+        "vulkan": 4
+      },
       "context_override_architectures": [
         "muse-glimmer",
         "dflash"
       ],
+      "chat_template": "muse-glimmer-atem",
+      "agent_tools": true,
+      "reasoning_preserve": true
+    },
+    "muse-glimmer-30b-kquant-17gb-dflash": {
+      "bundle": "llama-muse-glimmer-30b-kquant-17gb-dflash",
+      "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
+      "draft_artifact": "muse-glimmer-30b-dflash-q4-k-m-gguf",
+      "default_context": 131072,
+      "speculative_type": "draft-dflash",
+      "draft_tokens": 15,
+      "draft_tokens_by_backend": {
+        "vulkan": 4
+      },
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
       "reasoning_preserve": true

@@ -86,10 +86,10 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 51)
-        self.assertEqual(len(catalog.artifacts), 66)
+        self.assertEqual(len(catalog.bundles), 52)
+        self.assertEqual(len(catalog.artifacts), 68)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 16)
+        self.assertEqual(len(catalog.llama_presets), 17)
         self.assertFalse(
             [
                 artifact.identifier
@@ -270,8 +270,13 @@ class CatalogTests(unittest.TestCase):
         muse_256k = catalog.llama_preset(
             "muse-glimmer-30b-kquant-dynamic-dflash-256k"
         )
+        muse_17gb = catalog.llama_preset(
+            "muse-glimmer-30b-kquant-17gb-dflash"
+        )
         muse_artifact = catalog.artifact(muse.artifact)
         muse_draft = catalog.artifact(muse.draft_artifact)
+        muse_17gb_artifact = catalog.artifact(muse_17gb.artifact)
+        muse_17gb_draft = catalog.artifact(muse_17gb.draft_artifact)
         self.assertEqual(muse.default_context, 131072)
         self.assertEqual(muse_base.default_context, 131072)
         self.assertEqual(muse_base.speculative_type, "")
@@ -279,6 +284,9 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(muse_base.bundle, muse.bundle)
         self.assertEqual(muse.speculative_type, "draft-dflash")
         self.assertEqual(muse.draft_tokens, 15)
+        self.assertEqual(muse.draft_tokens_by_backend, {"vulkan": 4})
+        self.assertEqual(muse.draft_tokens_for_backend("rocm"), 15)
+        self.assertEqual(muse.draft_tokens_for_backend("vulkan"), 4)
         self.assertEqual(muse.context_override_architectures, ())
         self.assertEqual(muse_256k.artifact, muse.artifact)
         self.assertEqual(muse_256k.draft_artifact, muse.draft_artifact)
@@ -288,7 +296,7 @@ class CatalogTests(unittest.TestCase):
             muse_256k.context_override_architectures,
             ("muse-glimmer", "dflash"),
         )
-        for preset in (muse_base, muse, muse_256k):
+        for preset in (muse_base, muse, muse_256k, muse_17gb):
             with self.subTest(preset=preset.identifier):
                 self.assertFalse(preset.jinja)
                 self.assertEqual(
@@ -326,6 +334,30 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(muse.bundle)),
             21285163296,
+        )
+        self.assertEqual(muse_17gb.default_context, 131072)
+        self.assertEqual(muse_17gb.speculative_type, "draft-dflash")
+        self.assertEqual(muse_17gb.draft_tokens_for_backend("rocm"), 15)
+        self.assertEqual(muse_17gb.draft_tokens_for_backend("vulkan"), 4)
+        self.assertEqual(
+            muse_17gb_artifact.source.revision,
+            "43c7eadd41352a299ea8e0a36b3157978dd63596",
+        )
+        self.assertEqual(muse_17gb_artifact.size, 16756683904)
+        self.assertEqual(
+            muse_17gb_artifact.sha256,
+            "4cc57c0f51040a226e5a72cc47b7613f7772950e"
+            "460a665f7083de89f183f60e",
+        )
+        self.assertEqual(muse_17gb_draft.size, 1631208128)
+        self.assertEqual(
+            muse_17gb_draft.sha256,
+            "b2e808bf656086fe86bd0d0bd990f01d33e37753"
+            "7a07c02d45371517c8b264ef",
+        )
+        self.assertEqual(
+            catalog.bundle_size(catalog.bundle(muse_17gb.bundle)),
+            18387892032,
         )
         muse_template = (
             DEFAULT_CATALOG_PATH.parent.parent
@@ -610,6 +642,45 @@ class CatalogTests(unittest.TestCase):
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
                 LauncherError, "draft_tokens requires speculative_type"
+            ):
+                load_catalog(path)
+
+    def test_llama_backend_draft_tokens_are_strict(self):
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"][
+            "muse-glimmer-30b-kquant-dynamic-dflash"
+        ]
+        for value, message in (
+            ({"cuda": 4}, "key must be one of"),
+            ({"vulkan": 0}, "integer between 1 and 15"),
+            (4, "must be an object"),
+        ):
+            with self.subTest(value=value):
+                preset["draft_tokens_by_backend"] = value
+                with tempfile.TemporaryDirectory() as directory:
+                    path = self._catalog_copy(directory, raw)
+                    with self.assertRaisesRegex(LauncherError, message):
+                        load_catalog(path)
+
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        raw["llama_presets"]["qwen3-0.6b-q8-0"][
+            "draft_tokens_by_backend"
+        ] = {"vulkan": 4}
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "requires speculative_type"
+            ):
+                load_catalog(path)
+
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        raw["llama_presets"]["gemma4-31b-it-q8-0-mtp"][
+            "draft_tokens_by_backend"
+        ] = {"vulkan": 9}
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "draft-mtp backend draft tokens"
             ):
                 load_catalog(path)
 

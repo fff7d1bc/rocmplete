@@ -185,6 +185,17 @@ managed agent clients expose all three presets and llama.cpp preserves Muse's
 parsed reasoning across turns, but task depth still depends on the client
 scaffold and prompt.
 
+An exact advanced bundle provides Meta's smaller 17 GB Q4_K_M target with its
+matching current DFlash draft. It is faster and uses less unified memory on
+accepted fixed Strix Halo workloads, while the dynamic target remains the
+quality-oriented recipe default:
+
+```bash
+./rocmplete content install llama-muse-glimmer-30b-kquant-17gb-dflash
+./rocmplete run llama-cpp server \
+  --preset muse-glimmer-30b-kquant-17gb-dflash
+```
+
 For Japanese and English translation on a high-memory host, the separate
 Shisa V2.1 recipe installs the 70B Q8_0 model and requires acknowledgment of
 the Llama 3.3 terms:

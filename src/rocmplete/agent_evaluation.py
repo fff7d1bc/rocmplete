@@ -1385,7 +1385,8 @@ def _model_identity(
         "backend": options.backend,
         "sampling": dict(agent_sampling_parameters(preset.identifier)),
         "speculative_type": preset.speculative_type,
-        "draft_tokens": preset.draft_tokens,
+        "draft_tokens": preset.draft_tokens_for_backend(options.backend),
+        "draft_tokens_by_backend": dict(preset.draft_tokens_by_backend),
         "flash_attention": dict(preset.flash_attention),
         "kv_cache": dict(preset.kv_cache),
     }

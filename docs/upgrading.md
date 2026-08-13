@@ -240,9 +240,16 @@ The bundled `muse-glimmer-atem.jinja` is byte-for-byte Meta's template from
 base-model revision `a4e59da52a7bc87ae7251dd5545c0dd437c44b68`, SHA-256
 `cfc67e5f349f37690dfd31ed1f18bc4442a9dd32fe39a648f993cb4eb3cae678`.
 It corrects duplicate reasoning directives in the older template embedded in
-the unchanged official GGUF. On upgrades, compare the base-model template and
-GGUF metadata independently, then repeat direct and router rendering plus a
-complete structured tool round trip before changing or removing the override.
+ROCmplete's pinned official GGUF. Meta later repacked the official GGUFs at
+revision `43c7eadd41352a299ea8e0a36b3157978dd63596` with this fixed template and
+canonical Q4_K filenames. The dynamic target and DFlash candidate at that
+revision retained their tensor inventories and byte-identical tensor payloads;
+the only changed GGUF metadata key was the chat-template value. ROCmplete
+therefore did not replace the behavior-equivalent target and draft merely to
+acquire the embedded copy. On upgrades, compare the base-model template, GGUF
+metadata, and tensor payload independently, then repeat direct and router
+rendering plus a complete structured tool round trip before changing or
+removing the override.
 
 The bundled `kat-coder-v2.5.jinja` is byte-for-byte Kwaipilot's template from
 base-model revision `3a7d874090df0cd4399401982eca67df2c5a7e82`, SHA-256

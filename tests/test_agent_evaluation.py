@@ -73,6 +73,19 @@ class AgentEvaluationTests(unittest.TestCase):
         )
         self.assertEqual(identity["kv_cache"], {"strix-halo": "q8_0"})
 
+        muse_identity = _model_identity(
+            load_catalog(),
+            AgentEvaluationOptions(
+                data_dir=Path("/unused"),
+                preset="muse-glimmer-30b-kquant-dynamic-dflash",
+                backend="vulkan",
+            ),
+        )
+        self.assertEqual(muse_identity["draft_tokens"], 4)
+        self.assertEqual(
+            muse_identity["draft_tokens_by_backend"], {"vulkan": 4}
+        )
+
     def test_toolchains_select_fixed_controller_commands(self):
         tasks = {task.identifier: task for task in load_coding_suite().tasks}
         go_task = tasks["proxy-late-probe"]

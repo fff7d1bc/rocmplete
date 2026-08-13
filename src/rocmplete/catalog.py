@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Dict, Iterable, Mapping, Tuple, TypeVar
 
-from .config import APPLICATIONS, GPU_PROFILES
+from .config import APPLICATIONS, GPU_PROFILES, LLAMA_BACKENDS
 from .errors import LauncherError
 from .project import PROJECT_ROOT
 
@@ -125,6 +125,7 @@ class LlamaPreset:
     default_context: int
     speculative_type: str = ""
     draft_tokens: int = 0
+    draft_tokens_by_backend: Mapping[str, int] = field(default_factory=dict)
     draft_artifact: str = ""
     context_override_architectures: Tuple[str, ...] = field(
         default_factory=tuple
@@ -136,6 +137,9 @@ class LlamaPreset:
     chat_template: str = ""
     flash_attention: Mapping[str, str] = field(default_factory=dict)
     kv_cache: Mapping[str, str] = field(default_factory=dict)
+
+    def draft_tokens_for_backend(self, backend: str) -> int:
+        return self.draft_tokens_by_backend.get(backend, self.draft_tokens)
 
 
 @dataclass(frozen=True)
@@ -752,6 +756,7 @@ def _load_llama_preset(
         "default_context",
         "speculative_type",
         "draft_tokens",
+        "draft_tokens_by_backend",
         "draft_artifact",
         "context_override_architectures",
         "jinja",
@@ -814,6 +819,45 @@ def _load_llama_preset(
         raise LauncherError(
             "llama.cpp preset {} draft-mtp draft_tokens must be between "
             "1 and 8".format(identifier)
+        )
+    draft_tokens_by_backend_value = data.get(
+        "draft_tokens_by_backend", {}
+    )
+    if not isinstance(draft_tokens_by_backend_value, dict):
+        raise LauncherError(
+            "llama.cpp preset {} draft_tokens_by_backend must be an "
+            "object".format(identifier)
+        )
+    draft_tokens_by_backend: Dict[str, int] = {}
+    for raw_backend, value in draft_tokens_by_backend_value.items():
+        backend = _identifier(
+            raw_backend,
+            "{}.draft_tokens_by_backend backend".format(identifier),
+        )
+        if backend not in LLAMA_BACKENDS:
+            raise LauncherError(
+                "llama.cpp preset {} draft_tokens_by_backend key must be "
+                "one of {}".format(identifier, ", ".join(LLAMA_BACKENDS))
+            )
+        if (
+            not isinstance(value, int)
+            or isinstance(value, bool)
+            or not 1 <= value <= 15
+        ):
+            raise LauncherError(
+                "llama.cpp preset {} draft_tokens_by_backend value must "
+                "be an integer between 1 and 15".format(identifier)
+            )
+        if speculative_type == "draft-mtp" and value > 8:
+            raise LauncherError(
+                "llama.cpp preset {} draft-mtp backend draft tokens must "
+                "be between 1 and 8".format(identifier)
+            )
+        draft_tokens_by_backend[backend] = value
+    if draft_tokens_by_backend and not speculative_type:
+        raise LauncherError(
+            "llama.cpp preset {} draft_tokens_by_backend requires "
+            "speculative_type".format(identifier)
         )
     draft_artifact = data.get("draft_artifact", "")
     if draft_artifact:
@@ -983,6 +1027,7 @@ def _load_llama_preset(
         default_context=default_context,
         speculative_type=speculative_type,
         draft_tokens=draft_tokens,
+        draft_tokens_by_backend=draft_tokens_by_backend,
         draft_artifact=draft_artifact,
         context_override_architectures=tuple(
             context_override_architectures

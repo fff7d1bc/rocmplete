@@ -3375,14 +3375,25 @@ def _llama_speculation_policy(preset: LlamaPreset) -> str:
         "draft-mtp": "MTP",
         "draft-dflash": "DFlash",
     }[preset.speculative_type]
+    backend_policy = ""
+    if preset.draft_tokens_by_backend:
+        backend_policy = " ({})".format(
+            ", ".join(
+                "{}={}".format(backend, tokens)
+                for backend, tokens in sorted(
+                    preset.draft_tokens_by_backend.items()
+                )
+            )
+        )
     if preset.draft_artifact:
-        return "{}, {} draft tokens; draft {}".format(
+        return "{}, {} draft tokens{}; draft {}".format(
             strategy,
             preset.draft_tokens,
+            backend_policy,
             preset.draft_artifact,
         )
-    return "{}, {} draft tokens from model heads".format(
-        strategy, preset.draft_tokens
+    return "{}, {} draft tokens{} from model heads".format(
+        strategy, preset.draft_tokens, backend_policy
     )
 
 
@@ -5649,7 +5660,7 @@ def _llama_preset_status(
 
 
 def _render_llama_router_preset(
-    catalog: Catalog, data_dir: Path
+    catalog: Catalog, data_dir: Path, backend: str = "rocm"
 ) -> Tuple[str, Tuple[str, ...]]:
     sections = ["version = 1", ""]
     installed = []
@@ -5742,7 +5753,7 @@ def _render_llama_router_preset(
                 [
                     "spec-type = {}".format(preset.speculative_type),
                     "spec-draft-n-max = {}".format(
-                        preset.draft_tokens
+                        preset.draft_tokens_for_backend(backend)
                     ),
                 ]
             )
@@ -5860,7 +5871,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
                 preset.draft_artifact
             ).destination
         speculative_type = preset.speculative_type
-        draft_tokens = preset.draft_tokens
+        draft_tokens = preset.draft_tokens_for_backend(arguments.backend)
         context_override_architectures = (
             preset.context_override_architectures
         )
@@ -5878,7 +5889,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
             )
     elif arguments.router:
         contents, router_models = _render_llama_router_preset(
-            catalog, data_dir
+            catalog, data_dir, arguments.backend
         )
         router_preset = (
             StorageLayout(data_dir).application("llama-cpp") / "models.ini"

@@ -2650,6 +2650,9 @@ class CliTests(unittest.TestCase):
             contents, installed = _render_llama_router_preset(
                 catalog, data_dir
             )
+            vulkan_contents, _ = _render_llama_router_preset(
+                catalog, data_dir, "vulkan"
+            )
         self.assertEqual(
             installed,
             (
@@ -2688,6 +2691,8 @@ class CliTests(unittest.TestCase):
         self.assertEqual(contents.count("reasoning-preserve = true"), 3)
         self.assertIn("spec-type = draft-dflash", contents)
         self.assertIn("spec-draft-n-max = 15", contents)
+        self.assertIn("spec-draft-n-max = 4", vulkan_contents)
+        self.assertNotIn("spec-draft-n-max = 15", vulkan_contents)
         self.assertIn(
             "model-draft = /content/models/"
             "muse-glimmer-30b/dflash-kquant.gguf",
@@ -3081,6 +3086,24 @@ class CliTests(unittest.TestCase):
             )
             with redirect_stdout(io.StringIO()) as output:
                 self.assertEqual(command_run(arguments), 0)
+            _, vulkan_arguments = parse_arguments(
+                [
+                    "run",
+                    "llama-cpp",
+                    "server",
+                    "--preset",
+                    preset.identifier,
+                    "--profile",
+                    "cpu",
+                    "--backend",
+                    "vulkan",
+                    "--data-dir",
+                    str(data_dir),
+                    "--dry-run",
+                ]
+            )
+            with redirect_stdout(io.StringIO()) as vulkan_output:
+                self.assertEqual(command_run(vulkan_arguments), 0)
             _, zero_context = parse_arguments(
                 [
                     "run",
@@ -3127,6 +3150,10 @@ class CliTests(unittest.TestCase):
             command,
         )
         self.assertIn("--ctx-size 262144", command)
+        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=15", command)
+        self.assertIn(
+            "ROCMLETE_LLAMA_DRAFT_TOKENS=4", vulkan_output.getvalue()
+        )
         self.assertIn("ROCMLETE_LLAMA_JINJA=0", command)
         self.assertIn(
             "ROCMLETE_LLAMA_CHAT_TEMPLATE=muse-glimmer-atem", command
@@ -4136,7 +4163,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(command_content(arguments, load_catalog()), 0)
         text = output.getvalue()
         self.assertIn("family qwen   8  bundles", text)
-        self.assertIn("all  51  bundles", text)
+        self.assertIn("all  52  bundles", text)
         self.assertNotIn("Exact bundles:", text)
 
     def test_content_list_application_filter_requires_filterable_view(self):
@@ -4401,7 +4428,7 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(
             _llama_speculation_policy(dflash),
-            "DFlash, 15 draft tokens; draft "
+            "DFlash, 15 draft tokens (vulkan=4); draft "
             "muse-glimmer-30b-dflash-kquant-gguf",
         )
         self.assertEqual(
@@ -4844,7 +4871,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("exact-bundles", text)
         self.assertIn("Browse exact bundles:", text)
         self.assertIn("ComfyUI — image models (9 bundles)", text)
-        self.assertIn("llama.cpp (14 bundles)", text)
+        self.assertIn("llama.cpp (15 bundles)", text)
         self.assertIn("Laguna S 2.1", text)
         self.assertIn("laguna-s-2.1-q4-k-m", text)
 
@@ -4876,7 +4903,7 @@ class CliTests(unittest.TestCase):
                 "comfyui-images": 9,
                 "comfyui-videos": 20,
                 "comfyui-addons": 7,
-                "llama-cpp": 14,
+                "llama-cpp": 15,
                 "dwarfstar": 1,
             },
         )
@@ -5075,8 +5102,8 @@ class CliTests(unittest.TestCase):
                     )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 66)
-        self.assertEqual(len({item.identifier for item in artifacts}), 66)
+        self.assertEqual(len(artifacts), 68)
+        self.assertEqual(len({item.identifier for item in artifacts}), 68)
         self.assertEqual(
             install_artifacts.call_args.args[2],
             "localhost/custom-content-tools",
@@ -5092,7 +5119,7 @@ class CliTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Content ready: 51 bundles and 28 workflows.",
+            "Content ready: 52 bundles and 28 workflows.",
             output.getvalue(),
         )
 
@@ -5120,10 +5147,10 @@ class CliTests(unittest.TestCase):
                 )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 16)
-        self.assertEqual(len({item.identifier for item in artifacts}), 16)
+        self.assertEqual(len(artifacts), 18)
+        self.assertEqual(len({item.identifier for item in artifacts}), 18)
         self.assertIn(
-            "Content ready: 14 bundles and 0 workflows.",
+            "Content ready: 15 bundles and 0 workflows.",
             output.getvalue(),
         )
 

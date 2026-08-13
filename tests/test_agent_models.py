@@ -86,6 +86,14 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
+            "muse-glimmer-30b-kquant-17gb-dflash": (
+                1.0,
+                0.95,
+                64,
+                0.0,
+                0.0,
+                1.0,
+            ),
         }
         actual = {}
         for identifier, preset in self.catalog.llama_presets.items():

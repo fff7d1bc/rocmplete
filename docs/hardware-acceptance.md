@@ -128,6 +128,20 @@ Observed results:
   `apps/agent-evaluation/results/20260812T152234Z-muse-glimmer-30b-kquant-dynamic-dflash.json`.
   This is a template-regression field observation, not a new comparative
   quality ranking or a formal matrix `PASS`.
+- A 2026-08-13 follow-up on the same Fedora Strix Halo system and llama.cpp
+  revision compared the official dynamic target with Meta's current 17 GB
+  Q4_K_M target, and compared DFlash depths on both backends. Controlled 128K
+  workloads selected depth 15 for ROCm and depth 4 for Vulkan. At a 64347-token
+  prompt, the 17 GB target reached 27.35 generated tokens/s on ROCm and 27.23
+  on Vulkan, versus 22.08 and 20.68 for the dynamic target. The 17 GB Pi probe
+  solved `re-align` in 800.1 seconds and 65 tool calls with the same patch hash
+  as dynamic; all ordinary and hidden tests, build, dependency, artifact, and
+  network checks passed. Managed direct Vulkan and routed Vulkan startup both
+  resolved depth 4 and returned exact bounded content, while the Pi path
+  independently exercised ROCm depth 15. Containers stopped cleanly and the
+  kernel journal showed no matching GPU fault. Exact inputs, the AMD reference
+  caveats, complete matrix, and cleanup warning are in the
+  [Muse feasibility record](muse-glimmer-llama-cpp-agent-feasibility.md).
 - A 2026-08-12 KAT-Coder template audit used the same Fedora Strix Halo host,
   llama.cpp commit, KAT Q8_0 artifact, Pi 0.84.1, ROCm backend, 131072-token
   evaluation context, and high thinking. Candidate image
@@ -571,7 +585,7 @@ local source image.
 | llama.cpp 35B-A3B agent evaluation | `qwen3.6-35b-a3b-ud-q8-k-xl` first, then `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp Laguna XS coding/agent | `llama-laguna-xs-2.1-q4-k-m`, 256K allocation and smaller deep task | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp coding/agent | `llama-laguna-s-2.1-q4-k-m`, 256K context | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
-| llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-dflash` against `muse-glimmer-30b-kquant-dynamic` at 128K, then forced `muse-glimmer-30b-kquant-dynamic-dflash-256k` beyond 128K | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
+| llama.cpp Muse DFlash | dynamic target against no draft at 128K, ROCm depth 15 or Vulkan depth 4, advanced 17 GB target, then forced 256K beyond 128K | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
 
 DwarfStar remains experimental after the bounded smoke. Before promoting it,

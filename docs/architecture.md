@@ -569,9 +569,10 @@ belong to the recipe layer. `default_context` is the reviewed launcher
 starting point. Agent presets may expose their native context, while bounded
 or memory-constrained workloads may deliberately start smaller. A preset
 can select one of the allowlisted `draft-mtp` or `draft-dflash` strategies
-with a strategy-specific bounded token count. A different draft GGUF must
-belong to that same bundle. MTP may instead use tensors embedded in the target
-GGUF, while DFlash always requires the separate draft artifact. A preset may
+with a strategy-specific bounded token count and an optional closed
+ROCm/Vulkan override map. A different draft GGUF must belong to that same
+bundle. MTP may instead use tensors embedded in the target GGUF, while DFlash
+always requires the separate draft artifact. A preset may
 name exact GGUF architecture prefixes whose `context_length` metadata is
 overridden to that launch's selected context. Presence of this narrow policy
 also disables llama.cpp automatic fitting; it does not expose general metadata

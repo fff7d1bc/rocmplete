@@ -855,9 +855,10 @@ approximately 19.82 GiB in total:
   --preset muse-glimmer-30b-kquant-dynamic-dflash
 ```
 
-The DFlash preset is the recipe default. It starts at 131072 tokens and allows
-up to fifteen draft tokens, matching the draft's 16-token block. The same
-installed bundle also exposes
+The DFlash preset is the recipe default. It starts at 131072 tokens and uses
+fifteen draft tokens on ROCm, matching the draft's 16-token block, or four on
+Vulkan where the deeper setting regressed controlled Strix Halo workloads.
+The same installed bundle also exposes
 `muse-glimmer-30b-kquant-dynamic` as a non-speculative control. This makes it
 possible to compare output, draft acceptance, wall time, and memory without
 changing the target GGUF.
@@ -878,6 +879,21 @@ pass beyond 128K. The 128K DFlash preset therefore remains the recipe default.
 `--context 0` is intentionally refused for the forced preset; a positive
 override such as `--context 196608` applies to both target and draft metadata.
 
+Meta's current official repository also provides a smaller 17 GB Q4_K_M
+target and a matching current Q4_K_M DFlash draft. ROCmplete exposes that pair
+as an exact advanced bundle rather than changing the guided recipe:
+
+```bash
+./rocmplete content install llama-muse-glimmer-30b-kquant-17gb-dflash
+./rocmplete run llama-cpp server \
+  --preset muse-glimmer-30b-kquant-17gb-dflash
+```
+
+On the accepted Strix Halo workloads it improved fixed long-prompt generation
+and reduced ROCm unified-memory use, and it completed the maintained Pi coding
+probe. Its more aggressive quantization still carries a larger quality risk
+than the dynamic target, so the recipe remains the quality-oriented default.
+
 On one `gfx1151` host, a fixed pp512/tg128 ROCm benchmark measured the
 official K-quant at 341.17 prompt and 10.32 generated tokens/s. The previously
 managed Unsloth Q8 target measured 376.80 and 7.35 tokens/s, while a 51.90 GiB
@@ -887,8 +903,9 @@ versus 37.5 seconds and 66.77 GB for BF16. These are one-host observations,
 not cross-hardware promises. The complete immutable inputs and caveats are in
 the [maintainer feasibility record](../docs/muse-glimmer-llama-cpp-agent-feasibility.md).
 
-The base, 128K DFlash, and forced-256K DFlash presets are advertised to the
-managed OpenCode, Pi, OMP, and Maki clients. OpenCode, Pi, and OMP use the
+The base, 128K DFlash, forced-256K DFlash, and exact 17 GB DFlash presets are
+advertised to the managed OpenCode, Pi, OMP, and Maki clients. OpenCode, Pi,
+and OMP use the
 pinned upstream temperature 1.0, top-p 0.95, and top-k 64 defaults; Maki
 retains the server sampler defaults because its dynamic-provider schema cannot
 express per-model sampling. Live Maki tasks completed substantial repository
@@ -898,7 +915,7 @@ turn, not a server crash: repository-review depth remains sensitive to the
 client scaffold and prompt. Test the actual workflow before granting
 unattended write access.
 
-All three presets enable llama.cpp reasoning preservation so parsed reasoning
+All four presets enable llama.cpp reasoning preservation so parsed reasoning
 remains available to multi-turn history. This is separate from a bounded
 reasoning-effort selector: Muse does not advertise the Qwen-style effort
 variants. The managed Meta template normalizes an existing `Reasoning effort`

@@ -65,7 +65,14 @@ and separate DFlash draft. Its next-step command selects 128K DFlash by
 default; the matching non-speculative preset remains available as a managed
 control, and an experimental forced-256K DFlash preset reuses both files.
 All three policies preserve parsed reasoning for multi-turn agent history.
-Switching among them downloads nothing twice.
+Switching among them downloads nothing twice. Meta's smaller 17 GB Q4_K_M
+target and matching current DFlash draft remain a separate exact bundle for
+users who deliberately prefer measured fixed-workload speed and memory
+savings over the recipe's quality-oriented dynamic quantization:
+
+```bash
+./rocmplete content install llama-muse-glimmer-30b-kquant-17gb-dflash
+```
 
 The two Laguna recipes are separate model families. `laguna-xs-2.1` installs
 the official 33B-total, 3B-active Q4_K_M model. It is the practical local

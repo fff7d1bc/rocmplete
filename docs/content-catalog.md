@@ -145,6 +145,32 @@ overwrite them. Prefer a versioned upstream filename when practical. Otherwise
 document the explicit user migration: move the old file aside, run
 `content install TARGET`, and remove the backup only after validation.
 
+Treat an upstream model update as an artifact review even when the repository,
+model name, and advertised release name do not change. Resolve the current
+upstream state to a new full commit, then compare the pinned and candidate file
+inventories, paths, sizes, hashes, licenses, and model cards. For GGUF files,
+also compare metadata, tensor names and shapes, tensor data offsets, and tensor
+payload bytes. Classify the result before changing the catalog:
+
+- documentation-only changes do not require a new artifact pin;
+- a metadata-only repack is useful only when the changed metadata affects the
+  managed runtime and is not already supplied by an exact project override;
+- changed tensor payload, quantization, tokenizer data, or architecture
+  metadata is a new inference candidate and requires the applicable quality,
+  protocol, context, backend, memory, and performance acceptance; and
+- target, speculative draft, projector, tokenizer, and template files form a
+  reviewed companion tuple. Do not update one member merely because its
+  filename looks compatible with the others.
+
+Keep the public preset identifier stable when the accepted model policy has
+not changed. Artifact identity remains the full revision, source path, size,
+and SHA-256, not the preset ID or upstream display name. Prefer a new
+destination for changed bytes so the old and candidate files can coexist
+during validation. If the upstream canonical filename is reused, retain the
+installer's fail-closed collision behavior and document the explicit migration
+instead of overwriting managed content. Never follow a floating branch such as
+`main` at install or runtime.
+
 Runtime readiness also requires a current entry in
 `content/.rocmplete/verification.json`. The installer creates that receipt only
 after preparing the shared runtime SELinux label, where applicable, and hashing
@@ -172,6 +198,9 @@ connect it to a stable router identity:
     "default_context": 4096,
     "speculative_type": "draft-mtp",
     "draft_tokens": 4,
+    "draft_tokens_by_backend": {
+      "vulkan": 3
+    },
     "draft_artifact": "optional-draft-artifact-id",
     "context_override_architectures": ["target-architecture"],
     "jinja": true,
@@ -207,6 +236,14 @@ different `.gguf` artifact in the same bundle. Omit it only when an MTP target
 GGUF contains its own prediction heads; DFlash requires the separate draft
 artifact. These fields intentionally do not accept arbitrary llama.cpp
 arguments.
+
+`draft_tokens_by_backend` is an optional closed `rocm`/`vulkan` map that
+overrides the default draft depth only for a measured backend. Use it when
+the same target and speculative decoder have materially different optima on
+otherwise identical hardware, context, and workload. The host resolves the
+effective value consistently for direct and router startup. Do not use GPU
+profiles as backend aliases or infer one backend's optimum from another's
+acceptance ratio.
 
 `context_override_architectures` is an optional built-in-catalog list of exact
 GGUF architecture prefixes. When present, ROCmplete sets each architecture's
@@ -297,8 +334,10 @@ high-memory `ornith` and `kat-coder` families, the practical
 `muse-glimmer` family with its default 128K
 DFlash policy and experimental forced-256K preset, the high-memory Japanese
 and English `shisa-v2.1` family, and the focused `translation-hy` and
-`translation-gemma` choices. Shisa stays a model family rather than another
-generic translation role. The Qwen recipe
+`translation-gemma` choices. Muse's more aggressively quantized 17 GB target
+remains an exact advanced bundle rather than changing the dynamic recipe
+default. Shisa stays a model family rather than another generic translation
+role. The Qwen recipe
 deliberately installs the dense 27B MTP and sparse 35B-A3B MTP choices
 together. Ornith, KAT-Coder, each Laguna size, and Muse Glimmer keep separate
 family recipes instead of being grouped under a subjective coding role.

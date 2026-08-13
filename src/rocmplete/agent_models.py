@@ -84,6 +84,7 @@ _AGENT_SAMPLING_PARAMETERS = {
     "muse-glimmer-30b-kquant-dynamic": _MUSE_GLIMMER_CODING,
     "muse-glimmer-30b-kquant-dynamic-dflash": _MUSE_GLIMMER_CODING,
     "muse-glimmer-30b-kquant-dynamic-dflash-256k": _MUSE_GLIMMER_CODING,
+    "muse-glimmer-30b-kquant-17gb-dflash": _MUSE_GLIMMER_CODING,
 }
 
 

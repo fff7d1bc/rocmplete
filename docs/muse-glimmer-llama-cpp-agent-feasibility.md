@@ -323,6 +323,185 @@ the model weights, DFlash decoder, tool protocol, sampler policy, or harness
 scaffold. It is therefore a correctness retest trigger, not evidence by itself
 that Muse's repository-level coding quality or OpenCode behavior has improved.
 
+## 2026-08-13 upstream repack review
+
+Meta subsequently republished the
+[official GGUF repository](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/tree/43c7eadd41352a299ea8e0a36b3157978dd63596)
+at revision `43c7eadd41352a299ea8e0a36b3157978dd63596`. The revision embeds the
+corrected ATEM template and renames the files to canonical Q4_K names:
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `Muse-Glimmer-30B-KQuant-Dynamic-Q4_K_XL.gguf` | 19,653,960,832 | `ac7023d6a4c704eb9af54ab53e476a66b7f5b6c0ef2fc4a8dde5253c291a6c38` |
+| `dflash-Muse-Glimmer-30B-Q4_K_M.gguf` | 1,631,208,128 | `b2e808bf656086fe86bd0d0bd990f01d33e377537a07c02d45371517c8b264ef` |
+| `Muse-Glimmer-30B-KQuant-17GB-Q4_K_M.gguf` | 16,756,683,904 | `4cc57c0f51040a226e5a72cc47b7613f7772950e460a665f7083de89f183f60e` |
+
+A full GGUF comparison found that the catalog-pinned and republished dynamic
+targets have the same tensor names, shapes, and types. Their tensor-data
+regions are byte-for-byte identical after their respective 13113696-byte and
+13116544-byte headers. The two DFlash payloads are likewise byte-identical
+after offsets 13073344 and 13076160. Their only changed metadata key is
+`tokenizer.chat_template`; in both pairs, the whole-file size delta exactly
+matches the aligned tensor-data offset delta. The republished dynamic file's
+full SHA-256 also matched the recorded candidate hash. Meta's commit describes
+the change as a fixed-template update and canonical rename. The embedded
+template is byte-for-byte the same 9,992-byte template that ROCmplete already
+bundles and verifies.
+
+The renamed dynamic target and draft are therefore a metadata-only repack,
+not a model update. Moving the catalog pin would download about 19.82 GiB of
+behavior-equivalent content and require an unnecessary managed-content
+migration and cleanup. ROCmplete retains the older immutable target and draft
+plus its exact managed template.
+
+The 17 GB Q4_K_M target is different. It is a smaller quantization candidate,
+not another representation of the selected dynamic target, so it requires
+performance and quality acceptance before it could replace or accompany the
+managed choice.
+
+## 2026-08-13 AMD reference and tuning follow-up
+
+AMD's
+[Strix Halo Muse Glimmer article](https://www.amd.com/en/blogs/2026/run-meta-muse-glimmer-30b-on-amd-ryzen-ai-max-and-radeon-gpus.html)
+reports up to 24 generated tokens/s. Its screenshot shows 24.4 generated and
+143 prompt tokens/s. Footnote SHO-77 identifies a Ryzen AI Max+ 395 system
+with 128 GB RAM, a 64 GB VGM allocation, Windows 11 Pro 25H2, Adrenalin
+26.7.1, llama.cpp's Vulkan backend, DFlash, and
+`--spec-draft-n-max=4`. It says generation throughput is averaged over at
+least three runs.
+
+The report does not identify the target GGUF, llama.cpp revision, context or
+prompt depth, slot count, cache types, sample length, or sampling policy. Its
+roughly 21 GB screenshot allocation and Meta's own current DFlash example make
+the 17 GB target plausible, but this is an inference rather than a disclosed
+AMD setting. The headline is therefore a useful lead, not a directly
+comparable acceptance result.
+
+The ROCmplete follow-up first held the catalog-pinned dynamic target, managed
+ATEM template, image, sampler, 131072-token allocation, one active slot, and
+512-token output budget fixed. It compared ROCm and Vulkan with no draft,
+DFlash depth 4, and the managed depth 15 at shallow, 32664-token, and
+64347-token prompt depths. Shallow cases used three seeds; deeper cases used
+one seed and a fresh server. Requests that exhausted the budget while still
+reasoning are timing workloads rather than standalone answer-quality tests.
+
+The image was
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r19`, built from
+llama.cpp revision `62bf73d25c53b8161f8a22894d4f90c4aebbd7d0`. Sampling was
+temperature 1.0, top-p 0.95, top-k 64, min-p 0, presence penalty 0, and
+repeat penalty 1. A slash below separates generated tokens/s from end-to-end
+request seconds:
+
+| Backend and draft depth | 85-token prompt | 32664-token prompt | 64347-token prompt |
+| --- | ---: | ---: | ---: |
+| ROCm, none | 10.63 / 48.51 | 10.35 / 143.69 | 10.16 / 252.05 |
+| ROCm, 4 | 12.80 / 40.44 | 17.45 / 127.85 | 18.77 / 236.02 |
+| ROCm, 15 | 15.67 / 33.24 | 27.19 / 117.42 | 22.08 / 232.25 |
+| Vulkan, none | 11.03 / 46.97 | 10.71 / 205.80 | 10.50 / 379.66 |
+| Vulkan, 4 | 18.87 / 27.79 | 25.61 / 189.49 | 20.68 / 378.12 |
+| Vulkan, 15 | 5.15 / 100.58 | 8.49 / 228.22 | not run |
+
+Clean repeated ROCm no-draft prefill was 346.82 prompt tokens/s at 32664
+tokens and 319.29 at 64347. The corresponding depth-15 rates were 331.52 and
+307.95. Vulkan's depth-4 rates were 192.78 and 182.16, versus 206.83 and
+194.53 without a draft. ROCm therefore remained the better complete-workload
+backend on this Linux host even where Vulkan decode was competitive.
+
+Draft acceptance alone did not select the optimum. At shallow, 32664, and
+64347 tokens, ROCm accepted 31.5%, 55.7%, and 63.8% of depth-4 candidates but
+only 10.2%, 24.8%, and 20.1% at depth 15. The deeper ROCm setting nevertheless
+completed every workload faster because each speculative step offered more
+candidates. Vulkan accepted 33.9%, 60.9%, and 46.8% at depth 4. Its depth-15
+acceptance fell to 10.1% and 22.1% in the first two cases and made inference
+slower than no draft, so the redundant 64347-token case was stopped.
+
+The accepted policy is consequently backend-specific: Muse DFlash uses depth
+15 on ROCm and depth 4 on Vulkan. The preset schema owns a closed backend
+override so direct server startup, router rendering, client evaluation
+identity, and human-facing inspection all resolve the same depth. This is not
+a GPU-profile distinction and it does not change either backend globally.
+
+### 17 GB target acceptance
+
+The current revision's 17 GB Q4_K_M target and Q4_K_M draft were downloaded to
+an external mirror, verified against the exact catalog candidate sizes and
+hashes, and installed through the normal local-mirror path. An initial attempt
+correctly refused a mirror inside the active data tree because source and
+destination overlapped. Moving the mirror outside managed data allowed the
+normal staged copy, hash verification, atomic install, and receipt update to
+complete.
+
+The target was measured with each backend's accepted draft depth. The table
+reports prompt tokens/s, generated tokens/s, and wall seconds:
+
+| Backend and target | 32664-token prompt | 64347-token prompt |
+| --- | ---: | ---: |
+| ROCm, dynamic, depth 15 | 331.52 / 27.19 / 117.42 | 307.95 / 22.08 / 232.25 |
+| ROCm, 17 GB, depth 15 | 337.48 / 27.31 / 115.60 | 312.06 / 27.35 / 225.03 |
+| Vulkan, dynamic, depth 4 | 192.78 / 25.61 / 189.49 | 182.16 / 20.68 / 378.12 |
+| Vulkan, 17 GB, depth 4 | 213.77 / 26.87 / 171.91 | 200.57 / 27.23 / 339.73 |
+
+At 64347 prompt tokens, the smaller target raised generated throughput by 24%
+on ROCm and 32% on Vulkan. End-to-end time improved by 3% and 10% respectively
+because prefill still dominated both long-context requests. Shallow generation
+was effectively unchanged on ROCm at 15.68 tokens/s, while Vulkan improved
+from 18.87 to 21.17. The one-slot ROCm allocation after load fell from 24.54
+GB for dynamic target plus draft to 21.63 GB for the 17 GB pair. Vulkan memory
+is not compared because rootless container accounting does not include its
+device allocation on this host.
+
+These controlled numbers did not reproduce AMD's disclosed 24.4-token/s
+screenshot exactly. The closest comparable shallow Vulkan mean was 21.17
+tokens/s, with one repetition at 22.13. Differences in the undisclosed target
+file, prompt, sample length, context allocation, slot count, llama.cpp build,
+and Windows driver prevent an attribution. Normal coding-agent turns can show
+much higher instantaneous rates when their accepted draft sequence is easier,
+which is also not comparable to either fixed workload.
+
+A maintained Pi implementation probe at 128K, high reasoning, ROCm, and depth
+15 was then used as the quality and tool-protocol screen. It solved the frozen
+version 5 `re-align` task in 800.1 seconds and 65 tool calls. Ordinary and
+hidden tests, the build, dependency checks, artifact checks, and network
+isolation all passed. The patch changed the same two files with the same
+SHA-256, `cea8b4bc7fc8ba2cfd5c7952bf22b2a15fa1fafe37c186eabda7bca0fed1e215`,
+as the accepted dynamic-target run. It generated 17259 tokens at 20.39
+tokens/s and processed prompts at 73.71 tokens/s.
+
+The comparable dynamic-target run took 597.8 seconds, 36 tool calls, and 12749
+generated tokens at 23.89 tokens/s. The 17 GB attempt spent substantial extra
+time calculating and independently checking the boundary cases before making
+the same change. This is not a correctness or tool-protocol failure, but it
+does show that fixed decode benchmarks do not predict agent efficiency. One
+stochastic attempt also cannot attribute the extra deliberation to the
+quantization. The smaller target remains an exact advanced bundle rather than
+replacing the guided dynamic recipe: Meta's
+[current model card](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/43c7eadd41352a299ea8e0a36b3157978dd63596/README.md)
+reports a larger average benchmark loss for the 17 GB quantization than for
+dynamic K-quant, and this single solved probe cannot close that general
+quality risk. The retained result is
+`apps/agent-evaluation/results/muse-17gb-re-align-20260813.json`.
+
+Operationally, the transient evaluation service required both an explicit
+checkout working directory and the Homebrew binary path. Two setup attempts
+exited with status 127 before model inference and are excluded. An early deep
+no-draft timing request that overlapped another client was also discarded and
+repeated cleanly. Raw machine-specific result JSON remains outside the source
+tree under the benchmark and agent-evaluation data partitions.
+
+Final managed acceptance exercised both startup paths. Direct Vulkan startup
+resolved `--spec-draft-n-max 4`, loaded the exact installed target and draft,
+and reported healthy. A 64-token exact-answer probe exhausted its budget in
+reasoning without content; the same probe with the managed low-reasoning
+directive and 256-token budget stopped normally with exact content
+`VULKAN_OK`. Router rendering put `spec-draft-n-max = 4` in the 17 GB section,
+loaded that section on demand, and returned exact content `ROUTER_OK`. The ROCm
+Pi evaluation independently logged depth 15 and completed its structured
+65-tool loop. All containers stopped and were removed, with no matching GPU
+reset, page fault, or ring timeout in the kernel journal. llama.cpp did emit a
+ROCm host-buffer size-mismatch warning while destroying the evaluation
+context; it followed the successful result write and exit status 0, so it is
+retained as a cleanup warning rather than classified as an inference failure.
+
 ## Retest triggers
 
 Repeat the comparison when any of these changes materially:
