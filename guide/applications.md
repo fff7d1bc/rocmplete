@@ -845,7 +845,7 @@ to every Qwen model.
 ### Muse Glimmer and DFlash
 
 Muse Glimmer is a separate 30B model family rather than another Qwen variant.
-The recipe installs [Meta's official dynamic K-quant target and DFlash
+The recipe installs [Meta's official Dynamic Q4_K_XL target and DFlash
 draft](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md),
 plus Meta's current smaller 17 GB
 Q4_K_M target with its own matching Q4_K_M DFlash draft, approximately 36.95
@@ -854,23 +854,23 @@ GiB in total:
 ```bash
 ./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-dynamic-dflash
+  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash
 ```
 
 The DFlash preset is the recipe default. It starts at 131072 tokens and uses
 fifteen draft tokens on ROCm, matching the draft's 16-token block, or four on
 Vulkan where the deeper setting regressed controlled Strix Halo workloads.
 The dynamic bundle also exposes
-`muse-glimmer-30b-kquant-dynamic` as a non-speculative control. This makes it
-possible to compare output, draft acceptance, wall time, and memory without
-changing the target GGUF.
+`muse-glimmer-30b-kquant-dynamic-q4-k-xl` as a non-speculative control. This
+makes it possible to compare output, draft acceptance, wall time, and memory
+without changing the target GGUF.
 
 The dynamic bundle also exposes an experimental forced-window policy without
 another download:
 
 ```bash
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-dynamic-dflash-256k
+  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 ```
 
 That preset sets both `muse-glimmer.context_length` and
@@ -886,7 +886,7 @@ The 17 GB pair is installed by the same family recipe and has matching base,
 
 ```bash
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-17gb-dflash
+  --preset muse-glimmer-30b-kquant-17gb-q4-k-m-dflash
 ```
 
 On the accepted Strix Halo workloads it improved fixed long-prompt generation

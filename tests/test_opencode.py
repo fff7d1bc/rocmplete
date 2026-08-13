@@ -176,13 +176,13 @@ class OpenCodeLauncherTests(unittest.TestCase):
         )
         self.assertEqual(
             provider["models"][
-                "muse-glimmer-30b-kquant-dynamic-dflash-256k"
+                "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
             ]["limit"],
             {"context": 262144, "output": 16384},
         )
         self.assertEqual(
             provider["models"][
-                "muse-glimmer-30b-kquant-17gb-dflash-256k"
+                "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k"
             ]["limit"],
             {"context": 262144, "output": 16384},
         )

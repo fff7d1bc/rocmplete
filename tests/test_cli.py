@@ -2629,7 +2629,7 @@ class CliTests(unittest.TestCase):
     def test_llama_router_renders_preset_owned_dflash_settings(self):
         catalog = load_catalog()
         preset = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-dynamic-dflash"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash"
         )
         bundle = catalog.bundle(preset.bundle)
         with tempfile.TemporaryDirectory() as directory:
@@ -2656,19 +2656,19 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             installed,
             (
-                "muse-glimmer-30b-kquant-dynamic",
-                "muse-glimmer-30b-kquant-dynamic-dflash",
-                "muse-glimmer-30b-kquant-dynamic-dflash-256k",
+                "muse-glimmer-30b-kquant-dynamic-q4-k-xl",
+                "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
+                "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k",
             ),
         )
         base_section = contents.split(
-            "[muse-glimmer-30b-kquant-dynamic]", 1
+            "[muse-glimmer-30b-kquant-dynamic-q4-k-xl]", 1
         )[1].split(
-            "[muse-glimmer-30b-kquant-dynamic-dflash]", 1
+            "[muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash]", 1
         )[0]
         self.assertNotIn("spec-type", base_section)
         extended_section = contents.split(
-            "[muse-glimmer-30b-kquant-dynamic-dflash-256k]", 1
+            "[muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k]", 1
         )[1]
         self.assertIn("c = 131072", contents)
         self.assertIn("c = 262144", extended_section)
@@ -2702,7 +2702,7 @@ class CliTests(unittest.TestCase):
     def test_llama_router_renders_every_17gb_muse_policy(self):
         catalog = load_catalog()
         preset = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-17gb-dflash"
+            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash"
         )
         bundle = catalog.bundle(preset.bundle)
         with tempfile.TemporaryDirectory() as directory:
@@ -2729,19 +2729,19 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             installed,
             (
-                "muse-glimmer-30b-kquant-17gb",
-                "muse-glimmer-30b-kquant-17gb-dflash",
-                "muse-glimmer-30b-kquant-17gb-dflash-256k",
+                "muse-glimmer-30b-kquant-17gb-q4-k-m",
+                "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
+                "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k",
             ),
         )
         base_section = contents.split(
-            "[muse-glimmer-30b-kquant-17gb]", 1
+            "[muse-glimmer-30b-kquant-17gb-q4-k-m]", 1
         )[1].split(
-            "[muse-glimmer-30b-kquant-17gb-dflash]", 1
+            "[muse-glimmer-30b-kquant-17gb-q4-k-m-dflash]", 1
         )[0]
         self.assertNotIn("spec-type", base_section)
         extended_section = contents.split(
-            "[muse-glimmer-30b-kquant-17gb-dflash-256k]", 1
+            "[muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k]", 1
         )[1]
         self.assertIn("c = 131072", contents)
         self.assertIn("c = 262144", extended_section)
@@ -3117,7 +3117,7 @@ class CliTests(unittest.TestCase):
     def test_llama_forced_context_preset_dry_run_maps_override(self):
         catalog = load_catalog()
         preset = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-dynamic-dflash-256k"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         )
         bundle = catalog.bundle(preset.bundle)
         with tempfile.TemporaryDirectory() as directory:
@@ -3507,7 +3507,7 @@ class CliTests(unittest.TestCase):
         for preset, speculative_type in (
             ("qwen3.6-35b-a3b-mtp-ud-q8-k-xl", "draft-mtp"),
             (
-                "muse-glimmer-30b-kquant-dynamic-dflash",
+                "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
                 "draft-dflash",
             ),
         ):
@@ -4474,10 +4474,10 @@ class CliTests(unittest.TestCase):
             "gemma4-31b-it-q8-0-mtp"
         )
         dflash = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-dynamic-dflash"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash"
         )
         dflash_256k = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-dynamic-dflash-256k"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         )
         laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
         qwen27 = catalog.llama_preset("qwen3.6-27b-mtp-q8-0")
@@ -5073,8 +5073,8 @@ class CliTests(unittest.TestCase):
                 "llama-cpp",
                 "muse-glimmer",
             ): (
-                "llama-muse-glimmer-30b-kquant-dynamic-dflash",
-                "llama-muse-glimmer-30b-kquant-17gb-dflash",
+                "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
+                "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
             ),
             (
                 "llama-cpp",

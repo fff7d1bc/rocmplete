@@ -62,7 +62,7 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
-            "muse-glimmer-30b-kquant-dynamic": (
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl": (
                 1.0,
                 0.95,
                 64,
@@ -70,7 +70,7 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
-            "muse-glimmer-30b-kquant-dynamic-dflash": (
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash": (
                 1.0,
                 0.95,
                 64,
@@ -78,7 +78,7 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
-            "muse-glimmer-30b-kquant-dynamic-dflash-256k": (
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k": (
                 1.0,
                 0.95,
                 64,
@@ -86,7 +86,7 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
-            "muse-glimmer-30b-kquant-17gb": (
+            "muse-glimmer-30b-kquant-17gb-q4-k-m": (
                 1.0,
                 0.95,
                 64,
@@ -94,7 +94,7 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
-            "muse-glimmer-30b-kquant-17gb-dflash": (
+            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash": (
                 1.0,
                 0.95,
                 64,
@@ -102,7 +102,7 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
-            "muse-glimmer-30b-kquant-17gb-dflash-256k": (
+            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k": (
                 1.0,
                 0.95,
                 64,

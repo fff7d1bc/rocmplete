@@ -118,12 +118,12 @@ class MakiLauncherTests(unittest.TestCase):
                 by_id["laguna-xs-2.1-q4-k-m"]["supports_thinking"]
             )
             muse = by_id[
-                "muse-glimmer-30b-kquant-dynamic-dflash-256k"
+                "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
             ]
             self.assertEqual(muse["context_window"], 262144)
             self.assertFalse(muse["supports_thinking"])
             muse_17gb = by_id[
-                "muse-glimmer-30b-kquant-17gb-dflash-256k"
+                "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k"
             ]
             self.assertEqual(muse_17gb["context_window"], 262144)
             self.assertFalse(muse_17gb["supports_thinking"])

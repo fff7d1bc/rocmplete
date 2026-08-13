@@ -81,12 +81,16 @@ _AGENT_SAMPLING_PARAMETERS = {
         "presence_penalty": 0.0,
         "repeat_penalty": 1.0,
     },
-    "muse-glimmer-30b-kquant-dynamic": _MUSE_GLIMMER_CODING,
-    "muse-glimmer-30b-kquant-dynamic-dflash": _MUSE_GLIMMER_CODING,
-    "muse-glimmer-30b-kquant-dynamic-dflash-256k": _MUSE_GLIMMER_CODING,
-    "muse-glimmer-30b-kquant-17gb": _MUSE_GLIMMER_CODING,
-    "muse-glimmer-30b-kquant-17gb-dflash": _MUSE_GLIMMER_CODING,
-    "muse-glimmer-30b-kquant-17gb-dflash-256k": _MUSE_GLIMMER_CODING,
+    "muse-glimmer-30b-kquant-dynamic-q4-k-xl": _MUSE_GLIMMER_CODING,
+    "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash": _MUSE_GLIMMER_CODING,
+    "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k": (
+        _MUSE_GLIMMER_CODING
+    ),
+    "muse-glimmer-30b-kquant-17gb-q4-k-m": _MUSE_GLIMMER_CODING,
+    "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash": _MUSE_GLIMMER_CODING,
+    "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k": (
+        _MUSE_GLIMMER_CODING
+    ),
 }
 
 

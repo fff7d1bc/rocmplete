@@ -520,6 +520,9 @@ The 17 GB pair gained the same three policies as dynamic: a non-speculative
 generated for OpenCode, Pi, OMP, and Maki with the same reviewed Muse sampler,
 managed ATEM template, tool contract, and reasoning-preservation policy.
 Focused catalog, router, and client-generation tests cover all six identities.
+The public identifiers preserve Meta's quantization names as
+`kquant-dynamic-q4-k-xl` and `kquant-17gb-q4-k-m`; DFlash and forced-context
+behavior remain explicit suffixes rather than replacing the model identity.
 
 Final `gfx1151` acceptance used the same revision and `r19` image as the
 controlled comparison. A direct ROCm forced-256K server loaded four 262144

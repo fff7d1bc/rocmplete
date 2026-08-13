@@ -77,7 +77,9 @@ class AgentEvaluationTests(unittest.TestCase):
             load_catalog(),
             AgentEvaluationOptions(
                 data_dir=Path("/unused"),
-                preset="muse-glimmer-30b-kquant-dynamic-dflash",
+                preset=(
+                    "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash"
+                ),
                 backend="vulkan",
             ),
         )

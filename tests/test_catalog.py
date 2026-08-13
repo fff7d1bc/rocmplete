@@ -262,22 +262,22 @@ class CatalogTests(unittest.TestCase):
             33150364000,
         )
         muse = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-dynamic-dflash"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash"
         )
         muse_base = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-dynamic"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl"
         )
         muse_256k = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-dynamic-dflash-256k"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         )
         muse_17gb_base = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-17gb"
+            "muse-glimmer-30b-kquant-17gb-q4-k-m"
         )
         muse_17gb = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-17gb-dflash"
+            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash"
         )
         muse_17gb_256k = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-17gb-dflash-256k"
+            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k"
         )
         muse_artifact = catalog.artifact(muse.artifact)
         muse_draft = catalog.artifact(muse.draft_artifact)
@@ -653,7 +653,7 @@ class CatalogTests(unittest.TestCase):
     def test_llama_dflash_requires_a_separate_draft_artifact(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         preset = raw["llama_presets"][
-            "muse-glimmer-30b-kquant-dynamic-dflash"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash"
         ]
         del preset["draft_artifact"]
         with tempfile.TemporaryDirectory() as directory:
@@ -677,7 +677,7 @@ class CatalogTests(unittest.TestCase):
     def test_llama_backend_draft_tokens_are_strict(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         preset = raw["llama_presets"][
-            "muse-glimmer-30b-kquant-dynamic-dflash"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash"
         ]
         for value, message in (
             ({"cuda": 4}, "key must be one of"),
@@ -716,7 +716,7 @@ class CatalogTests(unittest.TestCase):
     def test_llama_context_override_architectures_are_strict(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         preset = raw["llama_presets"][
-            "muse-glimmer-30b-kquant-dynamic-dflash-256k"
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         ]
         preset["context_override_architectures"] = [
             "muse-glimmer",

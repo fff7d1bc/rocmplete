@@ -61,7 +61,7 @@ same is true of the 27B MTP artifact. Its upstream basename omits `MTP`, while
 its ROCmplete directory, bundle, preset, and pinned source retain the identity.
 
 The `muse-glimmer` recipe installs two official target/draft pairs: Meta's
-30B dynamic K-quant and the smaller 17 GB Q4_K_M. The next-step command keeps
+30B Dynamic Q4_K_XL and the smaller 17 GB Q4_K_M. The next-step command keeps
 the dynamic target's 128K DFlash policy as the quality-oriented default. Each
 target also exposes a matching non-speculative 128K control and experimental
 forced-256K DFlash policy, so switching among the six managed presets requires

@@ -92,11 +92,15 @@ class OmpLauncherTests(unittest.TestCase):
                 "defaultLevel": "medium",
             },
         )
-        muse = models["muse-glimmer-30b-kquant-dynamic-dflash-256k"]
+        muse = models[
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
+        ]
         self.assertEqual(muse["contextWindow"], 262144)
         self.assertFalse(muse["reasoning"])
         self.assertNotIn("thinking", muse)
-        muse_17gb = models["muse-glimmer-30b-kquant-17gb-dflash-256k"]
+        muse_17gb = models[
+            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k"
+        ]
         self.assertEqual(muse_17gb["contextWindow"], 262144)
         self.assertFalse(muse_17gb["reasoning"])
         self.assertNotIn("thinking", muse_17gb)

@@ -168,7 +168,7 @@ default:
 ./rocmplete run llama-cpp server --preset laguna-xs-2.1-q4-k-m
 ```
 
-Muse Glimmer is a separate 30B family using Meta's official dynamic K-quant
+Muse Glimmer is a separate 30B family using Meta's official Dynamic Q4_K_XL
 and smaller 17 GB Q4_K_M targets, each with its matching pinned DFlash draft.
 The family recipe installs both pairs for straightforward A/B testing and
 starts the quality-oriented dynamic target's 128K accelerated preset by
@@ -177,7 +177,7 @@ default:
 ```bash
 ./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-dynamic-dflash
+  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash
 ```
 
 Each target has a non-speculative 128K control, a 128K DFlash preset, and an
@@ -189,7 +189,7 @@ lower reported quantization loss and remains the recipe default:
 
 ```bash
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-17gb-dflash
+  --preset muse-glimmer-30b-kquant-17gb-q4-k-m-dflash
 ```
 
 The managed agent clients expose all six presets and llama.cpp preserves

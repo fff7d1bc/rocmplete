@@ -1134,7 +1134,7 @@
       ]
     },
     "muse-glimmer-30b-kquant-dynamic-gguf": {
-      "description": "Official Muse Glimmer 30B dynamic K-quant GGUF for llama.cpp",
+      "description": "Official Muse Glimmer 30B KQuant Dynamic Q4_K_XL GGUF for llama.cpp",
       "source": {
         "repository": "meta-models/Muse-Glimmer-30B-GGUF",
         "revision": "93769bc7ab5ad1e9cd22d857e3138cf5d977ae81",
@@ -1168,7 +1168,7 @@
       }
     },
     "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf": {
-      "description": "Official Muse Glimmer 30B 17GB Q4_K_M GGUF for llama.cpp",
+      "description": "Official Muse Glimmer 30B KQuant 17GB Q4_K_M GGUF for llama.cpp",
       "source": {
         "repository": "meta-models/Muse-Glimmer-30B-GGUF",
         "revision": "43c7eadd41352a299ea8e0a36b3157978dd63596",
@@ -1984,8 +1984,8 @@
         "llama"
       ]
     },
-    "llama-muse-glimmer-30b-kquant-dynamic-dflash": {
-      "description": "Official Muse Glimmer 30B dynamic K-quant llama.cpp model with DFlash draft",
+    "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash": {
+      "description": "Official Muse Glimmer 30B KQuant Dynamic Q4_K_XL llama.cpp model with DFlash draft",
       "application": "llama-cpp",
       "artifacts": [
         "muse-glimmer-30b-kquant-dynamic-gguf",
@@ -1996,8 +1996,8 @@
         "llama"
       ]
     },
-    "llama-muse-glimmer-30b-kquant-17gb-dflash": {
-      "description": "Official Muse Glimmer 30B 17GB Q4_K_M llama.cpp model with DFlash draft",
+    "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash": {
+      "description": "Official Muse Glimmer 30B KQuant 17GB Q4_K_M llama.cpp model with DFlash draft",
       "application": "llama-cpp",
       "artifacts": [
         "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
@@ -2638,16 +2638,16 @@
         "strix-point": "off"
       }
     },
-    "muse-glimmer-30b-kquant-dynamic": {
-      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+    "muse-glimmer-30b-kquant-dynamic-q4-k-xl": {
+      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
       "artifact": "muse-glimmer-30b-kquant-dynamic-gguf",
       "default_context": 131072,
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
       "reasoning_preserve": true
     },
-    "muse-glimmer-30b-kquant-dynamic-dflash": {
-      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+    "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash": {
+      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
       "artifact": "muse-glimmer-30b-kquant-dynamic-gguf",
       "draft_artifact": "muse-glimmer-30b-dflash-kquant-gguf",
       "default_context": 131072,
@@ -2660,8 +2660,8 @@
       "agent_tools": true,
       "reasoning_preserve": true
     },
-    "muse-glimmer-30b-kquant-dynamic-dflash-256k": {
-      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-dflash",
+    "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k": {
+      "bundle": "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
       "artifact": "muse-glimmer-30b-kquant-dynamic-gguf",
       "draft_artifact": "muse-glimmer-30b-dflash-kquant-gguf",
       "default_context": 262144,
@@ -2678,16 +2678,16 @@
       "agent_tools": true,
       "reasoning_preserve": true
     },
-    "muse-glimmer-30b-kquant-17gb": {
-      "bundle": "llama-muse-glimmer-30b-kquant-17gb-dflash",
+    "muse-glimmer-30b-kquant-17gb-q4-k-m": {
+      "bundle": "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
       "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
       "default_context": 131072,
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
       "reasoning_preserve": true
     },
-    "muse-glimmer-30b-kquant-17gb-dflash": {
-      "bundle": "llama-muse-glimmer-30b-kquant-17gb-dflash",
+    "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash": {
+      "bundle": "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
       "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
       "draft_artifact": "muse-glimmer-30b-dflash-q4-k-m-gguf",
       "default_context": 131072,
@@ -2700,8 +2700,8 @@
       "agent_tools": true,
       "reasoning_preserve": true
     },
-    "muse-glimmer-30b-kquant-17gb-dflash-256k": {
-      "bundle": "llama-muse-glimmer-30b-kquant-17gb-dflash",
+    "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k": {
+      "bundle": "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
       "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
       "draft_artifact": "muse-glimmer-30b-dflash-q4-k-m-gguf",
       "default_context": 262144,
