@@ -489,6 +489,55 @@ tested host but remains inconclusive about model capability; retain its
 checkpoint and revisit it when hardware or runtime throughput changes
 materially.
 
+#### Current Muse M, Muse XL, and Qwen 27B focus (2026-08-13)
+
+A focused comparison used source commit
+`5d170046250616cc88f67fce09177fe39c2a3afb`, the unchanged version 5 suite
+fingerprint, Pi 0.84.1, ROCm, high thinking, 131072 context, and image
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r19`, image ID
+`d4b7065b465a85efbfc5ff0aa10895283bdc5e79b2aae5b528f9f1b6e9647147`.
+It compared `muse-glimmer-30b-kquant-17gb-q4-k-m-dflash`,
+`muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash`, and
+`qwen3.6-27b-mtp-q8-0`. The Muse presets used the accepted ROCm DFlash depth
+15; Qwen used its managed three-token MTP policy.
+
+On `review-fzr-concurrency`, M, XL, and Qwen completed in 428.4, 369.9, and
+391.6 seconds with 13, 9, and 7 tool calls. Manual review found Qwen strongest
+on entry-version ordering, but it still missed immediate Enter selection from
+the older visible snapshot. M contradicted its otherwise correct description,
+and XL incorrectly said an older result is discarded. Retained results are
+`muse-m-review-fzr-20260813.json`, `muse-xl-review-fzr-20260813.json`, and
+`qwen27-review-fzr-20260813.json`.
+
+On medium `re-cancel`, M solved in 890.2 seconds and 75 tool calls, and XL
+solved in 1,014.4 seconds and 67 calls. Qwen's patch passed ordinary and hidden
+tests and built successfully in 1,028.1 seconds and 38 calls, but its own build
+left a forbidden `reencode` executable, so the strict outcome is unsolved.
+Peak live context was 57,702, 66,026, and 89,659 tokens respectively. Results
+are `muse-m-re-cancel-20260813.json`, `muse-xl-re-cancel-20260813.json`, and
+`qwen27-re-cancel-20260813.json`.
+
+All three completed hard `re-source-race` within the 45-minute policy and all
+three failed its hidden contract. M took 1,429.3 seconds and 91 tool calls, XL
+1,463.2 seconds and 71 calls, and Qwen 1,527.6 seconds and 37 calls. Ordinary
+tests and builds passed without generated artifacts. Each hidden suite failed
+to compile against incompatible snapshot or quarantine helpers. Manual patch
+inspection found M's per-input snapshot and deferred-restore design safer than
+XL's global mutable snapshot map and replacement-deleting restore. Qwen traced
+the failure paths carefully but still selected incompatible APIs. Peak live
+context was 69,686 for M, 66,640 for XL, and 97,818 for Qwen. Results are
+`muse-m-re-source-race-20260813.json`,
+`muse-xl-re-source-race-20260813.json`, and
+`qwen27-re-source-race-20260813.json`.
+
+These are single attempts and do not replace the complete-suite Qwen 35B
+baseline. They establish narrower operational roles: XL is the preferred Muse
+target for human-guided code archaeology, M has the strongest autonomous-
+implementation evidence among these three, and Qwen 27B remains a useful
+control-flow reviewer and second opinion. None demonstrated safe unattended
+destructive work. The qualitative reasoning and recommendation are retained
+in [Coding-agent model quality](coding-agent-model-quality.md#focused-muse-m-muse-xl-and-qwen-27b-comparison).
+
 All result paths are below `apps/agent-evaluation/results/`. No challenger
 passed the hard gate, so none consumed a full-suite run. Laguna and DwarfStar
 were not repeated because their unchanged earlier runs had already established

@@ -44,6 +44,83 @@ Those runs calibrate the policy for future candidates at a 45-minute ceiling
 per attempt. This does not retroactively change the recorded 20-minute
 practical screen or the two 60-minute capability probes.
 
+## Focused Muse M, Muse XL, and Qwen 27B comparison
+
+A 2026-08-13 follow-up separates the two currently managed Muse targets and
+compares them with Qwen3.6 27B MTP. The controlled runs used source commit
+`5d170046250616cc88f67fce09177fe39c2a3afb`, the version 5 suite fingerprint,
+Pi 0.84.1, ROCm, high thinking, 131072 context, one fresh fixture, and image
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r19` with image ID
+`d4b7065b465a85efbfc5ff0aa10895283bdc5e79b2aae5b528f9f1b6e9647147`.
+The Muse presets used their accepted ROCm DFlash depth 15. Each result is one
+stochastic attempt, so this is role-positioning evidence rather than a new
+general ranking.
+
+The read-only evidence splits by task. On the frozen fzr concurrency review,
+Qwen was the only model to explain correctly that an older accepted entry
+snapshot can be applied and followed by a refresh. It still missed that Enter
+can select immediately from the currently visible older snapshot while that
+refresh is pending. Muse M described the version behavior in one section but
+contradicted it elsewhere. Muse XL produced the cleanest answer but made the
+material error that an older result is discarded. Qwen therefore gave the
+best analysis of this particularly subtle mechanism, while none was fully
+trustworthy. The attempts took 391.6, 428.4, and 369.9 seconds respectively
+for Qwen, M, and XL.
+
+A naturalistic archaeology question against an older private checkout asked
+the models to explain a nontrivial data path end to end. Muse XL's 949-word
+answer was the best-balanced explanation, grounded in ten tool calls. Muse M
+was equally grounded and the most exhaustive at 940 words and twelve calls,
+but was less economical. Qwen used ten calls and gave a concise, usefully broad
+653-word answer, but made one material error about a size-selection threshold.
+The interactive Muse runs used the 256K variants and were not frozen evaluation
+attempts, so this observation supports a human-guided code-reading preference,
+not a strict score.
+
+The implementation evidence reverses the Muse order. On medium-difficulty
+`re-cancel`, both Muse variants passed ordinary tests, hidden tests, the build,
+artifact checks, and network isolation. Muse M solved it in 890.2 seconds and
+75 tool calls; Muse XL solved it in 1,014.4 seconds and 67 calls. Qwen's source
+patch passed every functional gate in 1,028.1 seconds and 38 calls, but its
+own `go build ./...` left a forbidden `reencode` executable, making the strict
+result unsolved. Qwen also consumed much more live context: 89,659 tokens,
+versus 57,702 for M and 66,026 for XL.
+
+No candidate solved hard `re-source-race`. Muse M exited in 1,429.3 seconds,
+Muse XL in 1,463.2, and Qwen in 1,527.6; ordinary tests and builds passed, but
+the hidden suite rejected all three helper contracts. M's candidate was the
+best of the two Muse implementations: it threaded per-input snapshots and
+used quarantine with deferred restoration, although restoration could still
+replace a new occupant and the helper API was incompatible. XL introduced
+global mutable snapshot state and explicitly removed an occupant before
+restoration, which violated the no-replace requirement. Qwen carefully traced
+the error paths but then independently chose incompatible snapshot,
+verification, and quarantine APIs. Peak live context was 69,686 for M, 66,640
+for XL, and 97,818 for Qwen. More wall time did not turn any candidate into a
+safe solution.
+
+The practical positioning from this evidence is:
+
+1. **Human-guided unfamiliar-code archaeology: Muse XL.** It gave the best
+   naturalistic explanation and reached a polished answer economically. Ask
+   it to cite exact files and challenge concurrency or boundary claims because
+   the frozen review exposed a confident factual error.
+2. **Long autonomous implementation among these three: Muse M, provisionally.**
+   It owns the quickest strict medium-task solve, while Qwen's otherwise-
+   passing attempt failed workspace hygiene, and its hard-task design was
+   safer than XL's. It is deliberate and tool-heavy, and one medium success
+   does not make it a trusted unattended engineer.
+3. **Broad second opinion and difficult control-flow analysis: Qwen3.6 27B.**
+   It was strongest on the subtle frozen review and often used fewer tool
+   calls, but consumed substantially more context, made one archaeology error,
+   failed medium-task workspace hygiene, and did not solve the hard task.
+
+This does not establish that either Muse quantization is globally more capable
+than Qwen. It establishes a useful role split under Pi on this host. If a task
+may run overnight, staged verification still matters more than the extra wall
+time: require cited analysis, run the repository tests, inspect the working
+tree for artifacts, and review destructive or concurrent paths independently.
+
 ## Current quality groups
 
 These groups put demonstrated repository-level quality before token speed.
@@ -60,12 +137,13 @@ looked plausible or the model exited normally.
    Gemma left the cleanest fixture and used the fewest tool calls. Ornith and
    KAT also retained generated executables. None qualifies for a full-suite
    promotion.
-3. **Correct easy patch, slow and incorrect hard-task completion: Muse
-   Glimmer 30B DFlash and Qwen3.6 27B MTP.** Neither completed the practical
-   gate within 20 minutes. Both later completed a candidate inside a 60-minute
-   capability probe, passed ordinary tests and the build, and failed the
-   withheld safety contract. Qwen 27B still owns the best-designed easy patch,
-   but that task-local result cannot support an overall first-place claim.
+3. **Correct easy patch, slow and incorrect hard-task completion: the then-
+   managed Muse Glimmer dynamic DFlash target and Qwen3.6 27B MTP.** Neither
+   completed the practical gate within 20 minutes. Both later completed a
+   candidate inside a 60-minute capability probe, passed ordinary tests and
+   the build, and failed the withheld safety contract. Qwen 27B still owns the
+   best-designed easy patch, but that task-local result cannot support an
+   overall first-place claim.
 
 Laguna XS, Laguna S, and DwarfStar DeepSeek V4 Flash are outside this order.
 They did not complete the bounded autonomous coding task in the tested
@@ -166,12 +244,14 @@ not compile against its incompatible helper design, and KAT left a generated
 `reencode` executable. This is a completed 0/1 safety-gate result, not a reason
 to spend a full-suite run.
 
-### Muse Glimmer 30B DFlash
+### Muse Glimmer 30B dynamic DFlash (current XL target)
 
 **Verdict:** capable of a correct minimal patch, but unable to finish the hard
 gate inside the practical autonomous-work budget.
 
-The `muse-glimmer-30b-kquant-dynamic-dflash` result made the same width-10
+The historical `muse-glimmer-30b-kquant-dynamic-dflash` result used the tensor-
+equivalent target now exposed as
+`muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash`. It made the same width-10
 header, row, and expectation changes as KAT. Ordinary tests, hidden tests, and
 the build passed. The retained patch itself gives no quality reason to place
 Muse below KAT.

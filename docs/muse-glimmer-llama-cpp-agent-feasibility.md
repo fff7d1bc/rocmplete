@@ -547,6 +547,48 @@ ring timeout, or device-loss report. The forced policy remains experimental
 because startup and shallow generation do not establish useful retrieval or
 quality beyond 128K.
 
+### M and XL agent-behavior comparison
+
+A same-runtime follow-up compared the two 128K ROCm DFlash presets with
+Qwen3.6 27B MTP under Pi 0.84.1, high thinking, and the frozen version 5
+grading contract. These are single attempts, not a claim that quantization
+alone caused every behavioral difference.
+
+The 17 GB Q4_K_M target had the stronger controlled implementation record. It
+solved medium `re-cancel` in 890.2 seconds; the dynamic Q4_K_XL target solved
+the same fixture in 1,014.4 seconds. Both passed ordinary and hidden tests,
+the build, artifact checks, and network isolation. Qwen's functionally correct
+attempt was disqualified by its retained build executable. On hard
+`re-source-race`, M and XL both passed ordinary tests and the build but failed
+the hidden helper contract. M produced the safer candidate, with per-input
+snapshots and deferred restoration. XL used global mutable snapshot state and
+could delete a replacement before restoring the quarantined source. M is
+therefore the provisional first choice of these Muse variants for a long
+autonomous implementation attempt, despite the model card's larger aggregate
+benchmark loss and the earlier easy task's extra deliberation.
+
+Human-guided code reading favored XL. On a naturalistic archaeology prompt
+against an older private checkout, XL gave the best-balanced accurate answer
+in ten tool calls. M's answer was equally grounded and more exhaustive, but
+less economical. On the frozen fzr concurrency review, however, XL made a
+material version-order error; M partly understood the behavior but contradicted
+itself. Qwen was strongest on that subtle mechanism, although it also missed
+one immediate-selection edge case. XL is consequently the preferred Muse
+target for interactive unfamiliar-code interrogation, not a source of facts
+that should go unverified.
+
+The fixed throughput result and agent result answer different questions. M's
+smaller allocation and stronger deep-prompt decode did not make every agent
+run shorter or every explanation better. Conversely, XL's cleaner archaeology
+answer did not make its safety patch better. Keep both targets first-class and
+retain dynamic XL as the guided family default. Choose M deliberately for
+longer implementation trials and XL for conversational repository study, then
+verify either model's boundary, concurrency, and destructive-operation claims.
+Exact measurements and retained result names are in the
+[same-host hardware record](hardware-acceptance.md#current-muse-m-muse-xl-and-qwen-27b-focus-2026-08-13),
+with the quality judgment in
+[Coding-agent model quality](coding-agent-model-quality.md#focused-muse-m-muse-xl-and-qwen-27b-comparison).
+
 ## Retest triggers
 
 Repeat the comparison when any of these changes materially:
