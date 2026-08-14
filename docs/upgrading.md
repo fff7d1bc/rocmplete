@@ -236,6 +236,17 @@ protected behavior is fixed.
 | `quantized-kv-flash-attention.patch` | Provides reviewed Vulkan q8_0 and HIP q8_0/q4_0 dequantize-on-load paths. It combines commits `4edaca09`, `4355d03e`, and `2a24abc6` from the `strix-halo-fa-fixes` branch. | Matching upstream code passes the same f16 and q8_0 cache, backend, context-depth, performance, and output checks on every applicable hardware class. |
 | `vulkan-f16-kv-contiguize.patch` | Adds the environment-gated f16 KV contiguization path derived from commit `b1a10f981`. ROCmplete enables it only for Vulkan on `gfx1151`. | Equivalent upstream behavior retains the measured long-context improvement without shallow-context or output regressions. Do not broaden the profile gate without results from the additional architecture. |
 
+The 2026-08-14 update from llama.cpp commit `62bf73d` to release `b10430`,
+commit `4c1a0af`, classified all four patches as **rebased**. None was
+replaced upstream. The 81-commit range changed adjacent server, speculative-
+decoding, and backend code, including upstream Vulkan TQ2 support, but did not
+provide the protected host-buffer, bounded reasoning-budget, quantized-KV, or
+f16-contiguization behavior. Exact range comparison and fail-closed patch
+application passed before the retained patches were exercised on `gfx1151`.
+The host-buffer and reasoning changes still track the open upstream pull
+requests linked in the ledger. Re-run the removal gates rather than carrying
+this classification forward to a later pin by assumption.
+
 The bundled `muse-glimmer-atem.jinja` is byte-for-byte Meta's template from
 base-model revision `a4e59da52a7bc87ae7251dd5545c0dd437c44b68`, SHA-256
 `cfc67e5f349f37690dfd31ed1f18bc4442a9dd32fe39a648f993cb4eb3cae678`.

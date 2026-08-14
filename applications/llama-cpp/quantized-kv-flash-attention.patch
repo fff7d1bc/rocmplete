@@ -48,7 +48,7 @@ index e563729a2..b7057cccf 100644
          case 320: {
              GGML_ASSERT(V->ne[0] == 256);
 diff --git a/ggml/src/ggml-cuda/fattn-tile.cuh b/ggml/src/ggml-cuda/fattn-tile.cuh
-index d1164b852..22f5cb39c 100644
+index d1164b852..b4b1bd248 100644
 --- a/ggml/src/ggml-cuda/fattn-tile.cuh
 +++ b/ggml/src/ggml-cuda/fattn-tile.cuh
 @@ -479,14 +479,96 @@ static __device__ __forceinline__ void flash_attn_tile_load_tile(
@@ -452,7 +452,7 @@ index d1164b852..22f5cb39c 100644
  extern DECL_FATTN_TILE_CASE( 64,  64);
  extern DECL_FATTN_TILE_CASE( 72,  72);
 diff --git a/ggml/src/ggml-cuda/fattn.cu b/ggml/src/ggml-cuda/fattn.cu
-index ab7a3b297..f343118ac 100644
+index ab7a3b297..de78e5c5e 100644
 --- a/ggml/src/ggml-cuda/fattn.cu
 +++ b/ggml/src/ggml-cuda/fattn.cu
 @@ -525,6 +525,17 @@ static best_fattn_kernel ggml_cuda_get_best_fattn_kernel(const int device, const
@@ -504,10 +504,10 @@ index 5caffac04..da5e2a46e 100644
 +DECL_FATTN_TILE_CASE_Q( 64,  64, GGML_TYPE_Q4_0, GGML_TYPE_Q4_0);
 +DECL_FATTN_TILE_CASE_Q( 64,  64, GGML_TYPE_Q8_0, GGML_TYPE_Q8_0);
 diff --git a/ggml/src/ggml-vulkan/ggml-vulkan.cpp b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
-index ff72fa60a..386e29393 100644
+index c815d4ff9..b800c24d3 100644
 --- a/ggml/src/ggml-vulkan/ggml-vulkan.cpp
 +++ b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
-@@ -853,6 +853,7 @@ struct vk_device_struct {
+@@ -913,6 +913,7 @@ struct vk_device_struct {
      vk_pipeline pipeline_quantize_q8_1_x4;
  
      vk_pipeline pipeline_dequant[GGML_TYPE_COUNT];
@@ -515,15 +515,15 @@ index ff72fa60a..386e29393 100644
      vk_pipeline pipeline_dequant_mul_mat_vec_f32_f32[DMMV_WG_SIZE_COUNT][GGML_TYPE_COUNT][mul_mat_vec_max_cols];
      vk_pipeline pipeline_dequant_mul_mat_vec_f16_f32[DMMV_WG_SIZE_COUNT][GGML_TYPE_COUNT][mul_mat_vec_max_cols];
      vk_pipeline pipeline_dequant_mul_mat_vec_id_f32[DMMV_WG_SIZE_COUNT][GGML_TYPE_COUNT];
-@@ -5207,6 +5208,7 @@ static void ggml_vk_load_shaders(vk_device& device, vk_pipeline requested) {
+@@ -5380,6 +5381,7 @@ static void ggml_vk_load_shaders(vk_device& device, vk_pipeline requested) {
      ggml_vk_create_pipeline(device, device->pipeline_dequant[GGML_TYPE_Q5_0], "dequant_q5_0", dequant_q5_0_len, dequant_q5_0_data, "main", 2, 5 * sizeof(uint32_t), {256 * 16, 1, 1}, {}, 1);
      ggml_vk_create_pipeline(device, device->pipeline_dequant[GGML_TYPE_Q5_1], "dequant_q5_1", dequant_q5_1_len, dequant_q5_1_data, "main", 2, 5 * sizeof(uint32_t), {256 * 16, 1, 1}, {}, 1);
      ggml_vk_create_pipeline(device, device->pipeline_dequant[GGML_TYPE_Q8_0], "dequant_q8_0", dequant_q8_0_len, dequant_q8_0_data, "main", 2, 5 * sizeof(uint32_t), {256 * 16, 1, 1}, {}, 1);
 +    ggml_vk_create_pipeline(device, device->pipeline_dequant_transpose[GGML_TYPE_Q8_0], "dequant_q8_0_transpose", dequant_q8_0_transpose_len, dequant_q8_0_transpose_data, "main", 2, 5 * sizeof(uint32_t), {256 * 16, 1, 1}, {}, 1);
      ggml_vk_create_pipeline(device, device->pipeline_dequant[GGML_TYPE_Q2_K], "dequant_q2_k", dequant_q2_k_len, dequant_q2_k_data, "main", 2, 5 * sizeof(uint32_t), {256 * 64, 1, 1}, {}, 1);
+     ggml_vk_create_pipeline(device, device->pipeline_dequant[GGML_TYPE_TQ2_0], "dequant_tq2_0", dequant_tq2_0_len, dequant_tq2_0_data, "main", 2, 5 * sizeof(uint32_t), {256 * 64, 1, 1}, {}, 1);
      ggml_vk_create_pipeline(device, device->pipeline_dequant[GGML_TYPE_Q3_K], "dequant_q3_k", dequant_q3_k_len, dequant_q3_k_data, "main", 2, 5 * sizeof(uint32_t), {256 * 64, 1, 1}, {}, 1);
-     ggml_vk_create_pipeline(device, device->pipeline_dequant[GGML_TYPE_Q4_K], "dequant_q4_k", dequant_q4_k_len, dequant_q4_k_data, "main", 2, 5 * sizeof(uint32_t), {256 * 32, 1, 1}, {}, 1);
-@@ -10597,9 +10599,27 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
+@@ -10799,9 +10801,27 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
  
      const bool f32acc = !ctx->device->fp16 || dst->op_params[3] == GGML_PREC_F32 || k->type == GGML_TYPE_BF16;
  
@@ -552,7 +552,7 @@ index ff72fa60a..386e29393 100644
      const uint32_t max_gqa = std::min(tuning_params.block_rows, 32u);
  
      if (N <= 8 && qk_ratio > 1 && qk_ratio <= max_gqa &&
-@@ -10612,7 +10632,7 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
+@@ -10814,7 +10834,7 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
          workgroups_y /= gqa_ratio;
      }
  
@@ -561,7 +561,7 @@ index ff72fa60a..386e29393 100644
  
      const uint32_t q_stride = (uint32_t)(nbq1 / ggml_type_size(q->type));
      uint32_t k_stride = (uint32_t)(nbk1 / ggml_type_size(k->type));
-@@ -10626,6 +10646,23 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
+@@ -10828,6 +10848,23 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
          v_stride /= 4;
      }
  
@@ -585,7 +585,7 @@ index ff72fa60a..386e29393 100644
      const uint32_t alignment = tuning_params.block_cols;
      bool aligned = (KV % alignment) == 0 &&
                     // the "aligned" shader variant will forcibly align strides, for performance
-@@ -10652,7 +10689,7 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
+@@ -10854,7 +10891,7 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
      bool use_mask_opt = mask && nem1 >= 32 && nem0 * nem1 > 32768 && nem0 >= tuning_params.block_cols * 16
                          && (ctx->device->architecture != vk_device_architecture::AMD_GCN || HSK > 256 || HSV > 256);
      vk_fa_pipeline_state fa_pipeline_state = get_fa_pipeline_state(ctx->device, tuning_params, HSK, HSV, aligned, f32acc,
@@ -594,7 +594,7 @@ index ff72fa60a..386e29393 100644
  
      vk_pipeline pipeline = nullptr;
  
-@@ -10756,6 +10793,39 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
+@@ -10958,6 +10995,39 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
      vk_subbuffer sinks_buf = sinks ? ggml_vk_tensor_subbuffer(ctx, sinks) : q_buf;
      vk_subbuffer mask_opt_buf = use_mask_opt ? ggml_vk_subbuffer(ctx, ctx->prealloc_y, 0) : q_buf;
  
@@ -634,7 +634,7 @@ index ff72fa60a..386e29393 100644
      uint32_t mask_n_head_log2 = ((sinks != nullptr) << 24) | n_head_log2;
  
      if (use_mask_opt)
-@@ -10785,8 +10855,8 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
+@@ -10987,8 +11057,8 @@ static void ggml_vk_flash_attn(ggml_backend_vk_context * ctx, vk_context& subctx
                                                (uint32_t)nev2, (uint32_t)nev3,
                                                nem1, nem2, nem3,
                                                q_stride, (uint32_t)nbq2, (uint32_t)nbq3,
@@ -672,10 +672,10 @@ index 10844ddf7..8ca44cf40 100644
      const float d = float(data_a[ib].d);
  
 diff --git a/ggml/src/ggml-vulkan/vulkan-shaders/vulkan-shaders-gen.cpp b/ggml/src/ggml-vulkan/vulkan-shaders/vulkan-shaders-gen.cpp
-index 0223d2e01..a75173c81 100644
+index 6c9f76af1..cc928980b 100644
 --- a/ggml/src/ggml-vulkan/vulkan-shaders/vulkan-shaders-gen.cpp
 +++ b/ggml/src/ggml-vulkan/vulkan-shaders/vulkan-shaders-gen.cpp
-@@ -779,6 +779,10 @@ void process_shaders() {
+@@ -780,6 +780,10 @@ void process_shaders() {
          if (tname != "f16" && tname != "bf16") {
              string_to_spv("dequant_" + tname, "dequant_" + tname + ".comp", merge_maps(base_dict, {{data_a_key, "1"}, {"D_TYPE", "float16_t"}}));
          }

@@ -29,7 +29,7 @@ revisions recorded in `catalog/catalog.json`.
   `/opt/rocmplete/custom_nodes/rgthree-comfy`, with its license copied to
   `/usr/share/licenses/rocmplete/rgthree-comfy`.
 - llama.cpp is built from the MIT-licensed `ggml-org/llama.cpp` repository at
-  commit `62bf73d25c53b8161f8a22894d4f90c4aebbd7d0`. The license is installed
+  commit `4c1a0af40d88c7fbb3b15c85bf2e8016d1d5b64c`. The license is installed
   at `/usr/local/share/licenses/rocmplete/llama-cpp/LICENSE`. ROCmplete builds
   the server, CLI, and benchmark binaries locally with RPC and remote UI
   assets disabled. It applies the narrowly scoped host-buffer correction from

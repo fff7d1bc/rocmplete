@@ -1,11 +1,11 @@
 diff --git a/tools/server/server-common.cpp b/tools/server/server-common.cpp
-index c9109fc..93f3efe 100644
+index 5ff7685bb..fd6c593bf 100644
 --- a/tools/server/server-common.cpp
 +++ b/tools/server/server-common.cpp
-@@ -14,6 +14,22 @@
- #include <fstream>
- #include <limits>
-
+@@ -16,6 +16,22 @@
+ #include <cstring>
+ #include <type_traits>
+ 
 +static int rocmplete_reasoning_effort_budget(const std::string & effort) {
 +    if (effort == "none") {
 +        return 0;
@@ -25,7 +25,7 @@ index c9109fc..93f3efe 100644
  json format_error_response(const std::string & message, const enum error_type type) {
      std::string type_str;
      int code = 500;
-@@ -1086,12 +1102,15 @@ json oaicompat_chat_params_parse(
+@@ -1292,12 +1308,15 @@ json oaicompat_chat_params_parse(
          throw std::invalid_argument("invalid type for \"enable_thinking\" (expected boolean, got string)");
      }
 
@@ -44,7 +44,7 @@ index c9109fc..93f3efe 100644
      }
 
      inputs.force_pure_content = opt.force_pure_content;
-@@ -1127,15 +1146,24 @@ json oaicompat_chat_params_parse(
+@@ -1333,15 +1352,24 @@ json oaicompat_chat_params_parse(
      {
          int reasoning_budget = json_value(body, "reasoning_budget_tokens",
                                 json_value(body, "thinking_budget_tokens", -1));
