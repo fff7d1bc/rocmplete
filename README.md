@@ -141,6 +141,19 @@ The Qwen3.6 recipe installs the practical dense and sparse MTP choices:
 ./rocmplete run llama-cpp server --preset qwen3.6-27b-mtp-q8-0
 ```
 
+Qwen3.8 is a separate dense 27B candidate with substantially stronger
+upstream coding and agent results. Its recipe installs the pinned Unsloth
+Dynamic Q8_K_XL GGUF and starts the preset that uses its embedded MTP heads:
+
+```bash
+./rocmplete content install llama-cpp qwen3.8
+./rocmplete run llama-cpp server \
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl
+```
+
+It is available to the managed agent clients after installation, but does not
+replace the accepted Qwen3.6 default automatically.
+
 For an API serving several installed presets, use the managed router:
 
 ```bash

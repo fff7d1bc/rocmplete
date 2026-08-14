@@ -1269,6 +1269,23 @@
         "url": "https://huggingface.co/unsloth/Qwen3.6-27B-MTP-GGUF/blob/5cb35eb3dcbf52dbce5f87dbc64df6aaffadcace/README.md"
       }
     },
+    "qwen3.8-27b-ud-q8-k-xl-gguf": {
+      "description": "Qwen3.8 27B Unsloth Dynamic Q8_K_XL GGUF with embedded MTP heads for llama.cpp",
+      "source": {
+        "repository": "unsloth/Qwen3.8-27B-GGUF",
+        "revision": "4604b899a826000505a834e623272db5b7fd62f6",
+        "path": "Qwen3.8-27B-UD-Q8_K_XL.gguf"
+      },
+      "destination": "qwen3.8-27b/Qwen3.8-27B-UD-Q8_K_XL.gguf",
+      "target": "llama-models",
+      "size": 31457991680,
+      "sha256": "af36ecb6b5db1407953345b746c14ac93f0657dda413910b4348683a2d990377",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4604b899a826000505a834e623272db5b7fd62f6/README.md"
+      }
+    },
     "gemma4-31b-it-q8-gguf": {
       "description": "Gemma 4 31B instruction-tuned Q8_0 GGUF from the llama.cpp project",
       "source": {
@@ -1950,6 +1967,17 @@
         "llama"
       ]
     },
+    "llama-qwen3.8-27b-ud-q8-k-xl": {
+      "description": "Qwen3.8 27B Unsloth Dynamic Q8_K_XL llama.cpp model with embedded MTP heads",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3.8-27b-ud-q8-k-xl-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
     "llama-gemma4-31b-it-q8-0-mtp": {
       "description": "Gemma 4 31B IT Q8_0 llama.cpp model with Q8_0 MTP draft",
       "application": "llama-cpp",
@@ -2601,6 +2629,26 @@
       "kv_cache": {
         "strix-halo": "q8_0"
       }
+    },
+    "qwen3.8-27b-ud-q8-k-xl": {
+      "bundle": "llama-qwen3.8-27b-ud-q8-k-xl",
+      "artifact": "qwen3.8-27b-ud-q8-k-xl-gguf",
+      "default_context": 262144,
+      "jinja": true,
+      "agent_tools": true,
+      "reasoning_effort_budget": true,
+      "reasoning_preserve": true
+    },
+    "qwen3.8-27b-mtp-ud-q8-k-xl": {
+      "bundle": "llama-qwen3.8-27b-ud-q8-k-xl",
+      "artifact": "qwen3.8-27b-ud-q8-k-xl-gguf",
+      "default_context": 262144,
+      "speculative_type": "draft-mtp",
+      "draft_tokens": 3,
+      "jinja": true,
+      "agent_tools": true,
+      "reasoning_effort_budget": true,
+      "reasoning_preserve": true
     },
     "gemma4-31b-it-q8-0-mtp": {
       "bundle": "llama-gemma4-31b-it-q8-0-mtp",

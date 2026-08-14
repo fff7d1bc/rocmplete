@@ -295,8 +295,10 @@ unaccepted context or speculative-decoding behavior explicitly experimental.
 `reasoning_effort_budget` is an optional, narrower compatibility decision
 and requires `agent_tools`. Set it only for presets whose reviewed template
 uses llama.cpp's thinking-token budget. ROCmplete's pinned server patch maps
-client effort labels to the project's enforced thinking-token ceilings. These
-labels are budget choices, not model-native effort modes.
+client effort labels to the project's enforced thinking-token ceilings. For a
+template such as Qwen3.8 that implements matching model-native effort
+instructions, the patch forwards the same recognized label to Jinja before
+rendering. Other templates still receive only the sampler budget.
 Keep the catalog descriptions, patch values, generated model metadata, and
 target-hardware Chat Completions tests in sync.
 
@@ -329,7 +331,8 @@ installed presets, ignores wholly missing presets, and refuses partial
 managed installs.
 
 The public llama.cpp recipes are the paired `qwen3.6` selection, the separate
-high-memory `ornith` and `kat-coder` families, the practical
+single-artifact `qwen3.8` dense target with optional embedded-MTP runtime, the
+separate high-memory `ornith` and `kat-coder` families, the practical
 `laguna-xs-2.1`, the explicitly experimental `laguna-s-2.1`, the separate
 `muse-glimmer` family with two reviewed quantizations, a default dynamic 128K
 DFlash policy, and experimental forced-256K presets, the high-memory Japanese
@@ -339,8 +342,10 @@ A/B selection while keeping the less aggressively quantized dynamic target as
 its launch default. Shisa stays a model family rather than another generic
 translation role. The Qwen recipe
 deliberately installs the dense 27B MTP and sparse 35B-A3B MTP choices
-together. Ornith, KAT-Coder, each Laguna size, and Muse Glimmer keep separate
-family recipes instead of being grouped under a subjective coding role.
+together. Qwen3.8 remains its own family recipe even though both Qwen releases
+serve similar work. Ornith, KAT-Coder, each Laguna size, and Muse Glimmer keep
+separate family recipes instead of being grouped under a subjective coding
+role.
 Non-MTP Qwen controls, the smoke-test model, and
 other deliberately large models remain exact bundles and presets rather than
 multiplying beginner choices.

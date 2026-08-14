@@ -132,6 +132,14 @@ For a useful general assistant:
   --preset qwen3.6-27b-mtp-q8-0
 ```
 
+For the newer dense coding and agent candidate:
+
+```bash
+./rocmplete content install llama-cpp qwen3.8
+./rocmplete run llama-cpp server \
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl
+```
+
 The default preset is approximately 27.05 GiB with a 262144-token starting
 context. It uses the dense Qwen3.6 27B MTP Q8_0 model and verifies up to three
 tokens from its embedded prediction heads. On Strix Halo, the preset also
@@ -203,9 +211,38 @@ effect of speculative decoding:
 | `qwen3.6-27b-q8-0` | Dense 27B Q8_0 | Non-MTP control for the dense model |
 | `qwen3.6-35b-a3b-ud-q8-k-xl` | Sparse 35B-A3B Dynamic Q8_K_XL | Non-MTP control for the recommended agent model |
 | `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | Matching sparse model with MTP heads | Recommended agent-client default on a high-memory host |
+| `qwen3.8-27b-ud-q8-k-xl` | Dense 27B Dynamic Q8_K_XL | Qwen3.8 non-speculative control |
+| `qwen3.8-27b-mtp-ud-q8-k-xl` | Same GGUF using its embedded MTP heads | New dense coding-agent candidate |
 
 Keep whichever model succeeds on representative tasks rather than choosing
 from the parameter count or quantization name alone.
+
+Qwen3.8 uses the Jinja template embedded in the pinned Unsloth GGUF. That
+template incorporates the developer-role and structured tool-argument fixes
+that ROCmplete had to supply separately for Qwen3.6, handles any number of
+leading system or developer messages, and retains reasoning across tool
+turns. For `low`, `medium`, and `high`, ROCmplete passes one effort choice to
+both the model's template instructions and llama.cpp's bounded reasoning
+sampler. `reasoning_effort: none` disables thinking. The managed clients use
+the official thinking-mode sampling policy: temperature 1.0, top-p 0.95,
+top-k 20, min-p 0, presence penalty 0, and repeat penalty 1.
+
+The pinned
+[official Qwen3.8 model card](https://huggingface.co/Qwen/Qwen3.8-27B/blob/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/README.md)
+reports large improvements over Qwen3.6-27B on its coding and agent harnesses.
+Treat those numbers as candidate-selection evidence, not acceptance of this
+quantization or local client behavior.
+ROCmplete therefore exposes Qwen3.8 after installation without changing the
+Qwen3.6 agent-client default. The catalog currently serves text only; native
+vision needs the optional projector and separate multimodal acceptance.
+
+Initial Strix Halo acceptance measured 19.12 generated tokens/s for the
+depth-three MTP preset versus 7.20 for its non-speculative control on one fixed
+256-token workload. The real Pi result was less dramatic: Qwen3.8 solved the
+frozen `re-align` coding task with all graders passing, but took 1,514 seconds
+and 26 tool calls. The earlier accepted Qwen3.6 27B run solved that task in
+451 seconds, so install Qwen3.8 as a promising candidate rather than assuming
+the upstream benchmark gain transfers directly to every local agent task.
 
 ### Ornith and KAT-Coder
 

@@ -28,6 +28,14 @@ _QWEN36_PRECISE_CODING = {
     "presence_penalty": 0.0,
     "repeat_penalty": 1.0,
 }
+_QWEN38_THINKING = {
+    "temperature": 1.0,
+    "top_p": 0.95,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 0.0,
+    "repeat_penalty": 1.0,
+}
 _MUSE_GLIMMER_CODING = {
     "temperature": 1.0,
     "top_p": 0.95,
@@ -57,6 +65,8 @@ _AGENT_SAMPLING_PARAMETERS = {
     "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": _QWEN36_PRECISE_CODING,
     "qwen3.6-27b-q8-0": _QWEN36_PRECISE_CODING,
     "qwen3.6-27b-mtp-q8-0": _QWEN36_PRECISE_CODING,
+    "qwen3.8-27b-ud-q8-k-xl": _QWEN38_THINKING,
+    "qwen3.8-27b-mtp-ud-q8-k-xl": _QWEN38_THINKING,
     "gemma4-31b-it-q8-0-mtp": {
         "temperature": 1.0,
         "top_p": 0.95,

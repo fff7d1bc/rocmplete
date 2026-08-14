@@ -27,7 +27,7 @@ Recipes are organized by their consuming application:
 comfyui
   image  edit  t2v  i2v
 llama-cpp
-  qwen3.6  ornith  kat-coder  laguna-s-2.1  laguna-xs-2.1
+  qwen3.6  qwen3.8  ornith  kat-coder  laguna-s-2.1  laguna-xs-2.1
   muse-glimmer
   shisa-v2.1  translation-gemma  translation-hy
 dwarfstar
@@ -40,6 +40,7 @@ Install interactively, or select one recipe explicitly:
 ./rocmplete content install
 ./rocmplete content install comfyui image
 ./rocmplete content install llama-cpp qwen3.6
+./rocmplete content install llama-cpp qwen3.8
 ./rocmplete content install llama-cpp laguna-s-2.1
 ./rocmplete content install llama-cpp laguna-xs-2.1 --accept-license
 ./rocmplete content install llama-cpp muse-glimmer
@@ -59,6 +60,12 @@ non-MTP build. ROCmplete keeps that upstream filename, but identifies the MTP
 variant in its source repository, managed directory, bundle, and preset. The
 same is true of the 27B MTP artifact. Its upstream basename omits `MTP`, while
 its ROCmplete directory, bundle, preset, and pinned source retain the identity.
+
+The separate `qwen3.8` recipe installs one 29.30 GiB Dynamic Q8_K_XL GGUF.
+That file contains the dense 27B target and its trained MTP prediction heads,
+so the matching base and MTP presets share one verified artifact. The initial
+integration is text-only: the optional vision projector remains outside the
+recipe until its multimodal runtime contract is separately accepted.
 
 The `muse-glimmer` recipe installs two official target/draft pairs: Meta's
 30B Dynamic Q4_K_XL and the smaller 17 GB Q4_K_M. The next-step command keeps

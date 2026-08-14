@@ -88,6 +88,17 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             ),
         ),
         ContentRecipe(
+            identifier="qwen3.8",
+            application="llama-cpp",
+            description="Qwen3.8 dense 27B Dynamic Q8_K_XL with MTP",
+            bundles=("llama-qwen3.8-27b-ud-q8-k-xl",),
+            launch=RecipeLaunch(
+                "llama-cpp",
+                mode="server",
+                preset="qwen3.8-27b-mtp-ud-q8-k-xl",
+            ),
+        ),
+        ContentRecipe(
             identifier="ornith",
             application="llama-cpp",
             description="Ornith 1.0 35B Q8_0 coding and agent model",

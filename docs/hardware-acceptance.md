@@ -325,6 +325,49 @@ Observed results:
   7,406-token run. The result therefore accepts depth 12 as a `gfx1151` ROCm
   performance policy for this preset, not as new forced-256K quality evidence.
 
+- A 2026-08-14 Qwen3.8 candidate acceptance used the pinned Unsloth
+  `Qwen3.8-27B-UD-Q8_K_XL.gguf` at revision
+  `4604b899a826000505a834e623272db5b7fd62f6`, SHA-256
+  `af36ecb6b5db1407953345b746c14ac93f0657dda413910b4348683a2d990377`.
+  The one 31,457,991,680-byte file reports the `qwen35` architecture, native
+  262144 context, and embedded MTP tensors. The reasoning-template forwarding
+  change produced image
+  `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-4c1a0af-r22`, image ID
+  `86351eeda1d4c89f7cc980f0fbbf0a5bddd21bbe0a8e6a109a3f2d5b171be6ea`.
+  The image passed `pip check`; CPU startup at 4096 context and direct base,
+  direct depth-three MTP, and router ROCm startup on `gfx1151` all passed. The
+  direct GPU paths used the native 262144 context. The router advertised both
+  presets and returned exact content through the MTP policy.
+
+  The embedded Unsloth template retained three consecutive leading system or
+  developer messages, advertised object and parallel tool-call support, and
+  rendered ROCmplete's top-level low and high effort choices as the model's
+  low and xhigh instructions. Medium selected the template's intentionally
+  unadorned middle policy. Low, medium, and high requests all returned the
+  correct bounded result. A required function call produced the exact nested
+  string argument and its tool-result continuation returned exact content;
+  both requests used the MTP path.
+
+  Three fixed 256-token, no-thinking repetitions generated at 19.25, 19.07,
+  and 19.06 tokens/s with depth three. The matching non-speculative control
+  generated at 7.19, 7.20, and 7.20 tokens/s. MTP therefore improved this
+  narrow decode workload by 2.66x and accepted 187 of 201 proposals in every
+  repetition. This is a runtime-policy result, not a model-quality benchmark.
+
+  Pi 0.84.1 then solved the frozen version 5 `re-align` task at 131072 context
+  with high thinking. Pi exited zero, and ordinary tests, hidden tests, and
+  the build passed without a dependency change, generated artifact, or audited
+  network attempt. The run took 1,514.0 seconds and 26 tool calls, processed
+  19,101 prompt tokens at 175.31 tokens/s, and generated 21,924 tokens at
+  14.49 tokens/s. Its retained result is
+  `apps/agent-evaluation/results/20260814T162403Z-qwen3.8-27b-mtp-ud-q8-k-xl.json`.
+  This accepts the quantized model and Pi tool contract on `gfx1151`, but the
+  much longer trajectory than the earlier Qwen3.6 27B solve does not justify
+  replacing ROCmplete's current agent default. The optional vision projector
+  and `gfx1150`, `gfx1200`, and `gfx1201` remain deferred. All containers were
+  removed, and the kernel reported no matching GPU reset, page fault, ring
+  timeout, device loss, or OOM event.
+
 #### Coding-agent comparison (2026-08-11)
 
 The [model quality baseline](coding-agent-model-quality.md) groups these

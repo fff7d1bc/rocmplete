@@ -2833,6 +2833,42 @@ class CliTests(unittest.TestCase):
             "rocmplete-kv-cache-strix-halo = q8_0", contents
         )
 
+    def test_llama_router_renders_qwen38_base_and_embedded_mtp_policy(self):
+        catalog = load_catalog()
+        preset = catalog.llama_preset("qwen3.8-27b-ud-q8-k-xl")
+        artifact = catalog.artifact(preset.artifact)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            path = (
+                data_dir
+                / "content"
+                / "llama-cpp"
+                / "models"
+                / artifact.destination
+            )
+            path.parent.mkdir(parents=True)
+            with path.open("wb") as handle:
+                handle.truncate(artifact.size)
+            _record_managed_file(data_dir, path, artifact)
+            contents, installed = _render_llama_router_preset(
+                catalog, data_dir
+            )
+        self.assertEqual(
+            installed,
+            (
+                "qwen3.8-27b-ud-q8-k-xl",
+                "qwen3.8-27b-mtp-ud-q8-k-xl",
+            ),
+        )
+        self.assertEqual(contents.count("jinja = true"), 2)
+        self.assertEqual(contents.count("reasoning-preserve = true"), 2)
+        mtp_section = contents.split(
+            "[qwen3.8-27b-mtp-ud-q8-k-xl]", 1
+        )[1].split("[gemma4-31b-it-q8-0-mtp]", 1)[0]
+        self.assertIn("spec-type = draft-mtp", mtp_section)
+        self.assertIn("spec-draft-n-max = 3", mtp_section)
+        self.assertNotIn("model-draft", mtp_section)
+
     def test_llama_router_renders_updated_kat_template_policy(self):
         catalog = load_catalog()
         identifier = "kat-coder-v2.5-dev-q8-0"
@@ -4182,6 +4218,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("comfyui i2v    1  bundle", text)
         self.assertNotIn("comfyui all", text)
         self.assertIn("llama-cpp qwen3.6", text)
+        self.assertIn("llama-cpp qwen3.8", text)
         self.assertIn("llama-cpp ornith", text)
         self.assertIn("llama-cpp kat-coder", text)
         self.assertNotIn("llama-cpp assistant", text)
@@ -4241,7 +4278,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(command_content(arguments, load_catalog()), 0)
         text = output.getvalue()
         self.assertIn("family qwen   8  bundles", text)
-        self.assertIn("all  52  bundles", text)
+        self.assertIn("all  53  bundles", text)
         self.assertNotIn("Exact bundles:", text)
 
     def test_content_list_application_filter_requires_filterable_view(self):
@@ -4906,7 +4943,7 @@ class CliTests(unittest.TestCase):
         )
         self.assertNotIn("family", top_level)
 
-    @patch("builtins.input", side_effect=("2", "4"))
+    @patch("builtins.input", side_effect=("2", "5"))
     @patch("rocmplete.cli.sys.stdin")
     def test_guided_content_install_offers_laguna_recipe(
         self, stdin, input_mock
@@ -4923,7 +4960,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("Laguna S 2.1", text)
         self.assertIn("browse-bundles", text)
 
-    @patch("builtins.input", side_effect=("2", "5"))
+    @patch("builtins.input", side_effect=("2", "6"))
     @patch("rocmplete.cli.sys.stdin")
     def test_guided_content_install_offers_laguna_xs_recipe(
         self, stdin, input_mock
@@ -4939,7 +4976,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("laguna-xs-2.1", text)
         self.assertIn("Laguna XS 2.1", text)
 
-    @patch("builtins.input", side_effect=("4", "4", "9"))
+    @patch("builtins.input", side_effect=("4", "4", "10"))
     @patch("rocmplete.cli.sys.stdin")
     def test_guided_exact_bundle_browser_uses_categories(
         self, stdin, input_mock
@@ -4954,11 +4991,11 @@ class CliTests(unittest.TestCase):
         self.assertIn("exact-bundles", text)
         self.assertIn("Browse exact bundles:", text)
         self.assertIn("ComfyUI — image models (9 bundles)", text)
-        self.assertIn("llama.cpp (15 bundles)", text)
+        self.assertIn("llama.cpp (16 bundles)", text)
         self.assertIn("Laguna S 2.1", text)
         self.assertIn("laguna-s-2.1-q4-k-m", text)
 
-    @patch("builtins.input", side_effect=("10", "9"))
+    @patch("builtins.input", side_effect=("11", "10"))
     @patch("rocmplete.cli.sys.stdin")
     def test_llama_recipe_menu_can_browse_exact_llama_bundles(
         self, stdin, input_mock
@@ -4986,7 +5023,7 @@ class CliTests(unittest.TestCase):
                 "comfyui-images": 9,
                 "comfyui-videos": 20,
                 "comfyui-addons": 7,
-                "llama-cpp": 15,
+                "llama-cpp": 16,
                 "dwarfstar": 1,
             },
         )
@@ -5072,6 +5109,9 @@ class CliTests(unittest.TestCase):
             ("llama-cpp", "qwen3.6"): (
                 "llama-qwen3.6-27b-mtp-q8-0",
                 "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
+            ),
+            ("llama-cpp", "qwen3.8"): (
+                "llama-qwen3.8-27b-ud-q8-k-xl",
             ),
             ("llama-cpp", "ornith"): (
                 "llama-ornith-1.0-35b-q8-0",
@@ -5188,8 +5228,8 @@ class CliTests(unittest.TestCase):
                     )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 68)
-        self.assertEqual(len({item.identifier for item in artifacts}), 68)
+        self.assertEqual(len(artifacts), 69)
+        self.assertEqual(len({item.identifier for item in artifacts}), 69)
         self.assertEqual(
             install_artifacts.call_args.args[2],
             "localhost/custom-content-tools",
@@ -5205,7 +5245,7 @@ class CliTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Content ready: 52 bundles and 28 workflows.",
+            "Content ready: 53 bundles and 28 workflows.",
             output.getvalue(),
         )
 
@@ -5233,10 +5273,10 @@ class CliTests(unittest.TestCase):
                 )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 18)
-        self.assertEqual(len({item.identifier for item in artifacts}), 18)
+        self.assertEqual(len(artifacts), 19)
+        self.assertEqual(len({item.identifier for item in artifacts}), 19)
         self.assertIn(
-            "Content ready: 15 bundles and 0 workflows.",
+            "Content ready: 16 bundles and 0 workflows.",
             output.getvalue(),
         )
 

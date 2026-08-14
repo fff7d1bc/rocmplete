@@ -77,9 +77,10 @@ class OmpLauncherTests(unittest.TestCase):
         self.assertEqual(provider["discovery"], {"type": "llama.cpp"})
         self.assertEqual(provider["baseUrl"], "http://127.0.0.1:9090/v1")
         models = {model["id"]: model for model in provider["models"]}
-        self.assertEqual(len(models), 15)
+        self.assertEqual(len(models), 17)
         self.assertNotIn("qwen3-0.6b-q8-0", models)
         self.assertNotIn("translategemma-27b-it-q8-0", models)
+        self.assertIn("qwen3.8-27b-mtp-ud-q8-k-xl", models)
         qwen = models[self.default_model]
         self.assertEqual(qwen["contextWindow"], 262144)
         self.assertEqual(qwen["maxTokens"], 16384)
@@ -154,7 +155,7 @@ class OmpLauncherTests(unittest.TestCase):
                 "advisor": "@default",
             },
         )
-        self.assertEqual(len(overlay["enabledModels"]), 16)
+        self.assertEqual(len(overlay["enabledModels"]), 18)
         self.assertIn(
             "rocmplete-dwarfstar/deepseek-v4-flash-0731-q2-imatrix",
             overlay["enabledModels"],

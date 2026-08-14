@@ -86,10 +86,10 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 52)
-        self.assertEqual(len(catalog.artifacts), 68)
+        self.assertEqual(len(catalog.bundles), 53)
+        self.assertEqual(len(catalog.artifacts), 69)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 19)
+        self.assertEqual(len(catalog.llama_presets), 21)
         self.assertFalse(
             [
                 artifact.identifier
@@ -435,6 +435,34 @@ class CatalogTests(unittest.TestCase):
         self.assertTrue(
             all(preset.chat_template == "qwen3.6" for preset in qwen_presets)
         )
+        qwen38 = catalog.llama_preset("qwen3.8-27b-ud-q8-k-xl")
+        qwen38_mtp = catalog.llama_preset(
+            "qwen3.8-27b-mtp-ud-q8-k-xl"
+        )
+        qwen38_artifact = catalog.artifact(qwen38.artifact)
+        self.assertEqual(qwen38.bundle, qwen38_mtp.bundle)
+        self.assertEqual(qwen38.artifact, qwen38_mtp.artifact)
+        self.assertEqual(qwen38.default_context, 262144)
+        self.assertTrue(qwen38.jinja)
+        self.assertTrue(qwen38.agent_tools)
+        self.assertTrue(qwen38.reasoning_effort_budget)
+        self.assertTrue(qwen38.reasoning_preserve)
+        self.assertEqual(qwen38_mtp.speculative_type, "draft-mtp")
+        self.assertEqual(qwen38_mtp.draft_tokens, 3)
+        self.assertEqual(qwen38_artifact.size, 31457991680)
+        self.assertEqual(
+            qwen38_artifact.source.repository,
+            "unsloth/Qwen3.8-27B-GGUF",
+        )
+        self.assertEqual(
+            qwen38_artifact.source.revision,
+            "4604b899a826000505a834e623272db5b7fd62f6",
+        )
+        self.assertEqual(
+            qwen38_artifact.sha256,
+            "af36ecb6b5db1407953345b746c14ac93f0657dda413910b4348683a2d990377",
+        )
+        self.assertEqual(qwen38_artifact.license.spdx, "Apache-2.0")
         laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
         laguna_bundle = catalog.bundle(laguna.bundle)
         laguna_artifact = catalog.artifact(laguna.artifact)
