@@ -205,11 +205,11 @@ connect it to a stable router identity:
     "context_override_architectures": ["target-architecture"],
     "jinja": true,
     "agent_tools": true,
-    "reasoning_effort_budget": true,
-    "reasoning_levels": ["low", "medium", "high"],
+    "reasoning_control": "effort",
+    "reasoning_levels": ["low", "medium", "xhigh"],
     "reasoning_default": "medium",
     "reasoning_off": true,
-    "reasoning_parameter": "budget",
+    "reasoning_preserve": true,
     "flash_attention": {
       "strix-halo": "on",
       "strix-point": "off"
@@ -296,22 +296,22 @@ repeat the end-to-end loop there as well. Sibling presets may share protocol
 evidence when they use the byte-identical target and chat template; keep
 unaccepted context or speculative-decoding behavior explicitly experimental.
 
-`reasoning_effort_budget` is an optional, narrower compatibility decision and
-requires `agent_tools`. When enabled, `reasoning_levels` is an ordered subset
-of low, medium, high, and xhigh; `reasoning_default` selects one level;
-`reasoning_off` records whether clients may advertise off/instant; and
-`reasoning_parameter` distinguishes sampler-only `budget`, model-native
-`effort`, or model-native `strength`. The server maps the four levels to 1024,
-4096, 8192, and 16384 thinking tokens and forwards recognized positive labels
-to both Jinja parameter names. Qwen3.8 consumes effort, Muse consumes strength,
-and Qwen3.6 uses only the sampler ceiling. Keep catalog policy, patch values,
-generated metadata, and target-hardware tests in sync.
+`reasoning_control` is an optional, narrower compatibility decision and
+requires `agent_tools`. `toggle` represents a native off/on model and must
+default to `on` without declaring named levels. `effort` and `strength`
+represent distinct model-native parameters; they require an ordered subset of
+low, medium, high, and xhigh in `reasoning_levels`, and
+`reasoning_default` must select one of those real levels. `reasoning_off`
+records whether clients may advertise off/instant. Do not insert a generic
+level that the template merely aliases to another value: Qwen3.8, for example,
+has no native high effort. Keep catalog policy, generated client metadata,
+the server compatibility bridge, and target-hardware tests in sync.
 
 `reasoning_preserve` is a separate optional boolean and also requires
 `agent_tools`. It maps a reviewed preset to llama.cpp's
 `--reasoning-preserve` server policy in both direct and router modes. Use it
 when the model's multi-turn template should retain parsed reasoning; it does
-not imply that the model accepts a client-selectable reasoning-effort budget.
+not imply that the model accepts a client-selectable reasoning control.
 Keep this distinction visible in agent metadata and user documentation.
 
 Agent sampling remains caller policy rather than a catalog preset field.

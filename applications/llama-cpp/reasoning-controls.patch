@@ -1,0 +1,84 @@
+diff --git a/tools/server/server-common.cpp b/tools/server/server-common.cpp
+index 5ff7685bb..2ca62eb6d 100644
+--- a/tools/server/server-common.cpp
++++ b/tools/server/server-common.cpp
+@@ -16,6 +16,31 @@
+ #include <cstring>
+ #include <type_traits>
+ 
++// Maki 0.4.5's llama.cpp transport converts its named selectors to these
++// exact budgets for ROCmplete's advertised 16384-token output window. Recover
++// the name for templates with native effort/strength controls while retaining
++// the numeric sampler ceiling Maki requested.
++static std::string rocmplete_maki_reasoning_level(int budget) {
++    if (budget == 1638 || budget == 3276) {
++        return "low";
++    }
++    if (budget == 6553) {
++        return "medium";
++    }
++    if (budget == 9830) {
++        return "high";
++    }
++    if (budget == 13107 || budget == 16384) {
++        return "xhigh";
++    }
++    return "";
++}
++
++static bool rocmplete_native_reasoning_level(const std::string & level) {
++    return level == "low" || level == "medium" ||
++           level == "high" || level == "xhigh";
++}
++
+ json format_error_response(const std::string & message, const enum error_type type) {
+     std::string type_str;
+     int code = 500;
+@@ -1292,12 +1317,43 @@ json oaicompat_chat_params_parse(
+         throw std::invalid_argument("invalid type for \"enable_thinking\" (expected boolean, got string)");
+     }
+ 
+-    // Parse also the OAI "reasoning_effort": "none" specific value
++    std::string reasoning_level;
+     if (body.contains("reasoning_effort")) {
+-        auto reasoning_effort = json_value(body, "reasoning_effort", std::string(""));
+-        if (reasoning_effort == "none") {
++        reasoning_level = json_value(body, "reasoning_effort", std::string(""));
++        if (reasoning_level == "none") {
+             inputs.enable_thinking = false;
+-        } // other reasoning_effort values are model-specific and not yet handled
++        } else if (!rocmplete_native_reasoning_level(reasoning_level)) {
++            reasoning_level.clear();
++        }
++    } else if (body.contains("thinking_budget_tokens")) {
++        const int thinking_budget = json_value(body, "thinking_budget_tokens", -1);
++        if (thinking_budget == 0) {
++            inputs.enable_thinking = false;
++        } else if (thinking_budget > 0) {
++            reasoning_level = rocmplete_maki_reasoning_level(thinking_budget);
++        }
++    }
++
++    // The Qwen3.8 and Muse templates consume different native names. Supplying
++    // both keeps the OpenAI-compatible client contract model-independent; an
++    // unknown Jinja variable is inert. Explicit chat_template_kwargs win.
++    if (!reasoning_level.empty()) {
++        if (inputs.chat_template_kwargs.find("reasoning_effort") ==
++            inputs.chat_template_kwargs.end()) {
++            inputs.chat_template_kwargs["reasoning_effort"] =
++                json(reasoning_level).dump();
++        }
++        if (inputs.chat_template_kwargs.find("reasoning_strength") ==
++            inputs.chat_template_kwargs.end()) {
++            inputs.chat_template_kwargs["reasoning_strength"] =
++                json(reasoning_level).dump();
++        }
++    } else if (!inputs.enable_thinking &&
++               inputs.chat_template_kwargs.find("reasoning_strength") ==
++               inputs.chat_template_kwargs.end()) {
++        // Muse has no off mode. Clients that cannot hide their generic off
++        // choice clamp it to the model's lowest real strength.
++        inputs.chat_template_kwargs["reasoning_strength"] = json("low").dump();
+     }
+ 
+     inputs.force_pure_content = opt.force_pure_content;

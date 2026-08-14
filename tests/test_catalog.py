@@ -181,7 +181,7 @@ class CatalogTests(unittest.TestCase):
                 artifact = catalog.artifact(preset.artifact)
                 self.assertEqual(preset.default_context, 262144)
                 self.assertTrue(preset.agent_tools)
-                self.assertTrue(preset.reasoning_effort_budget)
+                self.assertEqual(preset.reasoning_control, "")
                 self.assertEqual(artifact.source.repository, expected[0])
                 self.assertEqual(artifact.size, expected[1])
                 self.assertEqual(artifact.sha256, expected[2])
@@ -197,7 +197,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(gemma.draft_tokens, 4)
         self.assertTrue(gemma.jinja)
         self.assertTrue(gemma.agent_tools)
-        self.assertTrue(gemma.reasoning_effort_budget)
+        self.assertEqual(gemma.reasoning_control, "")
         self.assertEqual(
             gemma.draft_artifact, "gemma4-31b-it-mtp-q8-gguf"
         )
@@ -260,14 +260,13 @@ class CatalogTests(unittest.TestCase):
                     preset.chat_template, "muse-glimmer-atem"
                 )
                 self.assertTrue(preset.agent_tools)
-                self.assertTrue(preset.reasoning_effort_budget)
+                self.assertEqual(preset.reasoning_control, "strength")
                 self.assertEqual(
                     preset.reasoning_levels,
                     ("low", "medium", "high", "xhigh"),
                 )
                 self.assertEqual(preset.reasoning_default, "high")
                 self.assertFalse(preset.reasoning_off)
-                self.assertEqual(preset.reasoning_parameter, "strength")
                 self.assertTrue(preset.reasoning_preserve)
         self.assertEqual(
             muse_artifact.source.repository,
@@ -324,6 +323,10 @@ class CatalogTests(unittest.TestCase):
                 "ea69920311f2efccf6343675490b27bd2"
                 "2d03787ebb8ccaf6e9101bfeba72898"
             ),
+            "qwen3.8.jinja": (
+                "7e450592d49f8ee825815fa3d7eb7f51"
+                "02200d4e5e18571cc68ed66540ce9e31"
+            ),
         }
         for filename, expected_hash in managed_template_hashes.items():
             with self.subTest(template=filename):
@@ -332,6 +335,14 @@ class CatalogTests(unittest.TestCase):
                     hashlib.sha256(template.read_bytes()).hexdigest(),
                     expected_hash,
                 )
+        qwen38_template = (
+            muse_template.parent / "qwen3.8.jinja"
+        ).read_text()
+        self.assertIn("reasoning_effort|default('medium')", qwen38_template)
+        self.assertIn("('xhigh', 'medium', 'low')", qwen38_template)
+        self.assertNotIn(
+            "resolved_reasoning_effort == 'high'", qwen38_template
+        )
         qwen_presets = (
             assistant,
             assistant_mtp,
@@ -340,6 +351,13 @@ class CatalogTests(unittest.TestCase):
         self.assertTrue(
             all(preset.chat_template == "qwen3.6" for preset in qwen_presets)
         )
+        self.assertTrue(
+            all(preset.reasoning_control == "toggle" for preset in qwen_presets)
+        )
+        self.assertTrue(
+            all(preset.reasoning_default == "on" for preset in qwen_presets)
+        )
+        self.assertTrue(all(preset.reasoning_off for preset in qwen_presets))
         qwen38 = catalog.llama_preset("qwen3.8-27b-ud-q8-k-xl")
         qwen38_mtp = catalog.llama_preset(
             "qwen3.8-27b-mtp-ud-q8-k-xl"
@@ -348,10 +366,15 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(qwen38.bundle, qwen38_mtp.bundle)
         self.assertEqual(qwen38.artifact, qwen38_mtp.artifact)
         self.assertEqual(qwen38.default_context, 262144)
-        self.assertTrue(qwen38.jinja)
+        self.assertFalse(qwen38.jinja)
+        self.assertEqual(qwen38.chat_template, "qwen3.8")
         self.assertTrue(qwen38.agent_tools)
-        self.assertTrue(qwen38.reasoning_effort_budget)
-        self.assertEqual(qwen38.reasoning_parameter, "effort")
+        self.assertEqual(qwen38.reasoning_control, "effort")
+        self.assertEqual(
+            qwen38.reasoning_levels, ("low", "medium", "xhigh")
+        )
+        self.assertEqual(qwen38.reasoning_default, "medium")
+        self.assertTrue(qwen38.reasoning_off)
         self.assertTrue(qwen38.reasoning_preserve)
         self.assertEqual(qwen38_mtp.speculative_type, "draft-mtp")
         self.assertEqual(qwen38_mtp.draft_tokens, 3)
@@ -631,7 +654,7 @@ class CatalogTests(unittest.TestCase):
             with self.assertRaisesRegex(LauncherError, "jinja must be"):
                 load_catalog(path)
 
-        preset["jinja"] = True
+        preset["jinja"] = False
         preset["agent_tools"] = "yes"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
@@ -641,16 +664,15 @@ class CatalogTests(unittest.TestCase):
                 load_catalog(path)
 
         preset["agent_tools"] = True
-        preset["reasoning_effort_budget"] = "yes"
+        preset["reasoning_control"] = "native"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
-                LauncherError, "reasoning_effort_budget must be"
+                LauncherError, "reasoning_control must be"
             ):
                 load_catalog(path)
 
-        preset["reasoning_effort_budget"] = False
-        preset.pop("reasoning_parameter")
+        preset["reasoning_control"] = "effort"
         preset["reasoning_preserve"] = "yes"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
@@ -668,7 +690,6 @@ class CatalogTests(unittest.TestCase):
             ):
                 load_catalog(path)
 
-        preset["jinja"] = True
         preset["agent_tools"] = True
         preset["default_context"] = 32768
         preset["flash_attention"] = {"auto": "off"}
@@ -767,6 +788,7 @@ class CatalogTests(unittest.TestCase):
             ):
                 load_catalog(path)
 
+        preset["jinja"] = True
         preset["chat_template"] = "translategemma-manual"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
@@ -775,24 +797,26 @@ class CatalogTests(unittest.TestCase):
             ):
                 load_catalog(path)
 
-    def test_llama_reasoning_budget_requires_agent_tools(self):
+    def test_llama_reasoning_control_requires_agent_tools(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         preset = raw["llama_presets"]["qwen3-0.6b-q8-0"]
-        preset["reasoning_effort_budget"] = True
+        preset["reasoning_control"] = "toggle"
+        preset["reasoning_default"] = "on"
+        preset["reasoning_off"] = True
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
                 LauncherError,
-                "reasoning_effort_budget requires agent_tools",
+                "reasoning_control requires agent_tools",
             ):
                 load_catalog(path)
 
     def test_llama_reasoning_controls_fail_closed(self):
         cases = (
             ("reasoning_levels", ["high", "low"], "unique, ordered"),
-            ("reasoning_default", "instant", "must be off or one of"),
+            ("reasoning_default", "instant", "must be off, on, or one"),
             ("reasoning_off", "yes", "reasoning_off must be a boolean"),
-            ("reasoning_parameter", "native", "empty, budget, effort, or strength"),
+            ("reasoning_control", "native", "empty, toggle, effort, or strength"),
         )
         for field, value, message in cases:
             with self.subTest(field=field):
@@ -805,6 +829,16 @@ class CatalogTests(unittest.TestCase):
                     path = self._catalog_copy(directory, raw)
                     with self.assertRaisesRegex(LauncherError, message):
                         load_catalog(path)
+
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"]["qwen3.6-27b-q8-0"]
+        preset["reasoning_off"] = False
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "toggle reasoning_control must expose off"
+            ):
+                load_catalog(path)
 
     def test_llama_reasoning_preserve_requires_agent_tools(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())

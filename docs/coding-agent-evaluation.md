@@ -29,6 +29,8 @@ transcripts, generated patches, timing, or host-specific result JSON to the
 source tree. A curated result summary may be added to an appropriate research
 or hardware-acceptance record when it states the exact suite fingerprint,
 model artifact, runtime, harness, context, repetitions, and hardware.
+Result schema v2 records the reasoning control, client-facing selection, and
+native model value instead of the synthetic token budget used by v1.
 The [quality-oriented model grouping](coding-agent-model-quality.md) interprets
 the current evidence. Exact same-host measurements and the full-suite
 reference are recorded in the
@@ -119,20 +121,25 @@ factual grading and never increase the implementation solve rate.
 
 ## Fair comparison policy
 
-Use one machine, backend, image, context, harness version, thinking level,
-task selection, repetition count, and runtime policy for a model comparison.
+Use one machine, backend, image, context, harness version, task selection,
+repetition count, and runtime policy for a model comparison. Record reasoning
+as a model-native condition rather than assuming one shared label has the same
+meaning across families.
 Pi remains the fixed harness for version 5. OpenCode, Maki, and OMP have
 different tool prompts and context behavior and belong in a separately
 labelled harness comparison.
 
-For the maintained Qwen3.6 27B MTP, Qwen3.8 27B MTP, and Muse Dynamic DFlash
-256K comparison, pass `--normalized-comparison`. It fixes the condition ID,
-Pi harness, ROCm backend, 262144-token context, high reasoning level, and
-8192-token ceiling; the runner rejects other model IDs or conflicting values.
-Each model retains its reviewed sampling, template, and speculative-decoding
-policy because replacing those would test a synthetic configuration. Start
-with one attempt per task, then run three fresh repetitions for finalists. Do
-not tune the prompt or hidden grader after seeing a new model's answer.
+Qwen3.6 supports only thinking off/on; Pi displays on in its generic `high`
+slot. Qwen3.8 supports off/low/medium/xhigh and defaults to medium. Muse
+supports low/medium/high/xhigh, defaults to high, and cannot turn reasoning
+off. Consequently the runner has no normalized three-model switch. A primary
+operational comparison should use each preset's recorded default. A separate
+capability sweep should cover every native choice within one family and must
+not be presented as a set of semantically matched cross-family levels. Each
+model retains its reviewed sampling, template, and speculative-decoding policy
+because replacing those would test a synthetic configuration. Start with one
+attempt per task, then run three fresh repetitions for finalists. Do not tune
+the prompt or hidden grader after seeing a new model's answer.
 
 Use a 45-minute wall-clock ceiling for each future model-evaluation attempt.
 Apply it at the operator boundary so ordinary benchmark execution remains
@@ -141,7 +148,7 @@ intentionally unbounded:
 ```bash
 timeout --foreground --signal=INT --kill-after=90s 45m \
   ./rocmplete benchmark agent --preset PRESET \
-    --normalized-comparison --task TASK
+    --thinking LEVEL --task TASK
 ```
 
 The runner checkpoints an interrupted attempt and removes its model container.

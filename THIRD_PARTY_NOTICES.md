@@ -62,6 +62,13 @@ revisions recorded in `catalog/catalog.json`.
   retains later system and developer messages and omits empty historical
   reasoning blocks. ROCmplete records every GGUF shard's exact size and
   SHA-256 and does not redistribute those weights.
+- The managed Qwen3.8 27B Dynamic Q8_K_XL GGUF is downloaded from one full
+  pinned Unsloth revision whose model card declares Apache-2.0. ROCmplete
+  records its exact size and SHA-256 and does not redistribute the weights.
+  The llama.cpp image includes an Apache-2.0 adaptation of Qwen's chat template
+  from base-model revision
+  `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0`; it changes the omitted-effort
+  fallback from native xhigh to native medium.
 - KAT-Coder V2.5 Dev Q8_0 is downloaded from one full pinned Bartowski GGUF
   revision derived from Kwaipilot's public text-only checkpoint. The
   conversion repository declares Apache-2.0 and records its upstream model

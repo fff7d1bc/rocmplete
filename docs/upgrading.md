@@ -232,20 +232,22 @@ protected behavior is fixed.
 | Patch | Protected behavior and scope | Removal gate |
 | --- | --- | --- |
 | `hip-apu-host-buffer.patch` | Prevents unsafe direct computation on `ROCm_Host` buffers on HIP integrated GPUs while retaining pinned allocation. Relevant to `gfx1150` and `gfx1151`. | The selected upstream pin contains an equivalent to [PR 25863](https://github.com/ggml-org/llama.cpp/pull/25863), and long-input server, CLI, tool-call, and concurrent-slot checks remain correct on both APU architectures. |
-| `reasoning-effort-budget.patch` | Maps supported Chat Completions and Responses effort values onto ROCmplete's bounded reasoning policy and forwards positive labels as Qwen `reasoning_effort` and Muse `reasoning_strength` template variables. | Both endpoints honor Qwen no-thinking and the advertised low, medium, high, and xhigh budgets without the patch, including the configured exhaustion message, and recognized labels reach the applicable `chat_template_kwargs`. Related upstream work is tracked in [PR 20479](https://github.com/ggml-org/llama.cpp/pull/20479). |
+| `reasoning-controls.patch` | Forwards supported OpenAI-compatible effort values to Qwen `reasoning_effort` and Muse `reasoning_strength`, handles no-thinking, recovers native labels from Maki 0.4.5's deterministic numeric budgets, and clamps a generic Muse off request to native low. | Both endpoints carry the exact model-native controls without the patch, including Maki's numeric transport and clients that cannot hide Muse off. Related upstream request parsing is tracked in [PR 20479](https://github.com/ggml-org/llama.cpp/pull/20479). |
 | `quantized-kv-flash-attention.patch` | Provides reviewed Vulkan q8_0 and HIP q8_0/q4_0 dequantize-on-load paths. It combines commits `4edaca09`, `4355d03e`, and `2a24abc6` from the `strix-halo-fa-fixes` branch. | Matching upstream code passes the same f16 and q8_0 cache, backend, context-depth, performance, and output checks on every applicable hardware class. |
 | `vulkan-f16-kv-contiguize.patch` | Adds the environment-gated f16 KV contiguization path derived from commit `b1a10f981`. ROCmplete enables it only for Vulkan on `gfx1151`. | Equivalent upstream behavior retains the measured long-context improvement without shallow-context or output regressions. Do not broaden the profile gate without results from the additional architecture. |
 
 The 2026-08-14 update from llama.cpp commit `62bf73d` to release `b10430`,
-commit `4c1a0af`, classified all four patches as **rebased**. None was
-replaced upstream. The 81-commit range changed adjacent server, speculative-
-decoding, and backend code, including upstream Vulkan TQ2 support, but did not
-provide the protected host-buffer, bounded reasoning-budget, quantized-KV, or
-f16-contiguization behavior. Exact range comparison and fail-closed patch
-application passed before the retained patches were exercised on `gfx1151`.
-The host-buffer and reasoning changes still track the open upstream pull
-requests linked in the ledger. Re-run the removal gates rather than carrying
-this classification forward to a later pin by assumption.
+commit `4c1a0af`, initially classified all four then-current patches as
+**rebased**. None was replaced upstream. A subsequent native-reasoning audit
+replaced `reasoning-effort-budget.patch` with `reasoning-controls.patch`; the
+other three retain that update classification. The 81-commit range changed
+adjacent server, speculative-decoding, and backend code, including upstream
+Vulkan TQ2 support, but did not provide the protected host-buffer, reasoning
+transport, quantized-KV, or f16-contiguization behavior. Exact range comparison
+and fail-closed patch application passed before the retained patches were
+exercised on `gfx1151`. The host-buffer and reasoning changes still track the
+open upstream pull requests linked in the ledger. Re-run the removal gates
+rather than carrying this classification forward to a later pin by assumption.
 
 The bundled `muse-glimmer-atem.jinja` is byte-for-byte Meta's template from
 base-model revision `a4e59da52a7bc87ae7251dd5545c0dd437c44b68`, SHA-256
@@ -288,6 +290,19 @@ preservation. On an upgrade, extract and hash every selected GGUF template,
 compare Qwen's current base-model template independently, then render later
 developer messages and a complete multi-turn tool exchange before updating or
 removing the managed adaptation.
+
+The bundled `qwen3.8.jinja` is an Apache-2.0 adaptation of Qwen's official
+template at base-model revision
+`1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0`. The source template has SHA-256
+`c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041`;
+the managed template has SHA-256
+`7e450592d49f8ee825815fa3d7eb7f5102200d4e5e18571cc68ed66540ce9e31`.
+The only prompt-policy change is the omitted-effort fallback from upstream
+`xhigh` to native `medium`, with the validation message updated to identify the
+managed default. Qwen3.8 supports native low, medium, and xhigh effort plus a
+separate off toggle; it does not support high. On an upgrade, compare both the
+base-model and selected GGUF templates, render all three levels plus off, and
+complete a multi-turn tool exchange before changing the override or default.
 
 The bundled `qwen3-0.6b.jinja` is byte-for-byte the `chat_template` value from
 Qwen base-model revision `7e4ae267688d671ddfca3122e4528ee980cf3234`, SHA-256
@@ -342,7 +357,7 @@ For presets with `reasoning_preserve`, confirm that `llama-server` and
 `llama-cli` still expose `--reasoning-preserve`, that router INI accepts
 `reasoning-preserve = true`, and that a multi-turn tool exchange retains the
 intended reasoning history. Do not replace this with or infer support for the
-separate reasoning-effort budget patch.
+separate model-native reasoning controls or their server compatibility bridge.
 Inspect `llama-bench --help`, `--list-devices`, and JSON output as well.
 Changes to option names, backend device names, result shape, or progress
 streams require coordinated updates to

@@ -18,6 +18,7 @@ from .agent_models import (
     agent_sampling_parameters,
     default_agent_model,
     is_agent_capable,
+    reasoning_client_default,
 )
 from .agent_sandbox import (
     AgentSandboxPaths as OmpSandboxPaths,
@@ -152,7 +153,7 @@ def render_models(
         model = {
             "id": identifier,
             "name": identifier,
-            "reasoning": preset.reasoning_effort_budget,
+            "reasoning": bool(preset.reasoning_control),
             "input": ["text"],
             "supportsTools": True,
             "cost": _COST,
@@ -160,13 +161,31 @@ def render_models(
             "maxTokens": agent_output_limit(preset.default_context),
             "compat": _compat(identifier),
         }
-        if preset.reasoning_effort_budget:
+        if preset.reasoning_control:
+            efforts = (
+                ["high"]
+                if preset.reasoning_control == "toggle"
+                else list(preset.reasoning_levels)
+            )
             model["thinking"] = {
                 "mode": "effort",
-                "efforts": list(preset.reasoning_levels),
-                "defaultLevel": preset.reasoning_default,
+                "efforts": efforts,
+                "defaultLevel": reasoning_client_default(preset),
             }
-            model["compat"]["supportsReasoningEffort"] = True
+            if preset.reasoning_control == "toggle":
+                model["compat"].update(
+                    {
+                        "thinkingFormat": "qwen-chat-template",
+                        "supportsReasoningEffort": False,
+                    }
+                )
+            else:
+                model["compat"].update(
+                    {
+                        "thinkingFormat": "openai",
+                        "supportsReasoningEffort": True,
+                    }
+                )
         models.append(model)
 
     dwarfstar_model = {

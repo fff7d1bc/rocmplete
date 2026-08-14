@@ -5,10 +5,10 @@ import tarfile
 import tempfile
 import unittest
 from contextlib import redirect_stdout
-from dataclasses import replace
 from pathlib import Path
 
 from rocmplete.agent_evaluation import (
+    RESULT_SCHEMA,
     AgentEvaluationOptions,
     PreparedAttempt,
     _build_command,
@@ -37,6 +37,9 @@ from rocmplete.errors import LauncherError
 
 
 class AgentEvaluationTests(unittest.TestCase):
+    def test_result_schema_records_native_reasoning_contract(self):
+        self.assertEqual(RESULT_SCHEMA, "rocmplete.coding-agent-evaluation.v2")
+
     def test_frozen_definition_has_nine_implementation_and_two_review_tasks(self):
         suite = load_coding_suite()
         self.assertEqual(suite.identifier, "rocmplete-coding-v5")
@@ -75,7 +78,11 @@ class AgentEvaluationTests(unittest.TestCase):
         self.assertEqual(identity["kv_cache"], {"strix-halo": "q8_0"})
         self.assertEqual(
             identity["reasoning"],
-            {"parameter": "budget", "level": "high", "budget_tokens": 8192},
+            {
+                "control": "toggle",
+                "client_level": "high",
+                "native_value": "on",
+            },
         )
 
         muse_identity = _model_identity(
@@ -92,7 +99,7 @@ class AgentEvaluationTests(unittest.TestCase):
         self.assertEqual(
             muse_identity["draft_tokens_by_backend"], {"vulkan": 4}
         )
-        self.assertEqual(muse_identity["reasoning"]["parameter"], "strength")
+        self.assertEqual(muse_identity["reasoning"]["control"], "strength")
 
     def test_toolchains_select_fixed_controller_commands(self):
         tasks = {task.identifier: task for task in load_coding_suite().tasks}
@@ -441,7 +448,7 @@ class AgentEvaluationTests(unittest.TestCase):
             self.assertFalse(data_dir.exists())
             self.assertIn("Coding-agent evaluation", output.getvalue())
 
-    def test_normalized_comparison_dry_run_enforces_shared_conditions(self):
+    def test_model_native_reasoning_controls_are_enforced(self):
         with tempfile.TemporaryDirectory() as directory:
             data_dir = Path(directory) / "absent"
             options = AgentEvaluationOptions(
@@ -449,28 +456,44 @@ class AgentEvaluationTests(unittest.TestCase):
                 preset="qwen3.8-27b-mtp-ud-q8-k-xl",
                 tasks=("re-align",),
                 context=262144,
-                thinking="high",
-                normalized_comparison=True,
+                thinking="medium",
                 dry_run=True,
             )
             with redirect_stdout(io.StringIO()) as output:
                 run_agent_evaluation(load_catalog(), options)
-            self.assertIn("Conditions  three-model-256k-v1", output.getvalue())
+            self.assertIn("Model       qwen3.8", output.getvalue())
+            self.assertIn(
+                "Thinking    medium (effort=medium)", output.getvalue()
+            )
             self.assertFalse(data_dir.exists())
 
             with self.assertRaisesRegex(
-                LauncherError, "normalized comparison requires context"
+                LauncherError, "supports --thinking off or low or medium or xhigh"
             ):
                 run_agent_evaluation(
                     load_catalog(),
-                    replace(options, context=131072),
+                    AgentEvaluationOptions(
+                        data_dir=data_dir,
+                        preset="qwen3.8-27b-mtp-ud-q8-k-xl",
+                        tasks=("re-align",),
+                        thinking="high",
+                        dry_run=True,
+                    ),
                 )
             with self.assertRaisesRegex(
-                LauncherError, "normalized comparison requires one of"
+                LauncherError, "supports --thinking low or medium or high or xhigh"
             ):
                 run_agent_evaluation(
                     load_catalog(),
-                    replace(options, preset="kat-coder-v2.5-dev-q8-0"),
+                    AgentEvaluationOptions(
+                        data_dir=data_dir,
+                        preset=(
+                            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
+                        ),
+                        tasks=("re-align",),
+                        thinking="off",
+                        dry_run=True,
+                    ),
                 )
 
     def test_markdown_keeps_solve_rate_separate_from_review(self):

@@ -145,7 +145,7 @@ class RuntimeCommandTests(unittest.TestCase):
             containerfile,
         )
         self.assertIn(
-            "COPY applications/llama-cpp/reasoning-effort-budget.patch",
+            "COPY applications/llama-cpp/reasoning-controls.patch",
             containerfile,
         )
         self.assertIn(
@@ -181,7 +181,7 @@ class RuntimeCommandTests(unittest.TestCase):
         )
         self.assertIn(
             "git apply --check "
-            "/opt/rocmplete/llama-reasoning-effort-budget.patch",
+            "/opt/rocmplete/llama-reasoning-controls.patch",
             containerfile,
         )
         self.assertIn(
@@ -198,12 +198,10 @@ class RuntimeCommandTests(unittest.TestCase):
             root
             / "applications"
             / "llama-cpp"
-            / "reasoning-effort-budget.patch"
+            / "reasoning-controls.patch"
         ).read_text()
         self.assertIn("tools/server/server-common.cpp", reasoning_patch)
-        self.assertIn(
-            "reasoning_budget = reasoning_effort_budget", reasoning_patch
-        )
+        self.assertIn("rocmplete_maki_reasoning_level", reasoning_patch)
         self.assertIn(
             'inputs.chat_template_kwargs["reasoning_effort"]',
             reasoning_patch,
@@ -212,15 +210,17 @@ class RuntimeCommandTests(unittest.TestCase):
             'inputs.chat_template_kwargs["reasoning_strength"]',
             reasoning_patch,
         )
-        for effort, budget in (
-            ("none", 0),
-            ("low", 1024),
-            ("medium", 4096),
-            ("high", 8192),
-            ("xhigh", 16384),
+        self.assertIn('reasoning_level == "none"', reasoning_patch)
+        for budget, level in (
+            (1638, "low"),
+            (3276, "low"),
+            (6553, "medium"),
+            (9830, "high"),
+            (13107, "xhigh"),
+            (16384, "xhigh"),
         ):
-            self.assertIn('effort == "{}"'.format(effort), reasoning_patch)
-            self.assertIn("return {};".format(budget), reasoning_patch)
+            self.assertIn("budget == {}".format(budget), reasoning_patch)
+            self.assertIn('return "{}";'.format(level), reasoning_patch)
         self.assertIn(
             "/opt/rocmplete/container_profile.py", comfy_stage
         )
@@ -789,7 +789,7 @@ class RuntimeCommandTests(unittest.TestCase):
             entrypoint,
         )
         self.assertIn(
-            '""|kat-coder-v2.5|muse-glimmer-atem|qwen3-0.6b|qwen3.6|'
+            '""|kat-coder-v2.5|muse-glimmer-atem|qwen3-0.6b|qwen3.6|qwen3.8|'
             'translategemma-manual',
             entrypoint,
         )

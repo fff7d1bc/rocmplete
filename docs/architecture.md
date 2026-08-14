@@ -544,7 +544,7 @@ destination roots are therefore required not to overlap.
 
 ## Catalog and workflow trust chain
 
-`catalog/catalog.json` is schema version 20. The loader in
+`catalog/catalog.json` is schema version 23. The loader in
 `src/rocmplete/catalog.py` rejects malformed identifiers, unsafe paths,
 non-full revisions, invalid hashes, duplicate destinations, unknown
 references, and incomplete bundle/benchmark relationships.
@@ -597,26 +597,27 @@ size or Jinja alone. It requires Jinja and at least a 16384-token managed
 context. One maintained client must complete an end-to-end function-tool
 acceptance test on target hardware before promotion, and every generated
 client configuration remains covered by schema and serialization tests.
-The narrower `reasoning_effort_budget` and `reasoning_preserve` policies both
-require `agent_tools`, but remain independent. The first advertises the
-project's patched client-selectable thinking-token budgets; the second maps
-direct and router startup to llama.cpp's reasoning-history preservation. A
-model can require one without supporting the other.
+The narrower `reasoning_control` and `reasoning_preserve` policies both require
+`agent_tools`, but remain independent. The first records the model's native
+toggle, effort, or strength surface; the second maps direct and router startup
+to llama.cpp's reasoning-history preservation. A model can require one
+without supporting the other.
 Other clients may then expose the shared OpenAI-compatible contract
 provisionally, but each still needs its own live loop before unattended write
 access is considered accepted. Sibling presets with the byte-identical target
 and template may share this protocol evidence, while their distinct context
 or speculative-decoding policies retain separate runtime acceptance.
 
-`reasoning_effort_budget` is the narrower model claim behind agent-client
-reasoning selectors. `reasoning_levels`, `reasoning_default`,
-`reasoning_off`, and `reasoning_parameter` define the exact UI contract and
-distinguish sampler-only budgets, model-native effort, and Muse-native
-strength. The fail-closed server patch maps low, medium, high, and xhigh to
-1024, 4096, 8192, and 16384 sampler tokens. `none` remains zero. Recognized
-positive labels are forwarded as both `reasoning_effort` and
-`reasoning_strength`; each template consumes only its own variable. Muse
-declares no off choice because its official template always reasons.
+`reasoning_control` is the narrower model claim behind agent-client reasoning
+selectors. `reasoning_levels`, `reasoning_default`, and `reasoning_off` define
+the exact UI contract. Qwen3.6 declares a toggle, Qwen3.8 declares native
+effort, and Muse declares native strength. The fail-closed server bridge
+forwards recognized OpenAI-compatible labels as both `reasoning_effort` and
+`reasoning_strength`; each template consumes only its own variable. It also
+recovers labels from Maki 0.4.5's deterministic numeric values while retaining
+the client-requested sampler ceiling. Muse declares no off choice because its
+official template always reasons; clients that cannot hide their generic off
+choice are conservatively clamped to Muse low.
 
 `bin/rocmplete` is a PATH-friendly delegate to the root checkout launcher and
 resolves symlinks before locating it. The public `agent` command groups coding
@@ -628,9 +629,9 @@ which supplies the main JSON through `OPENCODE_CONFIG_CONTENT` and points
 `OPENCODE_TUI_CONFIG` at the repository-owned read-only keymap. No integration
 file is installed in the user's config directory. The model map contains only
 the reviewed agent set and advertises each preset's managed starting context.
-Presets with `reasoning_effort_budget` advertise only their catalog-owned
-OpenCode variants. Qwen has instant, low, medium, and high; Muse has low,
-medium, high, and xhigh with high as its fallback. Unsupported inherited
+Presets with `reasoning_control` advertise only their catalog-owned OpenCode
+variants. Qwen3.6 has instant and thinking, Qwen3.8 has instant, low, medium,
+and xhigh, and Muse has low, medium, high, and xhigh. Unsupported inherited
 variants are explicitly disabled. OpenCode merges a selected variant later,
 so persisted per-model choices continue to take precedence. The launcher
 prefers Muse Dynamic DFlash 256K and otherwise uses
@@ -714,7 +715,7 @@ Maki's native `llama-cpp` provider as their protocol base, so the exact
 loopback `/v1` URL comes from the generated provider while Chat Completions,
 tool calls, and local thinking budgets remain owned by Maki. A generated
 `init.lua` selects the recommended installed model, its catalog thinking
-default as an exact numeric ceiling, and one
+default by name, and one
 concurrent task subagent. The initial tier file assigns that model to every
 subagent tier. An unchanged seed follows a later default change, while any
 user-edited tier assignment is preserved. Managed configuration and provider
@@ -727,10 +728,11 @@ request sampling parameters, and its llama.cpp adapter does not provide a
 request-body hook. The generated provider therefore does not publish fields
 Maki would ignore; Maki requests retain llama.cpp's defaults until upstream
 exposes a clean model or request setting. The same adapter sends only numeric
-`thinking_budget_tokens`; ROCmplete pins the initial Muse high ceiling to 8192,
-but Maki's named selector cannot carry the separate Qwen effort or Muse
-strength value. Normalized quality comparisons therefore use Pi, whose request
-includes both the native label and matching sampler ceiling.
+`thinking_budget_tokens`. The managed llama.cpp bridge recognizes Maki
+0.4.5's standard values, derives the corresponding native label, and forwards
+it while retaining Maki's sampler ceiling. Maki still exposes generic choices
+that some models do not support, so reasoning-sensitive quality comparisons
+use Pi and an explicit model-native condition.
 
 DwarfStar is a separate provider at its own loopback endpoint, with the one
 reviewed `deepseek-v4-flash-0731-q2-imatrix` model advertising the same

@@ -214,15 +214,16 @@ control when you need to isolate speculative decoding:
 Keep whichever model succeeds on representative tasks rather than choosing
 from the parameter count or quantization name alone.
 
-Qwen3.8 uses the Jinja template embedded in the pinned Unsloth GGUF. That
-template incorporates the developer-role and structured tool-argument fixes
-that ROCmplete had to supply separately for Qwen3.6, handles any number of
-leading system or developer messages, and retains reasoning across tool
-turns. For `low`, `medium`, and `high`, ROCmplete passes one effort choice to
-both the model's template instructions and llama.cpp's bounded reasoning
-sampler. `reasoning_effort: none` disables thinking. The managed clients use
-the official thinking-mode sampling policy: temperature 1.0, top-p 0.95,
-top-k 20, min-p 0, presence penalty 0, and repeat penalty 1.
+Qwen3.8 uses ROCmplete's reviewed copy of the pinned official base-model Jinja
+template instead of the template embedded in the Unsloth GGUF. It keeps Qwen's
+official message and tool format, but the Unsloth copy silently aliases generic
+`high` to native `xhigh`. Qwen3.8's real effort levels are low, medium, and
+xhigh, plus a separate off toggle. The managed template changes the
+omitted-effort fallback from upstream xhigh to medium; it does not invent a
+high level.
+`reasoning_effort: none` disables thinking. The managed clients use the
+official thinking-mode sampling policy: temperature 1.0, top-p 0.95, top-k 20,
+min-p 0, presence penalty 0, and repeat penalty 1.
 
 The pinned
 [official Qwen3.8 model card](https://huggingface.co/Qwen/Qwen3.8-27B/blob/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/README.md)
@@ -355,7 +356,8 @@ little memory for the model, runtime buffers, or other workloads. Its
 official embedded template handles developer instructions, structured tool
 calls, tool results, and reasoning turns through llama.cpp's chat-template
 path. It appears in both generated client model maps and supports the same
-reasoning choices as the managed Qwen agents.
+function-tool protocol. ROCmplete does not advertise a model-native reasoning
+selector for Gemma 4.
 
 ### Tool-using clients
 
@@ -525,11 +527,11 @@ llama.cpp Chat Completions adapter and publish the exact context, output, and
 thinking capabilities of the reviewed presets. Maki's normal global config,
 sessions, and model choices are not read or modified.
 
-The recommended Muse model starts at an exact 8192-token high ceiling. Maki
-remembers an explicit `/model` or `/thinking` choice in its private state. On the first
-launch, ROCmplete assigns the selected default to Maki's strong, medium, weak,
-and compaction tiers so a local subagent does not silently select another
-alphabetically sorted model. Later tier changes in `/model` are preserved.
+The recommended Muse model starts at its native high reasoning strength. Maki
+remembers an explicit `/model` or `/thinking` choice in its private state. On
+the first launch, ROCmplete assigns the selected default to Maki's strong,
+medium, weak, and compaction tiers so a local subagent does not silently select
+another alphabetically sorted model. Later tier changes in `/model` are preserved.
 An unchanged generated assignment follows the default if installed content
 changes. The generated config also limits Maki to one concurrent task subagent
 because several simultaneous 256K local sessions can exhaust shared GPU
@@ -638,25 +640,37 @@ Its `--print` mode always starts a new Build-mode session, so use the TUI when
 the Plan boundary matters.
 
 For long-context presets, ROCmplete advertises a 16K per-turn output ceiling to
-all four clients. That leaves more of the native context available before
-automatic compaction while still accommodating the managed 8K high reasoning
-budget and a final response. This limit is per model turn, not the total
-session.
+all four clients. That leaves more native context available before automatic
+compaction. It is a per-turn output limit, not a model reasoning setting or a
+total-session limit.
 
-Qwen exposes off/instant, low, medium, and high. Those map to 0, 1024, 4096,
-and 8192 llama.cpp reasoning tokens. Qwen3.8 also receives the named native
-effort in its template; Qwen3.6 is budget-only. Muse always reasons and
-instead exposes native low, medium, high, and xhigh strength with 1024, 4096,
-8192, and 16384-token ceilings. Muse defaults to high and Pi/OpenCode do not
-advertise a false off/instant choice. OpenCode uses `ctrl+t` or `/variants`,
-Pi uses `Shift+Tab`, `/settings`, or `--thinking`, OMP accepts `--thinking`,
-and Maki uses `/thinking`.
+The maintained model families have three different native contracts:
 
-Maki's llama.cpp adapter sends numeric `thinking_budget_tokens`; it cannot
-carry the separate Qwen effort or Muse strength name. Its selector therefore
-controls the server-side ceiling only. Use Pi for normalized model-quality
-comparisons so the request carries both the named native control and the
-project's matching ceiling.
+| Family | Native control | Managed choices | Default |
+| --- | --- | --- | --- |
+| Qwen3.6 27B | thinking toggle | off, on | on |
+| Qwen3.8 27B | reasoning effort | off, low, medium, xhigh | medium |
+| Muse Glimmer 30B | reasoning strength | low, medium, high, xhigh | high |
+
+Qwen3.8 has no native `high` level. Its pinned official template defaults to
+`xhigh`; ROCmplete's reviewed copy changes only that fallback to `medium`, so
+an omitted setting never silently selects the most expensive level. Qwen3.6
+does not have graduated effort levels. Clients with a fixed shared vocabulary
+display its on state as `high` or `thinking`, but the request is translated to
+the native on/off toggle rather than treating `high` as a Qwen3.6 effort.
+Muse has no native off mode.
+
+OpenCode uses `ctrl+t` or `/variants`, Pi uses `Shift+Tab`, `/settings`, or
+`--thinking`, OMP accepts `--thinking`, and Maki uses `/thinking`. Pi and
+OpenCode hide unsupported choices. OMP exposes all real levels but its schema
+cannot suppress the generic off choice for Muse; the server conservatively
+maps that choice to Muse low. Maki exposes a generic selector and converts it
+to numeric `thinking_budget_tokens`. The managed server recognizes Maki
+0.4.5's standard numeric values and recovers the matching native effort or
+strength while retaining the numeric sampler ceiling. Unsupported generic
+Maki choices are not model-native controls, and Muse off likewise becomes
+low. Use Pi for reasoning-sensitive model comparisons because it carries the
+native selector without Maki's additional budget policy.
 
 All four clients use `/v1/chat/completions` and expose their file and shell
 tools as ordinary function calls. That matches llama.cpp's current tool
@@ -931,10 +945,10 @@ unattended write access.
 All three presets enable llama.cpp reasoning preservation so parsed reasoning
 remains available to multi-turn history. Muse does not have a native off mode.
 It exposes low, medium, high, and xhigh `Reasoning strength`, defaulting to
-high; ROCmplete couples those strengths to bounded 1024, 4096, 8192, and
-16384-token sampler ceilings. Pi, OpenCode, and OMP expose the named levels.
-Maki can set the numeric ceiling but its llama.cpp transport cannot carry the
-separate native strength string.
+high. Pi, OpenCode, and OMP expose the named levels. Maki converts its generic
+selector to a numeric ceiling; the managed llama.cpp compatibility bridge
+recovers and forwards the corresponding native strength for Maki 0.4.5's
+standard values.
 
 ROCmplete previously installed
 `Muse-Glimmer-30B-UD-Q8_K_XL.gguf` for this recipe. Upgrading the catalog does

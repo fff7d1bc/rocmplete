@@ -89,10 +89,23 @@ class OmpLauncherTests(unittest.TestCase):
             qwen["thinking"],
             {
                 "mode": "effort",
-                "efforts": ["low", "medium", "high"],
+                "efforts": ["high"],
+                "defaultLevel": "high",
+            },
+        )
+        self.assertEqual(qwen["compat"]["thinkingFormat"], "qwen-chat-template")
+        self.assertFalse(qwen["compat"]["supportsReasoningEffort"])
+        qwen38 = models["qwen3.8-27b-mtp-ud-q8-k-xl"]
+        self.assertEqual(
+            qwen38["thinking"],
+            {
+                "mode": "effort",
+                "efforts": ["low", "medium", "xhigh"],
                 "defaultLevel": "medium",
             },
         )
+        self.assertEqual(qwen38["compat"]["thinkingFormat"], "openai")
+        self.assertTrue(qwen38["compat"]["supportsReasoningEffort"])
         muse = models[
             "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         ]
@@ -106,6 +119,8 @@ class OmpLauncherTests(unittest.TestCase):
                 "defaultLevel": "high",
             },
         )
+        self.assertEqual(muse["compat"]["thinkingFormat"], "openai")
+        self.assertTrue(muse["compat"]["supportsReasoningEffort"])
         for identifier, model in models.items():
             self.assertEqual(
                 model["compat"]["extraBody"],

@@ -3476,7 +3476,6 @@ class CliTests(unittest.TestCase):
                 "3",
                 "--thinking",
                 "high",
-                "--normalized-comparison",
             ]
         )
         self.assertEqual(agent.benchmark_command, "agent")
@@ -3485,7 +3484,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(agent.repetitions, 3)
         self.assertIsNone(agent.context)
         self.assertEqual(agent.thinking, "high")
-        self.assertTrue(agent.normalized_comparison)
+        self.assertFalse(hasattr(agent, "normalized_comparison"))
 
         _, isolated = parse_arguments(
             ["benchmark", "suite", "--cache-mode", "isolated"]
@@ -4339,7 +4338,7 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(
             _llama_reasoning_policy(qwen27),
-            "budget; off, low, medium, high; default medium",
+            "toggle; off, on; default on",
         )
         self.assertEqual(
             _llama_reasoning_policy(dflash_256k),

@@ -17,23 +17,6 @@ DWARFSTAR_MODEL = "deepseek-v4-flash-0731-q2-imatrix"
 RECOMMENDED_MODEL = (
     "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
 )
-NORMALIZED_COMPARISON_ID = "three-model-256k-v1"
-NORMALIZED_COMPARISON_MODELS = (
-    "qwen3.6-27b-mtp-q8-0",
-    "qwen3.8-27b-mtp-ud-q8-k-xl",
-    RECOMMENDED_MODEL,
-)
-NORMALIZED_COMPARISON_CONTEXT = 262144
-NORMALIZED_COMPARISON_THINKING = "high"
-REASONING_BUDGETS = {
-    "off": 0,
-    "low": 1024,
-    "medium": 4096,
-    "high": 8192,
-    "xhigh": 16384,
-}
-
-
 # Agent sampling is caller policy, not model runtime policy, so it stays out of
 # the catalog presets. Values use llama.cpp's Chat Completions field names;
 # notably, upstream repetition_penalty maps to repeat_penalty here.
@@ -120,23 +103,38 @@ def agent_sampling_parameters(identifier: str) -> Mapping[str, object]:
         ) from error
 
 
-def reasoning_budget(preset: LlamaPreset, level: str) -> int:
-    """Resolve one advertised client level to its enforced token ceiling."""
+def reasoning_client_levels(preset: LlamaPreset) -> Tuple[str, ...]:
+    """Return the truthful selector surface used by generic agent clients."""
 
-    if level == "off":
-        if preset.reasoning_off:
-            return 0
-    elif level in preset.reasoning_levels:
-        try:
-            return REASONING_BUDGETS[level]
-        except KeyError:
-            pass
-    supported = list(preset.reasoning_levels)
+    if not preset.reasoning_control:
+        return ("off",)
+    levels = ("high",) if preset.reasoning_control == "toggle" else (
+        preset.reasoning_levels
+    )
     if preset.reasoning_off:
-        supported.insert(0, "off")
+        return ("off", *levels)
+    return tuple(levels)
+
+
+def reasoning_client_default(preset: LlamaPreset) -> str:
+    """Map a model-native default onto the shared client vocabulary."""
+
+    if preset.reasoning_control == "toggle":
+        return "high"
+    return preset.reasoning_default
+
+
+def reasoning_native_value(preset: LlamaPreset, level: str) -> str:
+    """Validate a client selector and return the model-native control value."""
+
+    supported = reasoning_client_levels(preset)
+    if level in supported:
+        if preset.reasoning_control == "toggle" and level == "high":
+            return "on"
+        return level
     raise LauncherError(
         "llama.cpp preset {} supports --thinking {}".format(
-            preset.identifier, " or ".join(supported) or "off"
+            preset.identifier, " or ".join(supported)
         )
     )
 
@@ -181,7 +179,7 @@ def default_agent_model(
         return PROVIDER_ID, RECOMMENDED_MODEL, "high"
     if installed:
         preset = catalog.llama_preset(installed[0])
-        thinking = preset.reasoning_default
+        thinking = reasoning_client_default(preset)
         return PROVIDER_ID, installed[0], thinking
     dwarfstar = catalog.bundle(
         "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"

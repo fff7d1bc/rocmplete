@@ -131,8 +131,7 @@ from .agent_evaluation import (
     run_agent_evaluation,
 )
 from .agent_models import (
-    NORMALIZED_COMPARISON_CONTEXT,
-    NORMALIZED_COMPARISON_THINKING,
+    reasoning_client_default,
 )
 from .build import (
     build_cache_dir,
@@ -3433,13 +3432,17 @@ def _llama_kv_cache_policy(preset: LlamaPreset) -> str:
 
 
 def _llama_reasoning_policy(preset: LlamaPreset) -> str:
-    if not preset.reasoning_effort_budget:
+    if not preset.reasoning_control:
         return "not exposed"
-    levels = list(preset.reasoning_levels)
+    levels = (
+        ["on"]
+        if preset.reasoning_control == "toggle"
+        else list(preset.reasoning_levels)
+    )
     if preset.reasoning_off:
         levels.insert(0, "off")
     return "{}; {}; default {}".format(
-        preset.reasoning_parameter,
+        preset.reasoning_control,
         ", ".join(levels),
         preset.reasoning_default,
     )
@@ -5045,26 +5048,11 @@ def command_benchmark(
             if arguments.output
             else None
         )
-        if (
-            arguments.normalized_comparison
-            and arguments.context is not None
-            and arguments.context != NORMALIZED_COMPARISON_CONTEXT
-        ):
-            raise LauncherError(
-                "--normalized-comparison fixes --context at {}".format(
-                    NORMALIZED_COMPARISON_CONTEXT
-                )
-            )
-        if (
-            arguments.normalized_comparison
-            and arguments.thinking is not None
-            and arguments.thinking != NORMALIZED_COMPARISON_THINKING
-        ):
-            raise LauncherError(
-                "--normalized-comparison fixes --thinking at {}".format(
-                    NORMALIZED_COMPARISON_THINKING
-                )
-            )
+        selected_preset = (
+            catalog.llama_preset(arguments.preset)
+            if arguments.preset
+            else None
+        )
         result_path, _ = run_agent_evaluation(
             catalog,
             AgentEvaluationOptions(
@@ -5073,15 +5061,11 @@ def command_benchmark(
                 dwarfstar=arguments.dwarfstar,
                 tasks=tuple(arguments.task),
                 repetitions=arguments.repetitions,
-                context=(
-                    NORMALIZED_COMPARISON_CONTEXT
-                    if arguments.normalized_comparison
-                    else arguments.context or AGENT_EVALUATION_DEFAULT_CONTEXT
-                ),
-                thinking=(
-                    NORMALIZED_COMPARISON_THINKING
-                    if arguments.normalized_comparison
-                    else arguments.thinking or "high"
+                context=arguments.context or AGENT_EVALUATION_DEFAULT_CONTEXT,
+                thinking=arguments.thinking or (
+                    reasoning_client_default(selected_preset)
+                    if selected_preset is not None
+                    else "high"
                 ),
                 profile=arguments.profile,
                 backend=arguments.backend,
@@ -5090,7 +5074,6 @@ def command_benchmark(
                 output=output,
                 keep_going=arguments.keep_going,
                 dry_run=arguments.dry_run,
-                normalized_comparison=arguments.normalized_comparison,
             ),
         )
         if arguments.dry_run:

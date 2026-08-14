@@ -230,6 +230,14 @@ server-side thinking through Maki. Confirm the generated providers follow
 `--dwarfstar-port`. Do not claim agent
 compatibility from `/v1/models` or a plain text response alone.
 
+For the maintained llama.cpp reasoning matrix, exercise each native choice
+through Pi, OpenCode, OMP, and Maki: Qwen3.6 off/on; Qwen3.8 off, low, medium,
+and xhigh; and Muse low, medium, high, and xhigh. Confirm the generated picker
+omits or disables unsupported values where the client schema permits it. OMP
+and Maki cannot hide every generic choice; confirm Muse off clamps to low and
+Maki's standard numeric values recover the documented native label. Keep these
+protocol checks separate from cross-model quality benchmarking.
+
 For coding-agent evaluation changes, validate the frozen inputs before using
 GPU time:
 
@@ -237,7 +245,7 @@ GPU time:
 ./rocmplete benchmark agent --list-tasks
 ./rocmplete benchmark agent \
   --preset qwen3.6-27b-mtp-q8-0 \
-  --normalized-comparison --task re-align --dry-run
+  --thinking high --task re-align --dry-run
 PYTHONPATH=src python3 -m unittest tests.test_agent_evaluation
 ```
 

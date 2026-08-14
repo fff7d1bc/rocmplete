@@ -362,6 +362,10 @@ Observed results:
   19,101 prompt tokens at 175.31 tokens/s, and generated 21,924 tokens at
   14.49 tokens/s. Its retained result is
   `apps/agent-evaluation/results/20260814T162403Z-qwen3.8-27b-mtp-ud-q8-k-xl.json`.
+  The later native-control audit established that the embedded Unsloth
+  template silently aliases Pi's generic `high` selector to Qwen3.8 `xhigh`.
+  Treat this as an xhigh Qwen3.8 result, not as a reasoning-matched comparison
+  with Qwen3.6 high/on or Muse high.
   This accepts the quantized model and Pi tool contract on `gfx1151`, but the
   much longer trajectory than the earlier Qwen3.6 27B solve does not justify
   replacing ROCmplete's current agent default. The optional vision projector
@@ -778,10 +782,10 @@ local source image.
 | Hunyuan T2V | `hunyuan-video-1.5-t2v-480p-cfg-distilled` | pending | pending | pending | pending |
 | Hunyuan I2V | `hunyuan-video-1.5-i2v-480p-step-distilled` | pending | pending | pending | pending |
 | llama.cpp offload smoke | `llama-qwen3-0.6b-q8-0` | pending | pending | pending | pending |
-| llama.cpp Qwen3.6 tool protocol | `qwen3.6-27b-mtp-q8-0`, complete nested tool round trip at 256K/high | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
-| llama.cpp Qwen3.8 tool protocol | `qwen3.8-27b-mtp-ud-q8-k-xl`, complete nested tool round trip at 256K/high | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
+| llama.cpp Qwen3.6 tool protocol | `qwen3.6-27b-mtp-q8-0`, complete nested tool round trip at 256K with thinking on (Pi `high`) and off | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
+| llama.cpp Qwen3.8 tool protocol | `qwen3.8-27b-mtp-ud-q8-k-xl`, complete nested tool round trip at 256K with off, low, medium, and xhigh | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k`, ROCm depth 12 or Vulkan depth 4, high strength | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
-| llama.cpp normalized agent comparison | Qwen3.6 MTP, Qwen3.8 MTP, and Muse 256K through Pi under `three-model-256k-v1` | N/P unless every model and context fits the card | N/P unless host memory is deliberately used | pending | pending |
+| llama.cpp agent default comparison | Qwen3.6 MTP on, Qwen3.8 MTP medium, and Muse 256K high through Pi with the same tasks and runtime conditions | N/P unless every model and context fits the card | N/P unless host memory is deliberately used | pending | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
 
 DwarfStar remains experimental after the bounded smoke. Before promoting it,
@@ -807,12 +811,15 @@ non-MTP preset to separate template handling from speculative decoding.
 Only after the raw API exchange passes should OpenCode, Pi, OMP, and Maki tasks be
 used as the final integration checks.
 
-For the normalized comparison row, run each of the three maintained presets
-through Pi with `--normalized-comparison`, the same tasks and repetition
-count, and unchanged hardware/runtime inputs. Keep edit and shell approvals
+For the agent default-comparison row, use explicit selectors: Qwen3.6
+`--thinking high` means native on, Qwen3.8 uses `--thinking medium`, and Muse
+uses `--thinking high`. These are operational defaults, not equivalent amounts
+of reasoning. Run all three through Pi with the same tasks and repetition
+count and unchanged hardware/runtime inputs. Keep edit and shell approvals
 equivalent across runs. Compare the structured results only after all three
 complete; record quality, protocol, state-corruption, or truncation failures
-instead of treating wall time as the sole rank.
+instead of treating wall time as the sole rank. Run per-model native-level
+sweeps as a separate experiment.
 
 For the Muse row, begin with the forced-256K DFlash default for a complete
 managed tool loop, then repeat the task with the 128K DFlash and

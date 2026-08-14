@@ -244,8 +244,10 @@ opencode
 
 Muse starts at high native reasoning strength. Pi, OpenCode, and OMP expose its
 low, medium, high, and xhigh levels without a false instant variant. Maki
-exposes its numeric llama.cpp budget control; use Pi for evaluations that must
-also carry the native strength into the template.
+exposes a generic selector through its numeric llama.cpp transport; the
+managed server recovers the matching native strength for Maki 0.4.5's standard
+values. Use Pi for comparisons that must avoid Maki's additional numeric
+budget policy.
 
 OpenCode starts new sessions in read-only Investigate mode. All four launchers
 keep the current directory and private client state writable while hiding the
@@ -362,15 +364,17 @@ task suite:
 ```bash
 ./rocmplete benchmark agent --list-tasks
 ./rocmplete benchmark agent \
-  --preset qwen3.6-27b-mtp-q8-0 \
-  --normalized-comparison --dry-run
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl \
+  --thinking medium --dry-run
 ```
 
-`--normalized-comparison` accepts only dense Qwen3.6 27B MTP, Qwen3.8 27B
-MTP, or Muse Dynamic DFlash 256K. It fixes Pi, ROCm, 256K context, high
-reasoning, and an 8192-token reasoning ceiling. Run the same task selection
-and repetition count for all three; the actual comparison remains a separate
-hardware pass.
+Reasoning selectors now follow each model's native contract: Qwen3.6 has an
+off/on toggle, Qwen3.8 has off/low/medium/xhigh effort, and Muse has
+low/medium/high/xhigh strength. The benchmark runner validates the explicit
+choice and records both the client selector and native value. There is no
+claim that one shared label is an equivalent reasoning condition across these
+families; define and record the comparison protocol before running the
+separate hardware pass.
 
 This is separate from smoke acceptance and native token-speed benchmarking.
 It runs Pi against disposable single-commit fixtures, applies hidden tests

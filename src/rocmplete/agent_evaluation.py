@@ -26,13 +26,9 @@ from . import podman
 from .agent_models import (
     DWARFSTAR_MODEL,
     DWARFSTAR_PROVIDER_ID,
-    NORMALIZED_COMPARISON_CONTEXT,
-    NORMALIZED_COMPARISON_ID,
-    NORMALIZED_COMPARISON_MODELS,
-    NORMALIZED_COMPARISON_THINKING,
     PROVIDER_ID,
     agent_sampling_parameters,
-    reasoning_budget,
+    reasoning_native_value,
 )
 from .agent_sandbox import SANDBOX_RUNTIME
 from .catalog import Catalog
@@ -50,7 +46,7 @@ from .project import PROJECT_ROOT
 
 DEFINITION_PATH = PROJECT_ROOT / "evaluations" / "coding" / "tasks.json"
 SUITE_SCHEMA = 2
-RESULT_SCHEMA = "rocmplete.coding-agent-evaluation.v1"
+RESULT_SCHEMA = "rocmplete.coding-agent-evaluation.v2"
 DEFAULT_CONTEXT = 131072
 DEFAULT_PORT = 8187
 ANSWER_FILE = "ROCMLETE_EVAL_ANSWER.md"
@@ -150,7 +146,6 @@ class AgentEvaluationOptions:
     output: Optional[Path] = None
     keep_going: bool = False
     dry_run: bool = False
-    normalized_comparison: bool = False
 
 
 @dataclass(frozen=True)
@@ -1370,7 +1365,7 @@ def _model_identity(
             "sampling": {},
         }
     preset = catalog.llama_preset(options.preset)
-    budget = reasoning_budget(preset, options.thinking)
+    native_reasoning = reasoning_native_value(preset, options.thinking)
     identifiers = [preset.artifact]
     if preset.draft_artifact:
         identifiers.append(preset.draft_artifact)
@@ -1390,9 +1385,9 @@ def _model_identity(
         "context": options.context,
         "thinking": options.thinking,
         "reasoning": {
-            "parameter": preset.reasoning_parameter,
-            "level": options.thinking,
-            "budget_tokens": budget,
+            "control": preset.reasoning_control or "none",
+            "client_level": options.thinking,
+            "native_value": native_reasoning,
         },
         "backend": options.backend,
         "sampling": dict(agent_sampling_parameters(preset.identifier)),
@@ -1491,25 +1486,6 @@ def run_agent_evaluation(
         raise LauncherError(
             "DwarfStar coding evaluation supports --thinking off or high"
         )
-    if options.normalized_comparison:
-        if options.dwarfstar or options.preset not in NORMALIZED_COMPARISON_MODELS:
-            raise LauncherError(
-                "normalized comparison requires one of: {}".format(
-                    ", ".join(NORMALIZED_COMPARISON_MODELS)
-                )
-            )
-        if (
-            options.context != NORMALIZED_COMPARISON_CONTEXT
-            or options.thinking != NORMALIZED_COMPARISON_THINKING
-            or options.backend != "rocm"
-        ):
-            raise LauncherError(
-                "normalized comparison requires context {}, thinking {}, "
-                "and ROCm".format(
-                    NORMALIZED_COMPARISON_CONTEXT,
-                    NORMALIZED_COMPARISON_THINKING,
-                )
-            )
     if options.preset:
         preset = catalog.llama_preset(options.preset)
         if not preset.agent_tools:
@@ -1518,16 +1494,25 @@ def run_agent_evaluation(
                     options.preset
                 )
             )
-        reasoning_budget(preset, options.thinking)
+        reasoning_native_value(preset, options.thinking)
     model = DWARFSTAR_MODEL if options.dwarfstar else options.preset
     if options.dry_run:
         print("Coding-agent evaluation")
-        if options.normalized_comparison:
-            print("  Conditions  {}".format(NORMALIZED_COMPARISON_ID))
         print("  Suite       {} ({})".format(suite.identifier, suite.fingerprint))
         print("  Model       {}".format(model))
         print("  Harness     Pi")
         print("  Context     {}".format(options.context))
+        if options.dwarfstar:
+            print("  Thinking    {} (DwarfStar mode)".format(options.thinking))
+        else:
+            preset = catalog.llama_preset(options.preset)
+            print(
+                "  Thinking    {} ({}={})".format(
+                    options.thinking,
+                    preset.reasoning_control or "none",
+                    reasoning_native_value(preset, options.thinking),
+                )
+            )
         print("  Tasks       {}".format(", ".join(task.identifier for task in tasks)))
         print("  Repetitions {}".format(options.repetitions))
         print("  Server      {}".format(" ".join(_server_command(options))))
@@ -1567,11 +1552,7 @@ def run_agent_evaluation(
         "project_revision": _project_revision(),
         "host": {"platform": platform.platform(), "machine": platform.machine()},
         "harness": {"name": "pi", "version": _pi_version()},
-        "conditions": (
-            NORMALIZED_COMPARISON_ID
-            if options.normalized_comparison
-            else "custom"
-        ),
+        "conditions": "custom",
         "model": dict(_model_identity(catalog, options)),
         "runtime": {
             "application": "dwarfstar" if options.dwarfstar else "llama-cpp",

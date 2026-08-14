@@ -16,7 +16,6 @@ from .agent_models import (
     DWARFSTAR_PROVIDER_ID,
     PROVIDER_ID,
     RECOMMENDED_MODEL,
-    REASONING_BUDGETS,
     agent_output_limit,
     default_agent_model,
     is_agent_capable,
@@ -68,7 +67,7 @@ def _models(catalog: Catalog) -> Tuple[Mapping[str, object], ...]:
             "max_output_tokens": agent_output_limit(
                 preset.default_context
             ),
-            "supports_thinking": preset.reasoning_effort_budget,
+            "supports_thinking": bool(preset.reasoning_control),
         }
         for identifier, preset in catalog.llama_presets.items()
         if is_agent_capable(preset)
@@ -116,15 +115,11 @@ def _default_model(
 
 def _render_init(provider: str, model: str, thinking: str) -> bytes:
     model_spec = json.dumps("{}/{}".format(provider, model))
-    # Maki's llama.cpp adapter accepts a numeric ceiling but cannot forward
-    # the separate native effort/strength label. Pin the managed startup
-    # ceiling exactly; later user-selected named levels remain Maki policy.
-    configured_thinking = (
-        str(REASONING_BUDGETS[thinking])
-        if provider == PROVIDER_ID and thinking in REASONING_BUDGETS
-        else thinking
-    )
-    thinking_value = json.dumps(configured_thinking)
+    # Keep the named selector so Maki computes the same deterministic local
+    # wire value for startup and later /thinking choices. The managed server
+    # recognizes those values and also forwards the corresponding native
+    # effort or strength to the selected template.
+    thinking_value = json.dumps(thinking)
     content = """maki.setup({{
   always_thinking = {thinking},
   provider = {{ default_model = {model} }},

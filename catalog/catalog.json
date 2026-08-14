@@ -1,5 +1,5 @@
 {
-  "schema_version": 22,
+  "schema_version": 23,
   "agreements": {
     "ltx-2-community-license": {
       "name": "LTX-2 Community License",
@@ -2376,8 +2376,7 @@
       "artifact": "kat-coder-v2.5-dev-q8-gguf",
       "default_context": 262144,
       "chat_template": "kat-coder-v2.5",
-      "agent_tools": true,
-      "reasoning_effort_budget": true
+      "agent_tools": true
     },
     "qwen3.6-27b-q8-0": {
       "bundle": "llama-qwen3.6-27b-q8-0",
@@ -2385,7 +2384,9 @@
       "default_context": 262144,
       "chat_template": "qwen3.6",
       "agent_tools": true,
-      "reasoning_effort_budget": true
+      "reasoning_control": "toggle",
+      "reasoning_default": "on",
+      "reasoning_off": true
     },
     "qwen3.6-27b-mtp-q8-0": {
       "bundle": "llama-qwen3.6-27b-mtp-q8-0",
@@ -2395,7 +2396,9 @@
       "draft_tokens": 3,
       "chat_template": "qwen3.6",
       "agent_tools": true,
-      "reasoning_effort_budget": true,
+      "reasoning_control": "toggle",
+      "reasoning_default": "on",
+      "reasoning_off": true,
       "flash_attention": {
         "strix-halo": "on"
       },
@@ -2407,10 +2410,16 @@
       "bundle": "llama-qwen3.8-27b-ud-q8-k-xl",
       "artifact": "qwen3.8-27b-ud-q8-k-xl-gguf",
       "default_context": 262144,
-      "jinja": true,
+      "chat_template": "qwen3.8",
       "agent_tools": true,
-      "reasoning_effort_budget": true,
-      "reasoning_parameter": "effort",
+      "reasoning_control": "effort",
+      "reasoning_levels": [
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "reasoning_default": "medium",
+      "reasoning_off": true,
       "reasoning_preserve": true
     },
     "qwen3.8-27b-mtp-ud-q8-k-xl": {
@@ -2419,10 +2428,16 @@
       "default_context": 262144,
       "speculative_type": "draft-mtp",
       "draft_tokens": 3,
-      "jinja": true,
+      "chat_template": "qwen3.8",
       "agent_tools": true,
-      "reasoning_effort_budget": true,
-      "reasoning_parameter": "effort",
+      "reasoning_control": "effort",
+      "reasoning_levels": [
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "reasoning_default": "medium",
+      "reasoning_off": true,
       "reasoning_preserve": true
     },
     "gemma4-31b-it-q8-0-mtp": {
@@ -2433,8 +2448,7 @@
       "speculative_type": "draft-mtp",
       "draft_tokens": 4,
       "jinja": true,
-      "agent_tools": true,
-      "reasoning_effort_budget": true
+      "agent_tools": true
     },
     "muse-glimmer-30b-kquant-dynamic-q4-k-xl": {
       "bundle": "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
@@ -2442,7 +2456,7 @@
       "default_context": 131072,
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
-      "reasoning_effort_budget": true,
+      "reasoning_control": "strength",
       "reasoning_levels": [
         "low",
         "medium",
@@ -2451,7 +2465,6 @@
       ],
       "reasoning_default": "high",
       "reasoning_off": false,
-      "reasoning_parameter": "strength",
       "reasoning_preserve": true
     },
     "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash": {
@@ -2466,7 +2479,7 @@
       },
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
-      "reasoning_effort_budget": true,
+      "reasoning_control": "strength",
       "reasoning_levels": [
         "low",
         "medium",
@@ -2475,7 +2488,6 @@
       ],
       "reasoning_default": "high",
       "reasoning_off": false,
-      "reasoning_parameter": "strength",
       "reasoning_preserve": true
     },
     "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k": {
@@ -2494,7 +2506,7 @@
       ],
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
-      "reasoning_effort_budget": true,
+      "reasoning_control": "strength",
       "reasoning_levels": [
         "low",
         "medium",
@@ -2503,7 +2515,6 @@
       ],
       "reasoning_default": "high",
       "reasoning_off": false,
-      "reasoning_parameter": "strength",
       "reasoning_preserve": true
     },
     "hy-mt1.5-7b-q8-0": {

@@ -120,21 +120,47 @@ def render_config(
         model = {
             "id": identifier,
             "name": identifier,
-            "reasoning": preset.reasoning_effort_budget,
+            "reasoning": bool(preset.reasoning_control),
             "input": ["text"],
             "contextWindow": preset.default_context,
             "maxTokens": agent_output_limit(preset.default_context),
             "cost": _COST,
             "samplingParams": agent_sampling_parameters(identifier),
         }
-        if preset.reasoning_effort_budget:
+        if preset.reasoning_control:
+            exposed = (
+                {"high"}
+                if preset.reasoning_control == "toggle"
+                else set(preset.reasoning_levels)
+            )
             model["thinkingLevelMap"] = {
                 "off": "none" if preset.reasoning_off else None,
                 **{
-                    level: level if level in preset.reasoning_levels else None
+                    level: level if level in exposed else None
                     for level in _THINKING_LEVELS
                 },
             }
+            if preset.reasoning_control == "toggle":
+                model["compat"] = {
+                    "thinkingFormat": "qwen-chat-template",
+                    "supportsReasoningEffort": False,
+                }
+            elif preset.reasoning_control == "effort":
+                model["compat"] = {
+                    "thinkingFormat": "qwen",
+                    "supportsReasoningEffort": True,
+                }
+            else:
+                model["compat"] = {
+                    "thinkingFormat": "chat-template",
+                    "supportsReasoningEffort": False,
+                    "chatTemplateKwargs": {
+                        "reasoning_strength": {
+                            "$var": "thinking.effort"
+                        },
+                        "preserve_thinking": True,
+                    },
+                }
         models.append(model)
     dwarfstar_model = {
         "id": DWARFSTAR_MODEL,

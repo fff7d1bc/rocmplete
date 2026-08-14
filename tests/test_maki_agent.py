@@ -117,6 +117,12 @@ class MakiLauncherTests(unittest.TestCase):
             ]
             self.assertEqual(muse["context_window"], 262144)
             self.assertTrue(muse["supports_thinking"])
+            self.assertTrue(
+                by_id["qwen3.8-27b-mtp-ud-q8-k-xl"]["supports_thinking"]
+            )
+            self.assertFalse(
+                by_id["kat-coder-v2.5-dev-q8-0"]["supports_thinking"]
+            )
             self.assertEqual(
                 resolved,
                 {"base_url": "http://127.0.0.1:9090/v1", "headers": {}},
@@ -158,7 +164,7 @@ class MakiLauncherTests(unittest.TestCase):
                 plan.init_content.decode(),
             )
             self.assertIn(
-                'always_thinking = "8192"', plan.init_content.decode()
+                'always_thinking = "high"', plan.init_content.decode()
             )
             self.assertIn(
                 "max_concurrent = 1", plan.init_content.decode()

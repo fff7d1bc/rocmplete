@@ -304,8 +304,8 @@ Try one of these:
 
   ./rocmplete benchmark run BUNDLE --dry-run
   ./rocmplete benchmark agent --preset qwen3.6-27b-q8-0 --dry-run
-  ./rocmplete benchmark agent --preset qwen3.6-27b-mtp-q8-0 \
-    --normalized-comparison --dry-run
+  ./rocmplete benchmark agent --preset qwen3.8-27b-mtp-ud-q8-k-xl \
+    --thinking medium --dry-run
   ./rocmplete benchmark agent --preset PRESET --task re-cancel
   ./rocmplete benchmark agent --list-tasks
   ./rocmplete benchmark llama-cpp --preset qwen3-0.6b-q8-0 --dry-run
@@ -1577,15 +1577,7 @@ def _parser() -> argparse.ArgumentParser:
         "--thinking",
         choices=("off", "minimal", "low", "medium", "high", "xhigh", "max"),
         default=None,
-        help="explicit Pi thinking level (default: high)",
-    )
-    agent_benchmark.add_argument(
-        "--normalized-comparison",
-        action="store_true",
-        help=(
-            "use the fixed 256K/high/ROCm conditions for the maintained "
-            "three-model comparison"
-        ),
+        help="explicit Pi thinking level (default: selected model policy)",
     )
     agent_benchmark.add_argument(
         "--profile",

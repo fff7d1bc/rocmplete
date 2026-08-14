@@ -260,8 +260,8 @@ ARG LLAMA_CPP_COMMIT
 WORKDIR /opt/llama.cpp
 COPY applications/llama-cpp/hip-apu-host-buffer.patch \
     /opt/rocmplete/llama-hip-apu-host-buffer.patch
-COPY applications/llama-cpp/reasoning-effort-budget.patch \
-    /opt/rocmplete/llama-reasoning-effort-budget.patch
+COPY applications/llama-cpp/reasoning-controls.patch \
+    /opt/rocmplete/llama-reasoning-controls.patch
 COPY applications/llama-cpp/quantized-kv-flash-attention.patch \
     /opt/rocmplete/llama-quantized-kv-flash-attention.patch
 COPY applications/llama-cpp/vulkan-f16-kv-contiguize.patch \
@@ -274,8 +274,8 @@ RUN git init . && \
     git submodule update --init --recursive --depth=1 && \
     git apply --check /opt/rocmplete/llama-hip-apu-host-buffer.patch && \
     git apply /opt/rocmplete/llama-hip-apu-host-buffer.patch && \
-    git apply --check /opt/rocmplete/llama-reasoning-effort-budget.patch && \
-    git apply /opt/rocmplete/llama-reasoning-effort-budget.patch && \
+    git apply --check /opt/rocmplete/llama-reasoning-controls.patch && \
+    git apply /opt/rocmplete/llama-reasoning-controls.patch && \
     git apply --check /opt/rocmplete/llama-quantized-kv-flash-attention.patch && \
     git apply /opt/rocmplete/llama-quantized-kv-flash-attention.patch && \
     git apply --check /opt/rocmplete/llama-vulkan-f16-kv-contiguize.patch && \

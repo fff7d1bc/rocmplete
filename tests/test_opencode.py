@@ -8,7 +8,10 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-from rocmplete.agent_models import agent_sampling_parameters
+from rocmplete.agent_models import (
+    agent_sampling_parameters,
+    reasoning_client_default,
+)
 from rocmplete.bundles import artifact_path
 from rocmplete.catalog import load_catalog
 from rocmplete.cli import command_opencode, main
@@ -175,19 +178,27 @@ class OpenCodeLauncherTests(unittest.TestCase):
         for identifier, model in provider["models"].items():
             preset = self.catalog.llama_preset(identifier)
             expected_options = dict(agent_sampling_parameters(identifier))
-            if preset.reasoning_effort_budget:
+            if preset.reasoning_control:
                 self.assertTrue(model["reasoning"])
                 expected_options["reasoningEffort"] = (
-                    preset.reasoning_default
+                    reasoning_client_default(preset)
                 )
-                enabled = set(preset.reasoning_levels)
+                enabled = (
+                    {"thinking"}
+                    if preset.reasoning_control == "toggle"
+                    else set(preset.reasoning_levels)
+                )
                 if preset.reasoning_off:
                     enabled.add("instant")
                 for name, variant in model["variants"].items():
                     if name in enabled:
                         self.assertEqual(
                             variant["reasoningEffort"],
-                            "none" if name == "instant" else name,
+                            "none"
+                            if name == "instant"
+                            else "high"
+                            if name == "thinking"
+                            else name,
                         )
                     else:
                         self.assertEqual(variant, {"disabled": True})

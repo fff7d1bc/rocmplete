@@ -28,6 +28,7 @@ from .agent_models import (
     agent_sampling_parameters,
     default_agent_model,
     is_agent_capable,
+    reasoning_client_default,
 )
 from .catalog import Catalog
 from .config import (
@@ -65,6 +66,7 @@ _PASSTHROUGH_COMMANDS = frozenset(
 _INFORMATION_ARGUMENTS = frozenset(("--help", "-h", "--version", "-v"))
 _REASONING_VARIANT_NAMES = (
     "instant",
+    "thinking",
     "minimal",
     "low",
     "medium",
@@ -211,20 +213,28 @@ def render_config(
             },
         }
         options = dict(agent_sampling_parameters(identifier))
-        if preset.reasoning_effort_budget:
+        if preset.reasoning_control:
             model["reasoning"] = True
             # OpenCode merges an explicitly selected variant over these model
             # options. Keep a useful fallback without overriding a choice the
             # user has already made for this model.
-            options["reasoningEffort"] = preset.reasoning_default
-            enabled = set(preset.reasoning_levels)
+            options["reasoningEffort"] = reasoning_client_default(preset)
+            enabled = (
+                {"thinking"}
+                if preset.reasoning_control == "toggle"
+                else set(preset.reasoning_levels)
+            )
             if preset.reasoning_off:
                 enabled.add("instant")
             model["variants"] = {
                 name: (
                     {
                         "reasoningEffort": (
-                            "none" if name == "instant" else name
+                            "none"
+                            if name == "instant"
+                            else "high"
+                            if name == "thinking"
+                            else name
                         )
                     }
                     if name in enabled

@@ -98,8 +98,8 @@ creating data, loading a model, or starting Pi:
 ```bash
 ./rocmplete benchmark agent --list-tasks
 ./rocmplete benchmark agent \
-  --preset qwen3.6-27b-mtp-q8-0 \
-  --normalized-comparison --dry-run
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl \
+  --thinking medium --dry-run
 ```
 
 The frozen suite has nine implementation tasks and two read-only review tasks
@@ -108,7 +108,7 @@ the complete suite with one exact managed llama.cpp preset:
 
 ```bash
 ./rocmplete benchmark agent \
-  --preset qwen3.6-27b-mtp-q8-0 --normalized-comparison
+  --preset qwen3.6-27b-mtp-q8-0 --thinking high
 ```
 
 Or run selected tasks while calibrating a model:
@@ -116,17 +116,21 @@ Or run selected tasks while calibrating a model:
 ```bash
 ./rocmplete benchmark agent \
   --preset qwen3.8-27b-mtp-ud-q8-k-xl \
-  --normalized-comparison \
+  --thinking medium \
   --task re-align --task re-cancel
 ```
 
 `--repetitions 3` creates a fresh checkout and Pi session for every attempt.
-The normalized condition accepts only Qwen3.6 27B MTP, Qwen3.8 27B MTP, and
-Muse Dynamic DFlash 256K. It fixes Pi, ROCm, 262144 context, high reasoning,
-and the 8192-token ceiling while retaining each model's reviewed sampling and
-speculative-decoding policy. Use the same task selection and repetitions for
-all three. Do not mix these Pi results with OpenCode, OMP, or Maki results;
-harness comparisons are a separate experiment.
+`--thinking high` means native thinking on for Qwen3.6; it is not a graduated
+high effort. Qwen3.8 accepts off, low, medium, or xhigh, while Muse accepts
+low, medium, high, or xhigh and has no off mode. The runner rejects selectors
+outside the chosen preset's native contract and records the native value in
+the result. It deliberately provides no “normalized” three-model condition:
+the same label would not mean the same control. Keep the Pi harness, hardware,
+task selection, repetitions, context, and runtime policy fixed, and state
+whether a run compares each model's operational default or performs a
+within-model reasoning sweep. Do not mix Pi results with OpenCode, OMP, or
+Maki results; harness comparisons are a separate experiment.
 
 DwarfStar can run the same suite through its independently managed endpoint:
 

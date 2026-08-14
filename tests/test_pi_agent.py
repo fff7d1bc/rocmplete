@@ -107,9 +107,42 @@ class PiLauncherTests(unittest.TestCase):
         self.assertTrue(muse["reasoning"])
         self.assertEqual(muse["thinkingLevelMap"]["xhigh"], "xhigh")
         self.assertIsNone(muse["thinkingLevelMap"]["off"])
+        self.assertEqual(
+            muse["compat"],
+            {
+                "thinkingFormat": "chat-template",
+                "supportsReasoningEffort": False,
+                "chatTemplateKwargs": {
+                    "reasoning_strength": {"$var": "thinking.effort"},
+                    "preserve_thinking": True,
+                },
+            },
+        )
         qwen = models["qwen3.6-27b-mtp-q8-0"]
         self.assertEqual(qwen["thinkingLevelMap"]["off"], "none")
+        self.assertEqual(qwen["thinkingLevelMap"]["high"], "high")
+        self.assertIsNone(qwen["thinkingLevelMap"]["low"])
         self.assertIsNone(qwen["thinkingLevelMap"]["xhigh"])
+        self.assertEqual(
+            qwen["compat"],
+            {
+                "thinkingFormat": "qwen-chat-template",
+                "supportsReasoningEffort": False,
+            },
+        )
+        qwen38 = models["qwen3.8-27b-mtp-ud-q8-k-xl"]
+        self.assertEqual(qwen38["thinkingLevelMap"]["off"], "none")
+        self.assertEqual(qwen38["thinkingLevelMap"]["medium"], "medium")
+        self.assertEqual(qwen38["thinkingLevelMap"]["xhigh"], "xhigh")
+        self.assertIsNone(qwen38["thinkingLevelMap"]["high"])
+        self.assertEqual(
+            qwen38["compat"],
+            {
+                "thinkingFormat": "qwen",
+                "supportsReasoningEffort": True,
+            },
+        )
+        self.assertFalse(models["kat-coder-v2.5-dev-q8-0"]["reasoning"])
         for identifier, model in models.items():
             self.assertEqual(
                 model["samplingParams"],
