@@ -44,6 +44,33 @@ Those runs calibrate the policy for future candidates at a 45-minute ceiling
 per attempt. This does not retroactively change the recorded 20-minute
 practical screen or the two 60-minute capability probes.
 
+## Current reasoning-default calibration
+
+The 2026-08-14 native-control follow-up compared the three retained practical
+models at 256K through Pi on the same Strix Halo host. Qwen3.6 used its binary
+thinking-on mode, Qwen3.8 used medium effort, and Muse used high strength. The
+exact conditions and measurements are in the
+[same-host reasoning-default record](hardware-acceptance.md#reasoning-default-calibration-2026-08-14).
+These are operational defaults, not a claim that the models received equal
+reasoning effort.
+
+All three solved the version 5 `re-align` task. Qwen3.8 medium was the best
+attempt in this narrow screen: it finished in 609.8 seconds with 16 tool calls
+and 7,789 output tokens, and its patch used one named width constant for the
+header and rows. Qwen3.6 on took 636.5 seconds, 21 calls, and 8,554 output
+tokens. Muse high generated fastest but took 768.0 seconds, 49 calls, and
+13,559 output tokens; it spent substantial work rechecking the same formatting
+and test details before producing the same minimal literal patch as Qwen3.6.
+
+This single easy repetition is enough to validate the three current paths and
+to reject raw token speed as a ranking proxy. It is not enough to replace the
+broader quality groups below or to change the user-selected Muse default.
+Before changing reasoning defaults, compare Qwen3.8 low with medium and Muse
+medium with high on the same frozen task, then carry the winner into the hard
+promotion gate. The official managed Qwen3.8 template showed no matching or
+tool-continuation failure here, so the broader Froggeric community template is
+not the next variable to introduce.
+
 ## Focused Muse M, Muse XL, and Qwen 27B comparison
 
 A 2026-08-13 follow-up separates the two currently managed Muse targets and

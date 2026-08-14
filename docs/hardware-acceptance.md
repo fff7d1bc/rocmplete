@@ -373,6 +373,56 @@ Observed results:
   removed, and the kernel reported no matching GPU reset, page fault, ring
   timeout, device loss, or OOM event.
 
+#### Reasoning-default calibration (2026-08-14)
+
+After the native reasoning-control audit, the current three-model comparison
+used source commit `b1eece5073e1e80e5d571a5e576c81bf68b8157e`, frozen suite
+`rocmplete-coding-v5` with fingerprint
+`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`,
+Pi 0.84.1, ROCm, the Fedora 44 Strix Halo host, `/dev/dri/renderD128`,
+262144 context, one fresh `re-align` fixture, and one repetition. The runtime
+was `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-4c1a0af-r23`, image ID
+`2fcacfed0112877f537e7244ef80aeba79d4a634538170e45f4708ffe2569ac9`;
+the image built on the target host and passed `pip check`.
+
+The selectors were the explicit operational defaults: Qwen3.6 `high` mapped
+to native thinking on, Qwen3.8 used native medium effort, and Muse used native
+high strength. Each preset retained its reviewed sampling and speculative
+policy. These are controlled runtime conditions, not equivalent quantities of
+reasoning.
+
+| Managed preset | Native reasoning | Outcome | Wall time | Tool calls | Input | Cache read | Output | Prompt tok/s | Generate tok/s |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `qwen3.8-27b-mtp-ud-q8-k-xl` | medium | solved | 609.8 s | 16 | 22,073 | 310,031 | 7,789 | 188.02 | 14.26 |
+| `qwen3.6-27b-mtp-q8-0` | on (Pi `high`) | solved | 636.5 s | 21 | 38,466 | 712,520 | 8,554 | 32.62 | 18.02 |
+| `muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k` | high | solved | 768.0 s | 49 | 21,377 | 1,150,747 | 13,559 | 74.51 | 23.51 |
+
+All three exited normally and passed ordinary tests, hidden tests, the build,
+dependency, generated-artifact, and network-isolation grading. Qwen3.8 was the
+fastest and most token-efficient attempt despite the lowest aggregate decode
+rate. It also expressed the requested shared policy as one named width-10
+constant. Qwen3.6 and Muse produced the same correct minimal width-10 literal
+patch, with patch SHA-256
+`cea8b4bc7fc8ba2cfd5c7952bf22b2a15fa1fafe37c186eabda7bca0fed1e215`;
+Qwen3.8's distinct patch SHA-256 was
+`d18c26589f7dc581a95a3e875fbeda75da9e82aeaed04341f54a2496a69c75ca`.
+
+The retained results below `apps/agent-evaluation/results/` are
+`20260814T200429Z-qwen3.6-27b-mtp-q8-0.json`,
+`20260814T201546Z-qwen3.8-27b-mtp-ud-q8-k-xl.json`, and
+`20260814T202625Z-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k.json`.
+All containers were removed after the runs. One easy repetition accepts the
+three operational paths but does not establish a general quality ranking.
+Run Qwen3.8 low versus medium and Muse medium versus high as separate native
+within-family sweeps before revising their defaults. Qwen3.6 has only the
+off/on control, so its off run is a behavior ablation rather than an
+equivalent-effort point.
+
+The official managed Qwen3.8 template completed this baseline without a tool
+protocol, role, or continuation failure. The pinned Froggeric template remains
+a separate diagnostic candidate; this result alone does not justify an A/B or
+replacing the official-template adaptation.
+
 #### Coding-agent comparison (2026-08-11)
 
 The [model quality baseline](coding-agent-model-quality.md) groups these
@@ -784,8 +834,8 @@ local source image.
 | llama.cpp offload smoke | `llama-qwen3-0.6b-q8-0` | pending | pending | pending | pending |
 | llama.cpp Qwen3.6 tool protocol | `qwen3.6-27b-mtp-q8-0`, complete nested tool round trip at 256K with thinking on (Pi `high`) and off | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp Qwen3.8 tool protocol | `qwen3.8-27b-mtp-ud-q8-k-xl`, complete nested tool round trip at 256K with off, low, medium, and xhigh | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
-| llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k`, ROCm depth 12 or Vulkan depth 4, high strength | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
-| llama.cpp agent default comparison | Qwen3.6 MTP on, Qwen3.8 MTP medium, and Muse 256K high through Pi with the same tasks and runtime conditions | N/P unless every model and context fits the card | N/P unless host memory is deliberately used | pending | pending |
+| llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k`, ROCm depth 12 or Vulkan depth 4, high strength | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | accepted 2026-08-14 on ROCm | pending |
+| llama.cpp agent default comparison | Qwen3.6 MTP on, Qwen3.8 MTP medium, and Muse 256K high through Pi with the same tasks and runtime conditions | N/P unless every model and context fits the card | N/P unless host memory is deliberately used | accepted 2026-08-14 on `re-align` | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
 
 DwarfStar remains experimental after the bounded smoke. Before promoting it,
