@@ -274,6 +274,43 @@ Observed results:
   stopped cleanly and the kernel recorded no GPU fault. Qwen35-A3B and other
   hardware profiles remain unchanged. Full controls and caveats are in the
   [Qwen tuning snapshot](qwen3.6-strix-halo-llama-cpp-tuning-feasibility.md).
+- A 2026-08-14 llama.cpp source update used ROCmplete commit `cad4588`,
+  upstream release `b10430` at commit
+  `4c1a0af40d88c7fbb3b15c85bf2e8016d1d5b64c`, and the same Fedora Strix
+  Halo host. All four downstream patches were rebased and applied fail closed.
+  A no-layer-cache candidate build produced image ID
+  `ab0c12904be072df89dfc983d1a7a56b4bed55c1dcd251278465e8965789af30`.
+  The final cold build rebuilt the complete prerequisite closure without image
+  or package-download caches and produced image
+  `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-4c1a0af-r21`, image ID
+  `94d426c19c6ea20270168e91da53346c7c4dd951349788426060138cdf11aa67`.
+  The final image reported the exact upstream revision and all four target
+  architectures, passed `pip check` and retained-binary `ldd`, and contained
+  only `llama-cli`, `llama-server`, `llama-bench`, and the entrypoint below
+  `/usr/local/bin`.
+
+  CPU CLI and router startup passed on the candidate. Fixed three-repetition
+  pp512/tg128 runs on Qwen3.6 27B Q8_0 at 32768 context with Q8_0 K/V and Flash
+  Attention measured 206.24/7.39 tokens/s on ROCm and 184.61/7.46 on Vulkan.
+  The retained results are
+  `apps/llama-cpp/benchmarks/20260814T134219Z-91cb1848.json`,
+  `20260814T134604Z-98dfe58f.json`, and
+  `20260814T134604Z-backend-comparison-19dd2c39.json` in the same directory.
+  These settings differ from the older backend observation above, so the
+  measurements verify the rebased quantized-KV paths rather than establish a
+  performance trend.
+
+  The managed Qwen3.6 27B MTP preset completed a nested structured tool call
+  and tool-result continuation at its default 262144 context. The managed Muse
+  M 128K DFlash preset returned exact bounded content at 31.05 generated
+  tokens/s and accepted 69 of 255 draft proposals. Four simultaneous long
+  Qwen requests returned four distinct requested nonces without cross-slot
+  replay or corruption. The final cold image then loaded Qwen3.6 27B through
+  the managed router and returned exact content through both Chat Completions
+  and Responses before clean removal. No tested path produced a matching GPU
+  reset, page fault, ring timeout, device-loss, or OOM kernel event. This is
+  `gfx1151` field coverage for the source update. The `gfx1150`, `gfx1200`,
+  and `gfx1201` hardware rows remain deferred.
 
 #### Coding-agent comparison (2026-08-11)
 
