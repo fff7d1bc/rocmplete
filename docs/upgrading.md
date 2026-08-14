@@ -304,6 +304,18 @@ separate off toggle; it does not support high. On an upgrade, compare both the
 base-model and selected GGUF templates, render all three levels plus off, and
 complete a multi-turn tool exchange before changing the override or default.
 
+The 2026-08-14 community-template candidate at
+`froggeric/Qwen-Fixed-Chat-Templates` revision
+`9f14778c92c3b5ed3e0738085694c0d3452802dd` has a 19,262-byte
+`chat_template.jinja` with SHA-256
+`398edf5b5bb802fb6b9c9a8dba670d09f2aaeef6fdcaa0b2ca307265f59f78dc`.
+Its model card claims broader local-engine, history, role, tool-argument, and
+agent-loop fixes, but the template also introduces control tags, failure
+escalation, payload truncation, and other prompt policy. Treat it as a pinned
+experimental A/B input rather than an in-place repair or an upstream source of
+truth. Reproduce a concrete failure with the managed official adaptation
+before evaluating it, and change only the template in that comparison.
+
 The bundled `qwen3-0.6b.jinja` is byte-for-byte the `chat_template` value from
 Qwen base-model revision `7e4ae267688d671ddfca3122e4528ee980cf3234`, SHA-256
 `a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8`.

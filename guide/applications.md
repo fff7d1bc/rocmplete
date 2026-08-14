@@ -242,6 +242,19 @@ and 26 tool calls. The earlier accepted Qwen3.6 27B run solved that task in
 451 seconds, so install Qwen3.8 as a promising candidate rather than assuming
 the upstream benchmark gain transfers directly to every local agent task.
 
+Early community experience remains unusually sensitive to the exact template
+and reasoning defaults. The rapidly evolving
+[Qwen3.8 27B release discussion](https://www.reddit.com/r/LocalLLaMA/comments/1voa3ch/qwen_38_27b_released_please_share_your_experience/)
+is useful for finding failure modes, but its different quantizations, engines,
+templates, and settings are not comparable benchmark evidence. One prominent
+[community template](https://huggingface.co/froggeric/Qwen-Fixed-Chat-Templates/tree/9f14778c92c3b5ed3e0738085694c0d3452802dd)
+claims fixes for empty historical thinking, stringified tool arguments,
+mid-conversation instructions, and agent-loop recovery. It also changes prompt
+policy well beyond ROCmplete's medium-default adaptation; even its `high`
+choice aliases to Qwen3.8 `xhigh`. ROCmplete therefore measures the pinned
+official-template adaptation first. A community-template run belongs in a
+later, explicitly labelled A/B with the same model bytes and runtime inputs.
+
 ### KAT-Coder
 
 KAT-Coder has a separate family-oriented recipe and can be installed

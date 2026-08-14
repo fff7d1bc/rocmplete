@@ -821,6 +821,15 @@ complete; record quality, protocol, state-corruption, or truncation failures
 instead of treating wall time as the sole rank. Run per-model native-level
 sweeps as a separate experiment.
 
+Keep the first Qwen3.8 pass on ROCmplete's pinned official-template adaptation.
+Do not replace it mid-comparison in response to anecdotal release reports. The
+froggeric community template is a separate candidate because it changes
+history rendering, role handling, tool serialization, control tags, and
+failure-recovery prompt policy. If the official-template baseline exposes a
+matching failure, run a Qwen3.8-only A/B with the target GGUF, image, native
+reasoning choice, sampling, task, and repetition count fixed; identify the
+template revision in the result notes.
+
 For the Muse row, begin with the forced-256K DFlash default for a complete
 managed tool loop, then repeat the task with the 128K DFlash and
 non-speculative controls when behavior or output is suspect. Exercise prompts
