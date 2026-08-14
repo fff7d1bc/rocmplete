@@ -57,7 +57,10 @@ revisions recorded in `catalog/catalog.json`.
 - Managed Qwen3.6 27B and Qwen3.6 35B-A3B GGUF
   conversions are downloaded from full pinned Unsloth revisions. Each pinned
   model card explicitly declares Apache-2.0 and links its corresponding Qwen
-  source-model license. ROCmplete records every GGUF shard's exact size and
+  source-model license. Their four embedded templates are byte-identical.
+  The llama.cpp image includes an Apache-2.0 adaptation of that template which
+  retains later system and developer messages and omits empty historical
+  reasoning blocks. ROCmplete records every GGUF shard's exact size and
   SHA-256 and does not redistribute those weights.
 - Ornith 1.0 35B Q8_0 is downloaded from DeepReinforce's official GGUF
   repository at one full pinned revision. The repository declares MIT in its

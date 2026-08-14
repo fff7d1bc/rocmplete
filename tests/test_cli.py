@@ -1008,7 +1008,8 @@ class CliTests(unittest.TestCase):
         self.assertIn(
             "Presets do not store a general system prompt", normalized
         )
-        self.assertIn("embedded Jinja templates", normalized)
+        self.assertIn("reviewed Jinja templates", normalized)
+        self.assertIn("fixed managed template", normalized)
         self.assertIn("not a dependable repository agent", normalized)
         self.assertIn("./rocmplete agent opencode", text)
         self.assertIn("bin/opencode", text)
@@ -2764,7 +2765,7 @@ class CliTests(unittest.TestCase):
             contents,
         )
 
-    def test_llama_router_renders_qwen_embedded_jinja_policy(self):
+    def test_llama_router_renders_qwen_managed_template_policy(self):
         catalog = load_catalog()
         identifier = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
         preset = catalog.llama_preset(identifier)
@@ -2788,7 +2789,12 @@ class CliTests(unittest.TestCase):
         self.assertEqual(installed, (identifier,))
         self.assertIn("[{}]".format(identifier), contents)
         self.assertIn("c = 262144", contents)
-        self.assertIn("jinja = true", contents)
+        self.assertIn(
+            "chat-template-file = "
+            "/usr/local/share/rocmplete/llama-chat-templates/"
+            "qwen3.6.jinja",
+            contents,
+        )
 
     def test_llama_router_renders_qwen27_strix_cache_policy(self):
         catalog = load_catalog()

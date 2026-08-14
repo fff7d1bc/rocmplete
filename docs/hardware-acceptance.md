@@ -196,6 +196,40 @@ Observed results:
   speed promotion is claimed. Raw results are retained as
   `apps/agent-evaluation/results/kat-template-ab-*.json` and
   `apps/agent-evaluation/results/kat-template-fz-*.json`.
+- A 2026-08-14 Qwen3.6 template audit on the same Fedora Strix Halo class
+  compared the common template embedded in all four managed GGUFs, a narrow
+  compatibility correction, and a neutralized Froggeric v22 control. Exact
+  llama.cpp rendering showed that the embedded baseline silently omitted
+  later system and developer instructions and replayed an empty historical
+  reasoning block. The narrow candidate fixed both without preserving old
+  reasoning or changing the tool prompt. V22-neutral also retained old
+  reasoning by default and expanded a representative tool continuation from
+  305 to 416 prompt tokens. In a deterministic two-turn probe that raised the
+  second prompt from 128 to 645 tokens; cache reuse rose from 101 to 616, but
+  wall time rose from 6.16 to 6.75 seconds.
+
+  Pi 0.84.1 then ran the frozen `review-fzr-concurrency` task at 131072
+  context and high thinking with Qwen3.6 27B MTP. Baseline, narrow, and
+  v22-neutral completed in 414.2, 385.5, and 399.7 seconds with 3,774, 3,424,
+  and 3,642 generated tokens. All produced valid review artifacts. Manual
+  source comparison favored the narrow answer at the deliberately stale scan
+  boundary; this one stochastic repetition is not treated as a speed claim.
+  The raw results are retained as
+  `apps/agent-evaluation/results/qwen-template-*-review-fzr-20260814.json`.
+
+  Final image
+  `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r20` (image ID
+  `ad6d419895b89e050c5e813e6cb0e2ed82261d2887bea27b0a92734fd1774992`)
+  contained managed `qwen3.6.jinja` with SHA-256
+  `ea69920311f2efccf6343675490b27bd22d03787ebb8ccaf6e9101bfeba72898`.
+  Direct startup retained a later developer message, completed a structured
+  tool call and tool-result continuation, and returned exact content
+  `FINAL_TEMPLATE_OK`. Router startup mapped the same template into all four
+  Qwen3.6 sections and returned `ROUTER_TEMPLATE_OK` from the dense non-MTP
+  control. Both paths stopped cleanly and the kernel recorded no matching GPU
+  fault. Complete inputs, candidate hashes, prompt/cache measurements, and
+  selection rationale are in the
+  [Qwen3.6 tuning record](qwen3.6-strix-halo-llama-cpp-tuning-feasibility.md).
 - A 2026-08-11 Laguna XS 2.1 probe used the same pinned llama.cpp commit and
   Fedora Strix Halo host with Poolside's official Q4_K_M GGUF. Under the
   project's Strix policy, Flash Attention off, F16 K/V cache, batch 2048, and

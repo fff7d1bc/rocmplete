@@ -780,7 +780,7 @@ class RuntimeCommandTests(unittest.TestCase):
             entrypoint,
         )
         self.assertIn(
-            '""|kat-coder-v2.5|muse-glimmer-atem|qwen3-0.6b|'
+            '""|kat-coder-v2.5|muse-glimmer-atem|qwen3-0.6b|qwen3.6|'
             'translategemma-manual',
             entrypoint,
         )

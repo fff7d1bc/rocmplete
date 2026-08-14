@@ -341,10 +341,10 @@ def _llama_guide() -> ApplicationGuide:
                 "Tool-using clients",
                 (
                     "Managed Qwen, Ornith, KAT-Coder, Gemma 4, Laguna, and "
-                    "Muse agent presets enable their "
-                    "embedded Jinja templates for llama.cpp's structured "
-                    "tool-call path. The Qwen templates include reviewed "
-                    "developer-role fixes. Gemma uses Google's canonical "
+                    "Muse agent presets enable reviewed Jinja templates for "
+                    "llama.cpp's structured tool-call path. Qwen3.6 uses a "
+                    "fixed managed template so later developer instructions "
+                    "remain in agent history. Gemma uses Google's canonical "
                     "tool-calling template. Laguna XS and Muse preserve "
                     "parsed reasoning without exposing Qwen-style effort "
                     "levels.",

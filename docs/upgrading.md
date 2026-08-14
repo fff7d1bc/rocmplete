@@ -261,6 +261,23 @@ that the template's optional historical-thinking support should be enabled:
 the 2026-08-12 trial described in the hardware-acceptance record did not
 establish a quality benefit from reasoning preservation.
 
+The bundled `qwen3.6.jinja` is an Apache-2.0 adaptation of the byte-identical
+8,057-byte templates embedded in all four pinned Unsloth Qwen3.6 GGUFs. The
+embedded source has SHA-256
+`55d4931433fe502b794226ee7f4d206a6bdd436ac9f80eb7d8ebb4c639f9ea0c`;
+the managed template has SHA-256
+`ea69920311f2efccf6343675490b27bd22d03787ebb8ccaf6e9101bfeba72898`.
+The adaptation renders system and developer messages after the leading pair
+instead of silently dropping them, and does not emit a closed empty reasoning
+block before a historical tool call. It deliberately retains the embedded
+template's default of discarding reasoning from completed turns. The
+2026-08-14 A/B record in the Qwen tuning snapshot found no reason to adopt the
+community v22 template's additional prompt policy or default reasoning
+preservation. On an upgrade, extract and hash every selected GGUF template,
+compare Qwen's current base-model template independently, then render later
+developer messages and a complete multi-turn tool exchange before updating or
+removing the managed adaptation.
+
 The bundled `qwen3-0.6b.jinja` is byte-for-byte the `chat_template` value from
 Qwen base-model revision `7e4ae267688d671ddfca3122e4528ee980cf3234`, SHA-256
 `a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8`.

@@ -917,12 +917,13 @@ def _load_llama_preset(
         "kat-coder-v2.5",
         "muse-glimmer-atem",
         "qwen3-0.6b",
+        "qwen3.6",
         "translategemma-manual",
     ):
         raise LauncherError(
             "llama.cpp preset {} chat_template must be empty, "
-            "kat-coder-v2.5, muse-glimmer-atem, qwen3-0.6b, or "
-            "translategemma-manual".format(identifier)
+            "kat-coder-v2.5, muse-glimmer-atem, qwen3-0.6b, qwen3.6, "
+            "or translategemma-manual".format(identifier)
         )
     if chat_template and jinja:
         raise LauncherError(

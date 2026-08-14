@@ -2564,7 +2564,7 @@
       "bundle": "llama-qwen3.6-35b-a3b-ud-q8-k-xl",
       "artifact": "qwen3.6-35b-a3b-ud-q8-k-xl-gguf",
       "default_context": 262144,
-      "jinja": true,
+      "chat_template": "qwen3.6",
       "agent_tools": true,
       "reasoning_effort_budget": true
     },
@@ -2574,7 +2574,7 @@
       "default_context": 262144,
       "speculative_type": "draft-mtp",
       "draft_tokens": 3,
-      "jinja": true,
+      "chat_template": "qwen3.6",
       "agent_tools": true,
       "reasoning_effort_budget": true
     },
@@ -2582,7 +2582,7 @@
       "bundle": "llama-qwen3.6-27b-q8-0",
       "artifact": "qwen3.6-27b-q8-0-gguf",
       "default_context": 262144,
-      "jinja": true,
+      "chat_template": "qwen3.6",
       "agent_tools": true,
       "reasoning_effort_budget": true
     },
@@ -2592,7 +2592,7 @@
       "default_context": 262144,
       "speculative_type": "draft-mtp",
       "draft_tokens": 3,
-      "jinja": true,
+      "chat_template": "qwen3.6",
       "agent_tools": true,
       "reasoning_effort_budget": true,
       "flash_attention": {

@@ -409,6 +409,10 @@ class CatalogTests(unittest.TestCase):
                 "a55ee1b1660128b7098723e0abcd92caa"
                 "0788061051c62d51cbe87d9cf1974d8"
             ),
+            "qwen3.6.jinja": (
+                "ea69920311f2efccf6343675490b27bd2"
+                "2d03787ebb8ccaf6e9101bfeba72898"
+            ),
         }
         for filename, expected_hash in managed_template_hashes.items():
             with self.subTest(template=filename):
@@ -423,7 +427,10 @@ class CatalogTests(unittest.TestCase):
             qwen35,
             qwen35_mtp,
         )
-        self.assertTrue(all(preset.jinja for preset in qwen_presets))
+        self.assertTrue(all(not preset.jinja for preset in qwen_presets))
+        self.assertTrue(
+            all(preset.chat_template == "qwen3.6" for preset in qwen_presets)
+        )
         laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
         laguna_bundle = catalog.bundle(laguna.bundle)
         laguna_artifact = catalog.artifact(laguna.artifact)

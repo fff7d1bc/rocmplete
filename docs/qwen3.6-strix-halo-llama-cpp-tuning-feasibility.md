@@ -1,9 +1,10 @@
 # Qwen3.6 llama.cpp Strix Halo tuning feasibility snapshot
 
-This is a dated maintainer research record from 2026-08-13. It evaluates a
-small set of current llama.cpp tuning claims against ROCmplete's managed
-Qwen3.6 MTP models on Strix Halo. It records which settings reproduced, which
-did not, and what remains to be accepted before changing managed defaults.
+This maintainer research record began on 2026-08-13 and was extended on
+2026-08-14. It evaluates a small set of current llama.cpp tuning and template
+claims against ROCmplete's managed Qwen3.6 models on Strix Halo. It records
+which settings reproduced, which did not, and what remains to be accepted
+before changing managed defaults.
 
 This document is evidence, not a current support or performance declaration.
 Always inspect `Containerfile`, `catalog/catalog.json`, source, and tests for
@@ -261,6 +262,109 @@ redundant reasoning or inconsistent decisions across longer tool loops. That
 must be measured separately in Pi, Maki, OMP, and OpenCode because clients may
 serialize assistant reasoning differently.
 
+## 2026-08-14 chat-template A/B
+
+A later community report proposed a substantially rewritten Qwen template for
+Qwen3.5, Qwen3.6, and Qwen3.8. The exact candidate inspected was Froggeric v22
+at revision `9f14778c92c3b5ed3e0738085694c0d3452802dd`, 19,262 bytes with
+SHA-256
+`398edf5b5bb802fb6b9c9a8dba670d09f2aaeef6fdcaa0b2ca307265f59f78dc`.
+Its published 28-case check uses Python Jinja rendering and substring
+assertions; it is useful template coverage but is not llama.cpp inference,
+tokenizer, cache, or coding-agent acceptance.
+
+All four managed Qwen3.6 GGUFs contained the same 8,057-byte Unsloth-modified
+template, SHA-256
+`55d4931433fe502b794226ee7f4d206a6bdd436ac9f80eb7d8ebb4c639f9ea0c`.
+That baseline already accepts normalized OpenAI string-form tool arguments and
+supports llama.cpp's optional reasoning-preservation control. It has two
+observable history defects: every system or developer message after its first
+two leading instructions is silently omitted, and an assistant tool call with
+empty reasoning can be replayed with a closed empty `<think>` block.
+
+Four immutable render candidates were frozen for the probe:
+
+- the embedded baseline above;
+- a narrow 8,343-byte candidate, SHA-256
+  `0e3bb87f2256e05fe08f0c5be96e276c4755113a187749c97462adeda67e745f`,
+  which fixes those two defects and included an unused raw-string argument
+  fallback;
+- exact v22; and
+- a 19,263-byte v22-neutral control, SHA-256
+  `d7bbe015f7e5ff45e5c229763d6b3ef4c61a4abf147724c7b2ee35ad021e0bd5`,
+  which changes only v22's implicit reasoning-effort default from `xhigh` to
+  `medium`.
+
+The exact pinned llama.cpp `/apply-template` and `/tokenize` endpoints rendered
+identical histories against the managed Qwen3.6 27B tokenizer. Baseline,
+narrow, and v22-neutral retained normalized object and JSON-string tool
+arguments. Only the narrow and v22 candidates retained later system and third
+leading instructions, and both avoided the empty historical reasoning block.
+The narrow candidate kept the baseline 25-token completed-turn history and
+reduced the tool-continuation probe from 309 to 305 tokens. V22-neutral
+preserved old reasoning by default, expanded the same tool continuation to 416
+tokens, and expanded the completed-turn history to 34 tokens. Exact v22 also
+injects an `xhigh` instruction when the client supplies no template-level
+effort value, rewrites the tool protocol, adds heuristic tool-error warnings,
+and supports prompt-time truncation. Those are policy changes, not required
+compatibility fixes. ROCmplete's current server patch maps top-level effort to
+bounded generation but does not pass that value into template kwargs, so exact
+v22 would silently select its own `xhigh` prompt for ordinary clients.
+
+A deterministic two-turn Qwen3.6 27B MTP cache probe then compared the same
+first response and follow-up. Baseline and narrow were effectively identical:
+the second request contained 128 prompt tokens, reused 101, and completed in
+6.168 and 6.164 seconds respectively. V22-neutral retained the first turn's
+reasoning, so the follow-up contained 645 prompt tokens and reused 616, but it
+still took 6.749 seconds. Its repeat took 6.352 seconds versus about 5.69 for
+the other candidates, and its MTP-accepted decode rate fell from roughly 23.35
+to 20.81 tokens/s on that changed context. Preserving more cached tokens did
+not make the total request cheaper.
+
+Pi 0.84.1 finally ran one repetition of the frozen
+`review-fzr-concurrency` task for each template with the same Qwen3.6 27B MTP
+weights, ROCm backend, 131072 context, high thinking, sampling, and Strix Halo
+policy. Baseline took 414.2 seconds and generated 3,774 tokens, the narrow
+candidate took 385.5 seconds and 3,424 tokens, and v22-neutral took 399.7
+seconds and 3,642 tokens. All produced valid review artifacts and cited the
+four relevant source files. This single stochastic repetition is not evidence
+of a template speedup. Manual source comparison favored the narrow answer: it
+correctly allowed Enter to select an older still-valid ranking when scanning
+advanced during an active job. The v22-neutral answer incorrectly implied
+that this boundary always waits for the newest snapshot. Raw results remain
+below the managed data directory as
+`apps/agent-evaluation/results/qwen-template-*-review-fzr-20260814.json`.
+
+The selected managed template is the narrow behavioral correction without the
+unused raw-string fallback. llama.cpp normalized both tested OpenAI argument
+forms before rendering, while emitting a raw JSON object directly inside the
+XML tool protocol would not be a sound fallback. The final 8,215-byte
+`qwen3.6.jinja` has SHA-256
+`ea69920311f2efccf6343675490b27bd22d03787ebb8ccaf6e9101bfeba72898`.
+It changes neither default reasoning preservation nor tool instructions. This
+keeps the compatibility gain independently reviewable and avoids importing
+v22's unrelated agent policy.
+
+The final integration image was
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r20`, image ID
+`ad6d419895b89e050c5e813e6cb0e2ed82261d2887bea27b0a92734fd1774992`.
+Its installed template matched the final hash above and `pip check` reported
+no broken requirements. Direct ROCm startup on `gfx1151` rendered a later
+developer message, omitted the closed empty historical reasoning block, and
+completed a structured `record_value` call with argument `TEMPLATE_42` plus a
+tool-result continuation returning exact content `FINAL_TEMPLATE_OK`. The
+first and second requests used 321 and 358 total tokens; the continuation
+reused 288 prompt tokens.
+
+Router startup generated 19 installed model sections. All four Qwen3.6
+sections selected the exact managed template. The router loaded the dense
+non-MTP control on demand, retained a later developer message, and returned
+exact bounded content `ROUTER_TEMPLATE_OK`. Direct and router containers
+stopped cleanly, and the recent kernel journal contained no matching AMD GPU
+fault, reset, timeout, or device-loss event. This accepts the final wiring and
+protocol behavior on Strix Halo; it does not turn the single Pi A/B repetition
+into a performance claim.
+
 ## Deferred candidates
 
 The host-level `amd_iommu=off` proposal was not tested. It changes device
@@ -300,6 +404,8 @@ attributable:
 - [Strix Halo MTP benchmark](https://calebcoffie.com/blog/benchmarking-llama-cpp-mtp-on-strix-halo)
 - [Community Qwen agent configuration](https://www.reddit.com/r/LocalLLM/comments/1uydqr8/i_made_claude_code_test_every_single_variant_of/)
 - [Qwen3.8 MTP or DFlash discussion that prompted the scan](https://www.reddit.com/r/LocalLLaMA/comments/1vmqduk/qwen_38_27b_mtp_or_dflash/)
+- [Community fixed-template report](https://www.reddit.com/r/LocalLLaMA/comments/1vnm7le/fixed_jinja_chat_template_for_qwen_35_36_and_the/)
+- [Froggeric fixed-template repository at the inspected revision](https://huggingface.co/froggeric/Qwen-Fixed-Chat-Templates/tree/9f14778c92c3b5ed3e0738085694c0d3452802dd)
 - [Strix Halo Qwen backend and slot discussion](https://github.com/ggml-org/llama.cpp/discussions/20856)
 - [Strix Halo quantized K/V measurements](https://thefrontierlab.ai/strix-halo-quantized-kv-cache-verified/)
 - [Open native BF16 Flash Attention PR](https://github.com/ggml-org/llama.cpp/pull/26856)
