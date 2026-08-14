@@ -298,6 +298,10 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(muse_256k.draft_artifact, muse.draft_artifact)
         self.assertEqual(muse_256k.bundle, muse.bundle)
         self.assertEqual(muse_256k.default_context, 262144)
+        self.assertEqual(muse_256k.draft_tokens, 12)
+        self.assertEqual(muse_256k.draft_tokens_by_backend, {"vulkan": 4})
+        self.assertEqual(muse_256k.draft_tokens_for_backend("rocm"), 12)
+        self.assertEqual(muse_256k.draft_tokens_for_backend("vulkan"), 4)
         self.assertEqual(
             muse_256k.context_override_architectures,
             ("muse-glimmer", "dflash"),

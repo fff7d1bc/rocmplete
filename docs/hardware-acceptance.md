@@ -312,6 +312,19 @@ Observed results:
   `gfx1151` field coverage for the source update. The `gfx1150`, `gfx1200`,
   and `gfx1201` hardware rows remain deferred.
 
+  A same-image follow-up tuned only the dynamic XL forced-256K DFlash preset.
+  With a fixed 38,244-token repository prompt, 768 generated tokens, seed,
+  sampler, F16 target KV, and 2048/512 batch policy, depth 12 generated at
+  15.16 tokens/s versus 11.87 at the managed depth 15 and reduced total server
+  time from 190.83 to 176.06 seconds. Depth 8 reached 12.75 tokens/s. Forced
+  Flash Attention was neutral, Q8 target KV regressed, confidence cutoffs did
+  not beat depth 12 with `p_min=0`, disabling backend sampling was neutral,
+  and a 4096 microbatch improved prefill but regressed decode and total time.
+  Longer depth-12 probes sustained about 13.4 tokens/s, but remained entirely
+  in Muse reasoning through 4,096 tokens and through a manually interrupted
+  7,406-token run. The result therefore accepts depth 12 as a `gfx1151` ROCm
+  performance policy for this preset, not as new forced-256K quality evidence.
+
 #### Coding-agent comparison (2026-08-11)
 
 The [model quality baseline](coding-agent-model-quality.md) groups these

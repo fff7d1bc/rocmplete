@@ -2668,6 +2668,11 @@ class CliTests(unittest.TestCase):
             "[muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash]", 1
         )[0]
         self.assertNotIn("spec-type", base_section)
+        dflash_section = contents.split(
+            "[muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash]", 1
+        )[1].split(
+            "[muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k]", 1
+        )[0]
         extended_section = contents.split(
             "[muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k]", 1
         )[1]
@@ -2691,9 +2696,11 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(contents.count("reasoning-preserve = true"), 3)
         self.assertIn("spec-type = draft-dflash", contents)
-        self.assertIn("spec-draft-n-max = 15", contents)
+        self.assertIn("spec-draft-n-max = 15", dflash_section)
+        self.assertIn("spec-draft-n-max = 12", extended_section)
         self.assertIn("spec-draft-n-max = 4", vulkan_contents)
         self.assertNotIn("spec-draft-n-max = 15", vulkan_contents)
+        self.assertNotIn("spec-draft-n-max = 12", vulkan_contents)
         self.assertIn(
             "model-draft = /content/models/"
             "muse-glimmer-30b/dflash-kquant.gguf",
@@ -3221,7 +3228,7 @@ class CliTests(unittest.TestCase):
             command,
         )
         self.assertIn("--ctx-size 262144", command)
-        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=15", command)
+        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=12", command)
         self.assertIn(
             "ROCMLETE_LLAMA_DRAFT_TOKENS=4", vulkan_output.getvalue()
         )
@@ -4500,6 +4507,11 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             _llama_speculation_policy(dflash),
             "DFlash, 15 draft tokens (vulkan=4); draft "
+            "muse-glimmer-30b-dflash-kquant-gguf",
+        )
+        self.assertEqual(
+            _llama_speculation_policy(dflash_256k),
+            "DFlash, 12 draft tokens (vulkan=4); draft "
             "muse-glimmer-30b-dflash-kquant-gguf",
         )
         self.assertEqual(

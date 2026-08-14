@@ -2666,7 +2666,7 @@
       "draft_artifact": "muse-glimmer-30b-dflash-kquant-gguf",
       "default_context": 262144,
       "speculative_type": "draft-dflash",
-      "draft_tokens": 15,
+      "draft_tokens": 12,
       "draft_tokens_by_backend": {
         "vulkan": 4
       },

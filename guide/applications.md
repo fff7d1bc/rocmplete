@@ -875,6 +875,9 @@ another download:
 
 That preset sets both `muse-glimmer.context_length` and
 `dflash.context_length` to 262144 and disables llama.cpp automatic fitting.
+On ROCm it uses twelve draft tokens, selected by a controlled Strix Halo
+comparison on the pinned llama.cpp build; the 128K XL preset retains fifteen.
+Vulkan continues to use its separately accepted depth of four.
 Meta's pinned target and DFlash metadata declare 131072 tokens. Treat 256K as
 forced extrapolation until retrieval, quality, memory, and draft acceptance
 pass beyond 128K. The 128K DFlash preset therefore remains the recipe default.

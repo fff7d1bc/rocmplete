@@ -589,6 +589,43 @@ Exact measurements and retained result names are in the
 with the quality judgment in
 [Coding-agent model quality](coding-agent-model-quality.md#focused-muse-m-muse-xl-and-qwen-27b-comparison).
 
+## 2026-08-14 forced-256K XL depth tuning
+
+A follow-up on the same `gfx1151` host used llama.cpp release `b10430`, commit
+`4c1a0af40d88c7fbb3b15c85bf2e8016d1d5b64c`, through image
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-4c1a0af-r21`. It retained
+the official dynamic target and DFlash bytes, forced 262144 context for both
+architectures, F16 target and draft KV, Flash Attention auto, batch 2048,
+microbatch 512, and the managed Muse sampler. Each timing case used the same
+38,244-token repository packet, seed 4242, and 768-token output allowance.
+
+| DFlash policy | Prompt tokens/s | Generate tokens/s | Total seconds | Accepted / drafted |
+| --- | ---: | ---: | ---: | ---: |
+| Depth 15, `p_min=0` | 303.00 | 11.87 | 190.83 | 415 / 5,253 |
+| Depth 8, `p_min=0` | 304.52 | 12.75 | 185.73 | 426 / 2,698 |
+| Depth 12, `p_min=0` | 304.77 | 15.16 | 176.06 | 487 / 3,329 |
+| Depth 12, `p_min=0.10` | 302.93 | 15.12 | 176.97 | 487 / 3,329 |
+| Depth 12, `p_min=0.25` | 301.81 | 12.59 | 187.66 | 426 / 1,896 |
+| Depth 12, `p_min=0.50` | 303.45 | 13.45 | 183.06 | 384 / 617 |
+
+Depth 12 improved the fixed generation interval by 27.8% and reduced complete
+server time by 7.7% relative to depth 15. A backend-sampling-off control
+reproduced depth 12 at 15.18 tokens/s with identical accepted and drafted
+counts, so the ROCm `TOP_K` offload warning did not identify another useful
+switch. Forcing Flash Attention was neutral. Q8 target KV reduced generation
+to 11.21 tokens/s. A 4096 microbatch raised prompt processing from 302.93 to
+319.63 tokens/s but reduced generation to 13.07 tokens/s and slightly increased
+total time.
+
+A 4,096-token depth-12 continuation sustained 13.35 tokens/s, and a later
+probe remained near 13.4 tokens/s through 7,406 tokens. Both stayed entirely
+inside Muse's ATEM reasoning channel; the latter was manually interrupted.
+They show that the short result did not collapse during longer decode, but do
+not establish answer quality or compare equal-length depth-12 and depth-15
+outputs. The accepted change is therefore deliberately narrow: the dynamic XL
+forced-256K preset uses depth 12 on ROCm, while its 128K preset retains depth
+15, Vulkan retains depth 4, and both 17 GB presets remain unchanged.
+
 ## Retest triggers
 
 Repeat the comparison when any of these changes materially:
