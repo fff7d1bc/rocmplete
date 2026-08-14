@@ -35,7 +35,9 @@ media. Use `./rocmplete content list --bundles` for the current exact inventory.
   disabling automatic fitting. `agent_tools` records the smaller reviewed set
   maintained for function-tool agent clients.
   `reasoning_effort_budget` records presets whose client reasoning selectors
-  are backed by enforced llama.cpp thinking-token ceilings.
+  are backed by enforced llama.cpp thinking-token ceilings; companion level,
+  default, off-mode, and native-parameter fields define the exact client
+  contract.
 
 The loader rejects unsafe paths, malformed revisions and hashes, missing
 references, repeated bundle content, unknown groups, and destination

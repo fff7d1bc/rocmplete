@@ -585,7 +585,7 @@ retain dynamic XL as the guided family default. Choose M deliberately for
 longer implementation trials and XL for conversational repository study, then
 verify either model's boundary, concurrency, and destructive-operation claims.
 Exact measurements and retained result names are in the
-[same-host hardware record](hardware-acceptance.md#current-muse-m-muse-xl-and-qwen-27b-focus-2026-08-13),
+[same-host hardware record](hardware-acceptance.md#historical-muse-m-muse-xl-and-qwen-27b-focus-2026-08-13),
 with the quality judgment in
 [Coding-agent model quality](coding-agent-model-quality.md#focused-muse-m-muse-xl-and-qwen-27b-comparison).
 

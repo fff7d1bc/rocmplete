@@ -1,5 +1,5 @@
 {
-  "schema_version": 21,
+  "schema_version": 22,
   "agreements": {
     "ltx-2-community-license": {
       "name": "LTX-2 Community License",
@@ -25,11 +25,6 @@
       "name": "Llama 3.3 Community License Agreement",
       "url": "https://www.llama.com/llama3_3/license/",
       "summary": "Includes attribution, naming, commercial-scale, and acceptable-use conditions. Review the complete terms before use."
-    },
-    "openmdw-1.1": {
-      "name": "OpenMDW License Agreement 1.1",
-      "url": "https://github.com/OpenMDW/OpenMDW/blob/b26b32b34ad2edcc29a7707abb68dcfb25a538c1/1.1/LICENSE.OpenMDW-1.1",
-      "summary": "Review the complete OpenMDW-1.1 terms before downloading or using Poolside Laguna model materials."
     },
     "tencent-hy-community-license": {
       "name": "Tencent HY Community License",
@@ -995,23 +990,6 @@
         "url": "https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/blob/23749fefcc72300e3a2ad315e1317431b06b590a/LICENSE"
       }
     },
-    "ornith-1.0-35b-q8-gguf": {
-      "description": "Official Ornith 1.0 35B Q8_0 GGUF for llama.cpp",
-      "source": {
-        "repository": "deepreinforce-ai/Ornith-1.0-35B-GGUF",
-        "revision": "383064f72a1ef3087b779f268d3ca117eb989aac",
-        "path": "ornith-1.0-35b-Q8_0.gguf"
-      },
-      "destination": "ornith-1.0-35b/ornith-1.0-35b-Q8_0.gguf",
-      "target": "llama-models",
-      "size": 36903138880,
-      "sha256": "cbc992bca07901c1a51f33e65e6fc5d687de179c852a772dfd15e4c3261dbf5c",
-      "license": {
-        "spdx": "MIT",
-        "status": "verified",
-        "url": "https://huggingface.co/deepreinforce-ai/Ornith-1.0-35B-GGUF/blob/383064f72a1ef3087b779f268d3ca117eb989aac/README.md"
-      }
-    },
     "kat-coder-v2.5-dev-q8-gguf": {
       "description": "KAT-Coder V2.5 Dev Q8_0 GGUF for llama.cpp",
       "source": {
@@ -1089,50 +1067,6 @@
         "llama-3.3-community-license"
       ]
     },
-    "laguna-s-2.1-q4-k-m-gguf": {
-      "description": "Official Laguna S 2.1 Q4_K_M GGUF for llama.cpp",
-      "source": {
-        "repository": "poolside/Laguna-S-2.1-GGUF",
-        "revision": "edd093522473dc7313b0738d8b4116b7f8b9745f",
-        "path": "laguna-s-2.1-Q4_K_M.gguf"
-      },
-      "destination": "laguna-s-2.1/laguna-s-2.1-Q4_K_M.gguf",
-      "target": "llama-models",
-      "size": 68248760064,
-      "sha256": "a34c74e46688122bef83122f4133031bababbefcf57436dde97048c91e2cc6ff",
-      "license": {
-        "spdx": "NOASSERTION",
-        "status": "unverified",
-        "url": "https://huggingface.co/poolside/Laguna-S-2.1-GGUF/blob/edd093522473dc7313b0738d8b4116b7f8b9745f/README.md",
-        "warning": "The official GGUF repository points to the base model terms but does not declare license metadata for the converted artifact.",
-        "upstream_repository": "poolside/Laguna-S-2.1",
-        "upstream_license": "OpenMDW-1.1",
-        "upstream_license_url": "https://huggingface.co/poolside/Laguna-S-2.1/blob/b0a9fd7c850eea9d68cf3ffc5bd5d3c5dced43c0/LICENSE.md"
-      },
-      "agreements": [
-        "openmdw-1.1"
-      ]
-    },
-    "laguna-xs-2.1-q4-k-m-gguf": {
-      "description": "Official Laguna XS 2.1 Q4_K_M GGUF for llama.cpp",
-      "source": {
-        "repository": "poolside/Laguna-XS-2.1-GGUF",
-        "revision": "1a37c0a5fb8c7a18e6106decb6be6327d1b63fa6",
-        "path": "Laguna-XS-2.1-Q4_K_M.gguf"
-      },
-      "destination": "laguna-xs-2.1/Laguna-XS-2.1-Q4_K_M.gguf",
-      "target": "llama-models",
-      "size": 20274300032,
-      "sha256": "1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb",
-      "license": {
-        "spdx": "LicenseRef-OpenMDW-1.1",
-        "status": "verified",
-        "url": "https://huggingface.co/poolside/Laguna-XS-2.1-GGUF/blob/1a37c0a5fb8c7a18e6106decb6be6327d1b63fa6/LICENSE.md"
-      },
-      "agreements": [
-        "openmdw-1.1"
-      ]
-    },
     "muse-glimmer-30b-kquant-dynamic-gguf": {
       "description": "Official Muse Glimmer 30B KQuant Dynamic Q4_K_XL GGUF for llama.cpp",
       "source": {
@@ -1165,74 +1099,6 @@
         "spdx": "Apache-2.0",
         "status": "verified",
         "url": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md"
-      }
-    },
-    "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf": {
-      "description": "Official Muse Glimmer 30B KQuant 17GB Q4_K_M GGUF for llama.cpp",
-      "source": {
-        "repository": "meta-models/Muse-Glimmer-30B-GGUF",
-        "revision": "43c7eadd41352a299ea8e0a36b3157978dd63596",
-        "path": "Muse-Glimmer-30B-KQuant-17GB-Q4_K_M.gguf"
-      },
-      "destination": "muse-glimmer-30b-17gb/Muse-Glimmer-30B-KQuant-17GB-Q4_K_M.gguf",
-      "target": "llama-models",
-      "size": 16756683904,
-      "sha256": "4cc57c0f51040a226e5a72cc47b7613f7772950e460a665f7083de89f183f60e",
-      "license": {
-        "spdx": "Apache-2.0",
-        "status": "verified",
-        "url": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/43c7eadd41352a299ea8e0a36b3157978dd63596/README.md"
-      }
-    },
-    "muse-glimmer-30b-dflash-q4-k-m-gguf": {
-      "description": "Official Muse Glimmer 30B DFlash Q4_K_M draft GGUF for llama.cpp",
-      "source": {
-        "repository": "meta-models/Muse-Glimmer-30B-GGUF",
-        "revision": "43c7eadd41352a299ea8e0a36b3157978dd63596",
-        "path": "dflash-Muse-Glimmer-30B-Q4_K_M.gguf"
-      },
-      "destination": "muse-glimmer-30b-17gb/dflash-Muse-Glimmer-30B-Q4_K_M.gguf",
-      "target": "llama-models",
-      "size": 1631208128,
-      "sha256": "b2e808bf656086fe86bd0d0bd990f01d33e377537a07c02d45371517c8b264ef",
-      "license": {
-        "spdx": "Apache-2.0",
-        "status": "verified",
-        "url": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/43c7eadd41352a299ea8e0a36b3157978dd63596/README.md"
-      }
-    },
-    "qwen3.6-35b-a3b-ud-q8-k-xl-gguf": {
-      "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
-      "source": {
-        "repository": "unsloth/Qwen3.6-35B-A3B-GGUF",
-        "revision": "a483e9e6cbd595906af30beda3187c2663a1118c",
-        "path": "Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf"
-      },
-      "destination": "qwen3.6-35b-a3b/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
-      "target": "llama-models",
-      "size": 38451182560,
-      "sha256": "b762215c5f507f4865df4ac3d1afa803828afa41e05ecac3fac431a67bbd88e8",
-      "license": {
-        "spdx": "Apache-2.0",
-        "status": "verified",
-        "url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/blob/a483e9e6cbd595906af30beda3187c2663a1118c/README.md"
-      }
-    },
-    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf": {
-      "description": "Qwen3.6 35B-A3B MTP Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
-      "source": {
-        "repository": "unsloth/Qwen3.6-35B-A3B-MTP-GGUF",
-        "revision": "5bc3e238d916f48a861bac2f8a1990a0e9b7e98d",
-        "path": "Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf"
-      },
-      "destination": "qwen3.6-35b-a3b-mtp/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
-      "target": "llama-models",
-      "size": 39099447584,
-      "sha256": "6c6b816537abad90b250a0972b345466028d861ddfe316d5f0de31ca6440f781",
-      "license": {
-        "spdx": "Apache-2.0",
-        "status": "verified",
-        "url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/blob/5bc3e238d916f48a861bac2f8a1990a0e9b7e98d/README.md"
       }
     },
     "qwen3.6-27b-q8-0-gguf": {
@@ -1901,44 +1767,11 @@
         "llama"
       ]
     },
-    "llama-ornith-1.0-35b-q8-0": {
-      "description": "Ornith 1.0 35B Q8_0 llama.cpp coding-agent model",
-      "application": "llama-cpp",
-      "artifacts": [
-        "ornith-1.0-35b-q8-gguf"
-      ],
-      "groups": [
-        "all",
-        "llama"
-      ]
-    },
     "llama-kat-coder-v2.5-dev-q8-0": {
       "description": "KAT-Coder V2.5 Dev Q8_0 llama.cpp coding-agent model",
       "application": "llama-cpp",
       "artifacts": [
         "kat-coder-v2.5-dev-q8-gguf"
-      ],
-      "groups": [
-        "all",
-        "llama"
-      ]
-    },
-    "llama-qwen3.6-35b-a3b-ud-q8-k-xl": {
-      "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL llama.cpp model",
-      "application": "llama-cpp",
-      "artifacts": [
-        "qwen3.6-35b-a3b-ud-q8-k-xl-gguf"
-      ],
-      "groups": [
-        "all",
-        "llama"
-      ]
-    },
-    "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl": {
-      "description": "Qwen3.6 35B-A3B MTP Unsloth Dynamic Q8_K_XL llama.cpp model",
-      "application": "llama-cpp",
-      "artifacts": [
-        "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf"
       ],
       "groups": [
         "all",
@@ -1990,46 +1823,12 @@
         "llama"
       ]
     },
-    "llama-laguna-s-2.1-q4-k-m": {
-      "description": "Laguna S 2.1 official Q4_K_M llama.cpp model",
-      "application": "llama-cpp",
-      "artifacts": [
-        "laguna-s-2.1-q4-k-m-gguf"
-      ],
-      "groups": [
-        "all",
-        "llama"
-      ]
-    },
-    "llama-laguna-xs-2.1-q4-k-m": {
-      "description": "Laguna XS 2.1 official Q4_K_M llama.cpp model",
-      "application": "llama-cpp",
-      "artifacts": [
-        "laguna-xs-2.1-q4-k-m-gguf"
-      ],
-      "groups": [
-        "all",
-        "llama"
-      ]
-    },
     "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash": {
       "description": "Official Muse Glimmer 30B KQuant Dynamic Q4_K_XL llama.cpp model with DFlash draft",
       "application": "llama-cpp",
       "artifacts": [
         "muse-glimmer-30b-kquant-dynamic-gguf",
         "muse-glimmer-30b-dflash-kquant-gguf"
-      ],
-      "groups": [
-        "all",
-        "llama"
-      ]
-    },
-    "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash": {
-      "description": "Official Muse Glimmer 30B KQuant 17GB Q4_K_M llama.cpp model with DFlash draft",
-      "application": "llama-cpp",
-      "artifacts": [
-        "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
-        "muse-glimmer-30b-dflash-q4-k-m-gguf"
       ],
       "groups": [
         "all",
@@ -2572,37 +2371,11 @@
       "default_context": 4096,
       "chat_template": "qwen3-0.6b"
     },
-    "ornith-1.0-35b-q8-0": {
-      "bundle": "llama-ornith-1.0-35b-q8-0",
-      "artifact": "ornith-1.0-35b-q8-gguf",
-      "default_context": 262144,
-      "jinja": true,
-      "agent_tools": true,
-      "reasoning_effort_budget": true
-    },
     "kat-coder-v2.5-dev-q8-0": {
       "bundle": "llama-kat-coder-v2.5-dev-q8-0",
       "artifact": "kat-coder-v2.5-dev-q8-gguf",
       "default_context": 262144,
       "chat_template": "kat-coder-v2.5",
-      "agent_tools": true,
-      "reasoning_effort_budget": true
-    },
-    "qwen3.6-35b-a3b-ud-q8-k-xl": {
-      "bundle": "llama-qwen3.6-35b-a3b-ud-q8-k-xl",
-      "artifact": "qwen3.6-35b-a3b-ud-q8-k-xl-gguf",
-      "default_context": 262144,
-      "chat_template": "qwen3.6",
-      "agent_tools": true,
-      "reasoning_effort_budget": true
-    },
-    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": {
-      "bundle": "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
-      "artifact": "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf",
-      "default_context": 262144,
-      "speculative_type": "draft-mtp",
-      "draft_tokens": 3,
-      "chat_template": "qwen3.6",
       "agent_tools": true,
       "reasoning_effort_budget": true
     },
@@ -2637,6 +2410,7 @@
       "jinja": true,
       "agent_tools": true,
       "reasoning_effort_budget": true,
+      "reasoning_parameter": "effort",
       "reasoning_preserve": true
     },
     "qwen3.8-27b-mtp-ud-q8-k-xl": {
@@ -2648,6 +2422,7 @@
       "jinja": true,
       "agent_tools": true,
       "reasoning_effort_budget": true,
+      "reasoning_parameter": "effort",
       "reasoning_preserve": true
     },
     "gemma4-31b-it-q8-0-mtp": {
@@ -2661,37 +2436,22 @@
       "agent_tools": true,
       "reasoning_effort_budget": true
     },
-    "laguna-s-2.1-q4-k-m": {
-      "bundle": "llama-laguna-s-2.1-q4-k-m",
-      "artifact": "laguna-s-2.1-q4-k-m-gguf",
-      "default_context": 262144,
-      "jinja": true,
-      "agent_tools": true,
-      "reasoning_effort_budget": true,
-      "reasoning_preserve": true,
-      "flash_attention": {
-        "strix-halo": "off",
-        "strix-point": "off"
-      }
-    },
-    "laguna-xs-2.1-q4-k-m": {
-      "bundle": "llama-laguna-xs-2.1-q4-k-m",
-      "artifact": "laguna-xs-2.1-q4-k-m-gguf",
-      "default_context": 262144,
-      "jinja": true,
-      "agent_tools": true,
-      "reasoning_preserve": true,
-      "flash_attention": {
-        "strix-halo": "off",
-        "strix-point": "off"
-      }
-    },
     "muse-glimmer-30b-kquant-dynamic-q4-k-xl": {
       "bundle": "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
       "artifact": "muse-glimmer-30b-kquant-dynamic-gguf",
       "default_context": 131072,
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
+      "reasoning_effort_budget": true,
+      "reasoning_levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "reasoning_default": "high",
+      "reasoning_off": false,
+      "reasoning_parameter": "strength",
       "reasoning_preserve": true
     },
     "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash": {
@@ -2706,6 +2466,16 @@
       },
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
+      "reasoning_effort_budget": true,
+      "reasoning_levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "reasoning_default": "high",
+      "reasoning_off": false,
+      "reasoning_parameter": "strength",
       "reasoning_preserve": true
     },
     "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k": {
@@ -2724,46 +2494,16 @@
       ],
       "chat_template": "muse-glimmer-atem",
       "agent_tools": true,
-      "reasoning_preserve": true
-    },
-    "muse-glimmer-30b-kquant-17gb-q4-k-m": {
-      "bundle": "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
-      "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
-      "default_context": 131072,
-      "chat_template": "muse-glimmer-atem",
-      "agent_tools": true,
-      "reasoning_preserve": true
-    },
-    "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash": {
-      "bundle": "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
-      "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
-      "draft_artifact": "muse-glimmer-30b-dflash-q4-k-m-gguf",
-      "default_context": 131072,
-      "speculative_type": "draft-dflash",
-      "draft_tokens": 15,
-      "draft_tokens_by_backend": {
-        "vulkan": 4
-      },
-      "chat_template": "muse-glimmer-atem",
-      "agent_tools": true,
-      "reasoning_preserve": true
-    },
-    "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k": {
-      "bundle": "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
-      "artifact": "muse-glimmer-30b-kquant-17gb-q4-k-m-gguf",
-      "draft_artifact": "muse-glimmer-30b-dflash-q4-k-m-gguf",
-      "default_context": 262144,
-      "speculative_type": "draft-dflash",
-      "draft_tokens": 15,
-      "draft_tokens_by_backend": {
-        "vulkan": 4
-      },
-      "context_override_architectures": [
-        "muse-glimmer",
-        "dflash"
+      "reasoning_effort_budget": true,
+      "reasoning_levels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
       ],
-      "chat_template": "muse-glimmer-atem",
-      "agent_tools": true,
+      "reasoning_default": "high",
+      "reasoning_off": false,
+      "reasoning_parameter": "strength",
       "reasoning_preserve": true
     },
     "hy-mt1.5-7b-q8-0": {

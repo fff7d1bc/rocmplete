@@ -77,11 +77,11 @@ class OmpLauncherTests(unittest.TestCase):
         self.assertEqual(provider["discovery"], {"type": "llama.cpp"})
         self.assertEqual(provider["baseUrl"], "http://127.0.0.1:9090/v1")
         models = {model["id"]: model for model in provider["models"]}
-        self.assertEqual(len(models), 17)
+        self.assertEqual(len(models), 9)
         self.assertNotIn("qwen3-0.6b-q8-0", models)
         self.assertNotIn("translategemma-27b-it-q8-0", models)
         self.assertIn("qwen3.8-27b-mtp-ud-q8-k-xl", models)
-        qwen = models[self.default_model]
+        qwen = models["qwen3.6-27b-mtp-q8-0"]
         self.assertEqual(qwen["contextWindow"], 262144)
         self.assertEqual(qwen["maxTokens"], 16384)
         self.assertTrue(qwen["supportsTools"])
@@ -97,22 +97,14 @@ class OmpLauncherTests(unittest.TestCase):
             "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         ]
         self.assertEqual(muse["contextWindow"], 262144)
-        self.assertFalse(muse["reasoning"])
-        self.assertNotIn("thinking", muse)
-        muse_17gb = models[
-            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k"
-        ]
-        self.assertEqual(muse_17gb["contextWindow"], 262144)
-        self.assertFalse(muse_17gb["reasoning"])
-        self.assertNotIn("thinking", muse_17gb)
-        laguna_xs = models["laguna-xs-2.1-q4-k-m"]
-        self.assertFalse(laguna_xs["reasoning"])
-        self.assertNotIn("thinking", laguna_xs)
-        laguna_s = models["laguna-s-2.1-q4-k-m"]
-        self.assertTrue(laguna_s["reasoning"])
-        self.assertEqual(laguna_s["thinking"], qwen["thinking"])
-        self.assertTrue(
-            laguna_s["compat"]["supportsReasoningEffort"]
+        self.assertTrue(muse["reasoning"])
+        self.assertEqual(
+            muse["thinking"],
+            {
+                "mode": "effort",
+                "efforts": ["low", "medium", "high", "xhigh"],
+                "defaultLevel": "high",
+            },
         )
         for identifier, model in models.items():
             self.assertEqual(
@@ -155,7 +147,7 @@ class OmpLauncherTests(unittest.TestCase):
                 "advisor": "@default",
             },
         )
-        self.assertEqual(len(overlay["enabledModels"]), 18)
+        self.assertEqual(len(overlay["enabledModels"]), 10)
         self.assertIn(
             "rocmplete-dwarfstar/deepseek-v4-flash-0731-q2-imatrix",
             overlay["enabledModels"],
@@ -188,7 +180,7 @@ class OmpLauncherTests(unittest.TestCase):
             self.assertEqual(plan.mode, "session")
             self.assertEqual(plan.default_provider, "rocmplete-llama-cpp")
             self.assertEqual(plan.default_model, self.default_model)
-            self.assertEqual(plan.default_thinking, "medium")
+            self.assertEqual(plan.default_thinking, "high")
             self.assertEqual(plan.endpoint, "http://127.0.0.1:9090/v1")
             self.assertEqual(
                 plan.dwarfstar_endpoint, "http://127.0.0.1:8001/v1"

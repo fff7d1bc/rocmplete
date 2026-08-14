@@ -41,16 +41,7 @@ from .project import PROJECT_ROOT
 
 WRAPPER_PATH = PROJECT_ROOT / "bin" / "pi"
 SANDBOX_AGENT_DIR = SANDBOX_HOME / ".local" / "share" / "pi" / "agent"
-_DEFAULT_REASONING_EFFORT = "medium"
-_REASONING_LEVELS = {
-    "off": "none",
-    "minimal": None,
-    "low": "low",
-    "medium": "medium",
-    "high": "high",
-    "xhigh": None,
-    "max": None,
-}
+_THINKING_LEVELS = ("minimal", "low", "medium", "high", "xhigh", "max")
 _DWARFSTAR_REASONING_LEVELS = {
     "off": "none",
     "minimal": None,
@@ -137,7 +128,13 @@ def render_config(
             "samplingParams": agent_sampling_parameters(identifier),
         }
         if preset.reasoning_effort_budget:
-            model["thinkingLevelMap"] = _REASONING_LEVELS
+            model["thinkingLevelMap"] = {
+                "off": "none" if preset.reasoning_off else None,
+                **{
+                    level: level if level in preset.reasoning_levels else None
+                    for level in _THINKING_LEVELS
+                },
+            }
         models.append(model)
     dwarfstar_model = {
         "id": DWARFSTAR_MODEL,

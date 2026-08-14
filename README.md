@@ -34,7 +34,7 @@ passed.
 | Host | GPU target | Workloads exercised |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 llama.cpp MTP/tool, OMP, and ROCm/Vulkan paths; Muse Glimmer dynamic and 17 GB agent and 256K probes; Laguna XS and Ling feasibility controls |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 llama.cpp MTP/tool, OMP, and ROCm/Vulkan paths; Muse Glimmer dynamic plus historical 17 GB agent and 256K probes; historical Laguna XS and Ling feasibility controls |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -105,7 +105,7 @@ hundreds of MiB to more than 100 GiB, so inspect a dry run before a large
 installation.
 
 ```bash
-./rocmplete content install llama-cpp qwen3.6 --dry-run
+./rocmplete content install llama-cpp muse-glimmer --dry-run
 ```
 
 Use the built-in guides for short, copyable walkthroughs:
@@ -133,26 +133,32 @@ Manager, and multi-GPU graphs are covered in the
 
 ### llama.cpp
 
-The Qwen3.6 recipe installs the practical dense and sparse MTP choices:
+Muse Glimmer Dynamic Q4_K_XL with DFlash is the common managed default:
 
 ```bash
 ./rocmplete build llama-cpp
-./rocmplete content install llama-cpp qwen3.6
-./rocmplete run llama-cpp server --preset qwen3.6-27b-mtp-q8-0
+./rocmplete content install llama-cpp muse-glimmer
+./rocmplete run llama-cpp server \
+  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 ```
 
-Qwen3.8 is a separate dense 27B candidate with substantially stronger
-upstream coding and agent results. Its recipe installs the pinned Unsloth
-Dynamic Q8_K_XL GGUF and starts the preset that uses its embedded MTP heads:
+The recipe installs the one official Dynamic target/draft pair. It exposes a
+non-speculative 128K control, a 128K DFlash preset, and the forced-256K DFlash
+default. The 256K preset deliberately overrides the released 128K target and
+draft metadata and therefore remains subject to long-context acceptance.
+
+Qwen3.6 and Qwen3.8 are separate dense 27B comparison families. Their recipes
+install the MTP-capable Q8 choices:
 
 ```bash
+./rocmplete content install llama-cpp qwen3.6
 ./rocmplete content install llama-cpp qwen3.8
-./rocmplete run llama-cpp server \
-  --preset qwen3.8-27b-mtp-ud-q8-k-xl
 ```
 
-It is available to the managed agent clients after installation, but does not
-replace the accepted Qwen3.6 default automatically.
+Qwen3.6 MTP and non-MTP are distinct GGUFs and therefore appear on separate
+`content list --models` rows. Qwen3.8's base and MTP presets share one GGUF
+with embedded MTP heads, so the list prints those preset aliases on one
+comma-separated row. Muse's three presets similarly share one artifact pair.
 
 For an API serving several installed presets, use the managed router:
 
@@ -163,51 +169,12 @@ For an API serving several installed presets, use the managed router:
 The [llama.cpp guide](guide/applications.md#llamacpp) explains presets,
 contexts, MTP, DFlash, translations, the terminal CLI, tool calling, and
 choosing between the managed Qwen variants. High-memory hosts can also install
-the Ornith and KAT-Coder Q8 coding-agent candidates independently without
-changing the default:
+the KAT-Coder Q8 coding-agent candidate independently without changing the
+default:
 
 ```bash
-./rocmplete content install llama-cpp ornith
 ./rocmplete content install llama-cpp kat-coder
 ```
-
-Laguna XS 2.1 is a separate, smaller sparse coding model. Its official
-Q4_K_M GGUF starts at 256K, preserves interleaved reasoning across tool turns,
-and is exposed by all managed agent clients without replacing Qwen as their
-default:
-
-```bash
-./rocmplete content install llama-cpp laguna-xs-2.1 --accept-license
-./rocmplete run llama-cpp server --preset laguna-xs-2.1-q4-k-m
-```
-
-Muse Glimmer is a separate 30B family using Meta's official Dynamic Q4_K_XL
-and smaller 17 GB Q4_K_M targets, each with its matching pinned DFlash draft.
-The family recipe installs both pairs for straightforward A/B testing and
-starts the quality-oriented dynamic target's 128K accelerated preset by
-default:
-
-```bash
-./rocmplete content install llama-cpp muse-glimmer
-./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash
-```
-
-Each target has a non-speculative 128K control, a 128K DFlash preset, and an
-experimental forced-256K DFlash preset. Use either `-dflash-256k` preset only
-for long-context acceptance because Meta's released target and draft metadata
-declare 128K. The smaller target is faster and uses less unified memory on
-accepted fixed Strix Halo workloads, while the dynamic target retains the
-lower reported quantization loss and remains the recipe default:
-
-```bash
-./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-17gb-q4-k-m-dflash
-```
-
-The managed agent clients expose all six presets and llama.cpp preserves
-Muse's parsed reasoning across turns, but task depth still depends on the
-client scaffold and prompt.
 
 For Japanese and English translation on a high-memory host, the separate
 Shisa V2.1 recipe installs the 70B Q8_0 model and requires acknowledgment of
@@ -266,7 +233,7 @@ For local coding-agent work, start the llama.cpp router and use the sandboxed
 PATH launcher. At least one managed agent model must already be installed.
 
 ```bash
-./rocmplete content install llama-cpp qwen3.6
+./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete run llama-cpp server --router --models-max 1
 export PATH="$PWD/bin:$PATH"
 opencode
@@ -275,10 +242,10 @@ opencode
 # or: maki
 ```
 
-Muse Glimmer is available through the same four clients after
-`./rocmplete content install llama-cpp muse-glimmer`. Select either target's
-base, 128K DFlash, or experimental forced-256K DFlash preset in the client's
-model picker.
+Muse starts at high native reasoning strength. Pi, OpenCode, and OMP expose its
+low, medium, high, and xhigh levels without a false instant variant. Maki
+exposes its numeric llama.cpp budget control; use Pi for evaluations that must
+also carry the native strength into the template.
 
 OpenCode starts new sessions in read-only Investigate mode. All four launchers
 keep the current directory and private client state writable while hiding the
@@ -395,10 +362,15 @@ task suite:
 ```bash
 ./rocmplete benchmark agent --list-tasks
 ./rocmplete benchmark agent \
-  --preset qwen3.6-27b-q8-0 --dry-run
-./rocmplete benchmark agent \
-  --preset qwen3.6-27b-q8-0
+  --preset qwen3.6-27b-mtp-q8-0 \
+  --normalized-comparison --dry-run
 ```
+
+`--normalized-comparison` accepts only dense Qwen3.6 27B MTP, Qwen3.8 27B
+MTP, or Muse Dynamic DFlash 256K. It fixes Pi, ROCm, 256K context, high
+reasoning, and an 8192-token reasoning ceiling. Run the same task selection
+and repetition count for all three; the actual comparison remains a separate
+hardware pass.
 
 This is separate from smoke acceptance and native token-speed benchmarking.
 It runs Pi against disposable single-commit fixtures, applies hidden tests

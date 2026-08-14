@@ -16,10 +16,7 @@ class ContentRecipeTests(unittest.TestCase):
         comfy = content_recipe("comfyui", "image")
         llama = content_recipe("llama-cpp", "qwen3.6")
         qwen38 = content_recipe("llama-cpp", "qwen3.8")
-        ornith = content_recipe("llama-cpp", "ornith")
         kat_coder = content_recipe("llama-cpp", "kat-coder")
-        laguna = content_recipe("llama-cpp", "laguna-s-2.1")
-        laguna_xs = content_recipe("llama-cpp", "laguna-xs-2.1")
         muse = content_recipe("llama-cpp", "muse-glimmer")
         hy = content_recipe("llama-cpp", "translation-hy")
         gemma = content_recipe("llama-cpp", "translation-gemma")
@@ -34,10 +31,7 @@ class ContentRecipeTests(unittest.TestCase):
         )
         self.assertEqual(
             llama.bundles,
-            (
-                "llama-qwen3.6-27b-mtp-q8-0",
-                "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
-            ),
+            ("llama-qwen3.6-27b-mtp-q8-0",),
         )
         self.assertEqual(
             qwen38.next_command,
@@ -49,15 +43,6 @@ class ContentRecipeTests(unittest.TestCase):
             ("llama-qwen3.8-27b-ud-q8-k-xl",),
         )
         self.assertEqual(
-            ornith.next_command,
-            "./rocmplete run llama-cpp server "
-            "--preset ornith-1.0-35b-q8-0",
-        )
-        self.assertEqual(
-            ornith.bundles,
-            ("llama-ornith-1.0-35b-q8-0",),
-        )
-        self.assertEqual(
             kat_coder.next_command,
             "./rocmplete run llama-cpp server "
             "--preset kat-coder-v2.5-dev-q8-0",
@@ -67,30 +52,14 @@ class ContentRecipeTests(unittest.TestCase):
             ("llama-kat-coder-v2.5-dev-q8-0",),
         )
         self.assertEqual(
-            laguna.next_command,
-            "./rocmplete run llama-cpp server "
-            "--preset laguna-s-2.1-q4-k-m",
-        )
-        self.assertEqual(
-            laguna_xs.next_command,
-            "./rocmplete run llama-cpp server "
-            "--preset laguna-xs-2.1-q4-k-m",
-        )
-        self.assertEqual(
-            laguna_xs.bundles,
-            ("llama-laguna-xs-2.1-q4-k-m",),
-        )
-        self.assertEqual(
             muse.next_command,
             "./rocmplete run llama-cpp server "
-            "--preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
+            "--preset "
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k",
         )
         self.assertEqual(
             muse.bundles,
-            (
-                "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
-                "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
-            ),
+            ("llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",),
         )
         self.assertEqual(
             hy.next_command,

@@ -74,13 +74,9 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             identifier="qwen3.6",
             application="llama-cpp",
             description=(
-                "Qwen3.6 dense 27B MTP Q8_0 and sparse 35B-A3B MTP "
-                "Dynamic Q8_K_XL"
+                "Qwen3.6 dense 27B MTP Q8_0"
             ),
-            bundles=(
-                "llama-qwen3.6-27b-mtp-q8-0",
-                "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
-            ),
+            bundles=("llama-qwen3.6-27b-mtp-q8-0",),
             launch=RecipeLaunch(
                 "llama-cpp",
                 mode="server",
@@ -99,17 +95,6 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             ),
         ),
         ContentRecipe(
-            identifier="ornith",
-            application="llama-cpp",
-            description="Ornith 1.0 35B Q8_0 coding and agent model",
-            bundles=("llama-ornith-1.0-35b-q8-0",),
-            launch=RecipeLaunch(
-                "llama-cpp",
-                mode="server",
-                preset="ornith-1.0-35b-q8-0",
-            ),
-        ),
-        ContentRecipe(
             identifier="kat-coder",
             application="llama-cpp",
             description="KAT-Coder V2.5 Dev 35B Q8_0 coding and agent model",
@@ -121,42 +106,18 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             ),
         ),
         ContentRecipe(
-            identifier="laguna-s-2.1",
-            application="llama-cpp",
-            description="Laguna S 2.1 Q4_K_M coding and agent model",
-            bundles=("llama-laguna-s-2.1-q4-k-m",),
-            launch=RecipeLaunch(
-                "llama-cpp",
-                mode="server",
-                preset="laguna-s-2.1-q4-k-m",
-            ),
-        ),
-        ContentRecipe(
-            identifier="laguna-xs-2.1",
-            application="llama-cpp",
-            description="Laguna XS 2.1 Q4_K_M coding and agent model",
-            bundles=("llama-laguna-xs-2.1-q4-k-m",),
-            launch=RecipeLaunch(
-                "llama-cpp",
-                mode="server",
-                preset="laguna-xs-2.1-q4-k-m",
-            ),
-        ),
-        ContentRecipe(
             identifier="muse-glimmer",
             application="llama-cpp",
-            description=(
-                "Muse Glimmer 30B official Dynamic Q4_K_XL and 17GB "
-                "Q4_K_M with DFlash"
-            ),
+            description="Muse Glimmer 30B Dynamic Q4_K_XL with DFlash",
             bundles=(
                 "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
-                "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
             ),
             launch=RecipeLaunch(
                 "llama-cpp",
                 mode="server",
-                preset="muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
+                preset=(
+                    "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
+                ),
             ),
         ),
         ContentRecipe(

@@ -156,25 +156,12 @@ class OpenCodeLauncherTests(unittest.TestCase):
             provider["options"]["baseURL"],
             "http://127.0.0.1:9090/v1",
         )
-        self.assertEqual(len(provider["models"]), 17)
+        self.assertEqual(len(provider["models"]), 9)
         self.assertNotIn("qwen3-0.6b-q8-0", provider["models"])
         self.assertNotIn("translategemma-27b-it-q8-0", provider["models"])
         self.assertIn("qwen3.6-27b-mtp-q8-0", provider["models"])
         self.assertIn("qwen3.8-27b-mtp-ud-q8-k-xl", provider["models"])
-        self.assertIn("ornith-1.0-35b-q8-0", provider["models"])
         self.assertIn("kat-coder-v2.5-dev-q8-0", provider["models"])
-        self.assertIn("laguna-xs-2.1-q4-k-m", provider["models"])
-        laguna_s = provider["models"]["laguna-s-2.1-q4-k-m"]
-        self.assertTrue(laguna_s["reasoning"])
-        self.assertEqual(
-            laguna_s["variants"],
-            {
-                "instant": {"reasoningEffort": "none"},
-                "low": {"reasoningEffort": "low"},
-                "medium": {"reasoningEffort": "medium"},
-                "high": {"reasoningEffort": "high"},
-            },
-        )
         self.assertEqual(
             provider["models"][
                 "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
@@ -182,28 +169,28 @@ class OpenCodeLauncherTests(unittest.TestCase):
             {"context": 262144, "output": 16384},
         )
         self.assertEqual(
-            provider["models"][
-                "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k"
-            ]["limit"],
-            {"context": 262144, "output": 16384},
-        )
-        self.assertEqual(
             provider["models"][self.default_model]["limit"],
             {"context": 262144, "output": 16384},
         )
-        expected_variants = {
-            "instant": {"reasoningEffort": "none"},
-            "low": {"reasoningEffort": "low"},
-            "medium": {"reasoningEffort": "medium"},
-            "high": {"reasoningEffort": "high"},
-        }
         for identifier, model in provider["models"].items():
             preset = self.catalog.llama_preset(identifier)
             expected_options = dict(agent_sampling_parameters(identifier))
             if preset.reasoning_effort_budget:
                 self.assertTrue(model["reasoning"])
-                expected_options["reasoningEffort"] = "medium"
-                self.assertEqual(model["variants"], expected_variants)
+                expected_options["reasoningEffort"] = (
+                    preset.reasoning_default
+                )
+                enabled = set(preset.reasoning_levels)
+                if preset.reasoning_off:
+                    enabled.add("instant")
+                for name, variant in model["variants"].items():
+                    if name in enabled:
+                        self.assertEqual(
+                            variant["reasoningEffort"],
+                            "none" if name == "instant" else name,
+                        )
+                    else:
+                        self.assertEqual(variant, {"disabled": True})
             else:
                 self.assertNotIn("variants", model)
             self.assertEqual(model["options"], expected_options)
@@ -280,7 +267,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
             )
 
     def test_launch_falls_back_to_an_installed_agent_model(self):
-        fallback = "qwen3.6-35b-a3b-ud-q8-k-xl"
+        fallback = "qwen3.6-27b-q8-0"
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             data_dir = root / "data"

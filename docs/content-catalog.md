@@ -206,6 +206,10 @@ connect it to a stable router identity:
     "jinja": true,
     "agent_tools": true,
     "reasoning_effort_budget": true,
+    "reasoning_levels": ["low", "medium", "high"],
+    "reasoning_default": "medium",
+    "reasoning_off": true,
+    "reasoning_parameter": "budget",
     "flash_attention": {
       "strix-halo": "on",
       "strix-point": "off"
@@ -292,15 +296,16 @@ repeat the end-to-end loop there as well. Sibling presets may share protocol
 evidence when they use the byte-identical target and chat template; keep
 unaccepted context or speculative-decoding behavior explicitly experimental.
 
-`reasoning_effort_budget` is an optional, narrower compatibility decision
-and requires `agent_tools`. Set it only for presets whose reviewed template
-uses llama.cpp's thinking-token budget. ROCmplete's pinned server patch maps
-client effort labels to the project's enforced thinking-token ceilings. For a
-template such as Qwen3.8 that implements matching model-native effort
-instructions, the patch forwards the same recognized label to Jinja before
-rendering. Other templates still receive only the sampler budget.
-Keep the catalog descriptions, patch values, generated model metadata, and
-target-hardware Chat Completions tests in sync.
+`reasoning_effort_budget` is an optional, narrower compatibility decision and
+requires `agent_tools`. When enabled, `reasoning_levels` is an ordered subset
+of low, medium, high, and xhigh; `reasoning_default` selects one level;
+`reasoning_off` records whether clients may advertise off/instant; and
+`reasoning_parameter` distinguishes sampler-only `budget`, model-native
+`effort`, or model-native `strength`. The server maps the four levels to 1024,
+4096, 8192, and 16384 thinking tokens and forwards recognized positive labels
+to both Jinja parameter names. Qwen3.8 consumes effort, Muse consumes strength,
+and Qwen3.6 uses only the sampler ceiling. Keep catalog policy, patch values,
+generated metadata, and target-hardware tests in sync.
 
 `reasoning_preserve` is a separate optional boolean and also requires
 `agent_tools`. It maps a reviewed preset to llama.cpp's
@@ -330,22 +335,15 @@ them stable and descriptive. Router startup includes
 installed presets, ignores wholly missing presets, and refuses partial
 managed installs.
 
-The public llama.cpp recipes are the paired `qwen3.6` selection, the separate
-single-artifact `qwen3.8` dense target with optional embedded-MTP runtime, the
-separate high-memory `ornith` and `kat-coder` families, the practical
-`laguna-xs-2.1`, the explicitly experimental `laguna-s-2.1`, the separate
-`muse-glimmer` family with two reviewed quantizations, a default dynamic 128K
-DFlash policy, and experimental forced-256K presets, the high-memory Japanese
-and English `shisa-v2.1` family, and the focused `translation-hy` and
-`translation-gemma` choices. Muse installs both target/draft pairs for direct
-A/B selection while keeping the less aggressively quantized dynamic target as
-its launch default. Shisa stays a model family rather than another generic
-translation role. The Qwen recipe
-deliberately installs the dense 27B MTP and sparse 35B-A3B MTP choices
-together. Qwen3.8 remains its own family recipe even though both Qwen releases
-serve similar work. Ornith, KAT-Coder, each Laguna size, and Muse Glimmer keep
-separate family recipes instead of being grouped under a subjective coding
-role.
+The public llama.cpp recipes are dense Qwen3.6 27B MTP, the separate
+single-artifact Qwen3.8 dense target with optional embedded-MTP runtime,
+KAT-Coder, Muse Glimmer's one Dynamic target/draft pair, high-memory Japanese
+and English Shisa V2.1, and the focused HY and Gemma translation families.
+Muse's forced-256K DFlash preset is both the recipe launch and managed-client
+default; its 128K base and DFlash controls share the installed pair. Qwen3.8
+remains its own family recipe even though both Qwen releases serve similar
+work. Unrelated models retain separate family recipes instead of being grouped
+under a subjective coding role.
 Non-MTP Qwen controls, the smoke-test model, and
 other deliberately large models remain exact bundles and presets rather than
 multiplying beginner choices.

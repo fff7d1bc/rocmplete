@@ -112,35 +112,29 @@ class ApplicationGuideTests(unittest.TestCase):
         )
         self.assertIn("Use an OpenAI-compatible client for automation", text)
         self.assertNotIn("./rocmplete client", text)
-        self.assertIn("qwen3.6 recipe installs dense 27B MTP Q8_0", text)
+        self.assertIn("qwen3.6 recipe installs only dense 27B MTP Q8_0", text)
         self.assertIn(
-            "separate ornith and kat-coder recipes install the official Ornith",
+            "separate qwen3.8 recipe installs dense 27B Dynamic",
             text,
         )
         self.assertIn(
-            "laguna-xs-2.1 recipe installs Poolside's official", text
-        )
-        self.assertIn(
-            "Qwen3.6 35B-A3B MTP Q8_K_XL preset is the recommended "
-            "OpenCode starting point",
+            "Muse Glimmer Dynamic DFlash at forced 256K is the common "
+            "managed-client default",
             normalized,
-        )
-        self.assertIn(
-            "Matching dense and sparse non-MTP controls remain", normalized
         )
         self.assertIn("non-MTP control", normalized)
         self.assertIn("MTP proposes and verifies extra tokens", text)
         self.assertIn("not a reasoning mode", text)
         self.assertIn(
-            "Qwen3.6, Ornith, KAT-Coder, Gemma 4, and both Laguna "
-            "families start at their native 256K",
+            "Qwen3.6, Qwen3.8, KAT-Coder, Gemma 4, and Muse "
+            "families have maintained 256K presets",
             normalized,
         )
         self.assertIn("--context 131072", text)
         self.assertIn("omit it for a mixed-model router", normalized)
         self.assertIn("Tool-using clients", text)
         self.assertIn("reviewed Jinja", text)
-        self.assertIn("fixed managed template", text)
+        self.assertIn("fixed managed template", normalized)
         self.assertIn("./rocmplete agent opencode", text)
         self.assertIn("bin/opencode", text)
         self.assertIn("./rocmplete agent pi", text)
@@ -163,7 +157,8 @@ class ApplicationGuideTests(unittest.TestCase):
         self.assertIn("hard read-only", text)
         self.assertIn("hidden read-only", text)
         self.assertIn("separate child sessions", text)
-        self.assertIn("disabled choice turns thinking off", text)
+        self.assertIn("Muse reasons unconditionally", normalized)
+        self.assertIn("native low, medium, high, and xhigh strength", normalized)
         self.assertIn("Pi uses Shift+Tab or /settings", normalized)
         self.assertIn("OMP accepts --thinking", normalized)
         self.assertIn("Maki uses /thinking", normalized)

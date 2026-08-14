@@ -208,11 +208,16 @@ class RuntimeCommandTests(unittest.TestCase):
             'inputs.chat_template_kwargs["reasoning_effort"]',
             reasoning_patch,
         )
+        self.assertIn(
+            'inputs.chat_template_kwargs["reasoning_strength"]',
+            reasoning_patch,
+        )
         for effort, budget in (
             ("none", 0),
             ("low", 1024),
             ("medium", 4096),
             ("high", 8192),
+            ("xhigh", 16384),
         ):
             self.assertIn('effort == "{}"'.format(effort), reasoning_patch)
             self.assertIn("return {};".format(budget), reasoning_patch)

@@ -150,11 +150,12 @@ Observed results:
   kernel journal showed no matching GPU fault. Exact inputs, the AMD reference
   caveats, complete matrix, and cleanup warning are in the
   [Muse feasibility record](muse-glimmer-llama-cpp-agent-feasibility.md).
-- The 2026-08-13 two-variant Muse follow-up promoted both separately pinned
-  target/draft pairs into the guided family while retaining dynamic 128K
-  DFlash as its launch default. The new 17 GB base and forced-256K policies
-  appear with the existing 128K DFlash policy in all four agent-client
-  catalogs. Direct ROCm, routed ROCm, and direct Vulkan forced-256K servers
+- The 2026-08-13 two-variant Muse follow-up temporarily promoted both
+  separately pinned target/draft pairs into the guided family while retaining
+  dynamic 128K DFlash as its launch default. At that revision, the new 17 GB
+  base and forced-256K policies appeared with the existing 128K DFlash policy
+  in all four agent-client catalogs. Direct ROCm, routed ROCm, and direct
+  Vulkan forced-256K servers
   loaded four 262144-token slots with automatic fitting disabled. ROCm used
   draft depth 15 and returned exact content `MUSE_256K_OK` and
   `ROUTER_256K_OK`; Vulkan used depth 4 and returned `VULKAN_256K_OK`. The
@@ -616,7 +617,7 @@ tested host but remains inconclusive about model capability; retain its
 checkpoint and revisit it when hardware or runtime throughput changes
 materially.
 
-#### Current Muse M, Muse XL, and Qwen 27B focus (2026-08-13)
+#### Historical Muse M, Muse XL, and Qwen 27B focus (2026-08-13)
 
 A focused comparison used source commit
 `5d170046250616cc88f67fce09177fe39c2a3afb`, the unchanged version 5 suite
@@ -777,12 +778,10 @@ local source image.
 | Hunyuan T2V | `hunyuan-video-1.5-t2v-480p-cfg-distilled` | pending | pending | pending | pending |
 | Hunyuan I2V | `hunyuan-video-1.5-i2v-480p-step-distilled` | pending | pending | pending | pending |
 | llama.cpp offload smoke | `llama-qwen3-0.6b-q8-0` | pending | pending | pending | pending |
-| llama.cpp assistant | `llama-qwen3.6-27b-mtp-q8-0` | pending | pending | pending | pending |
-| llama.cpp Qwen tool protocol | `qwen3.6-35b-a3b-mtp-ud-q8-k-xl`, complete nested tool round trip | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
-| llama.cpp 35B-A3B agent evaluation | `qwen3.6-35b-a3b-ud-q8-k-xl` first, then `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
-| llama.cpp Laguna XS coding/agent | `llama-laguna-xs-2.1-q4-k-m`, 256K allocation and smaller deep task | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
-| llama.cpp coding/agent | `llama-laguna-s-2.1-q4-k-m`, 256K context | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
-| llama.cpp Muse DFlash | both guided target/draft pairs at 128K, ROCm depth 15 or Vulkan depth 4, then forced 256K beyond 128K | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
+| llama.cpp Qwen3.6 tool protocol | `qwen3.6-27b-mtp-q8-0`, complete nested tool round trip at 256K/high | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
+| llama.cpp Qwen3.8 tool protocol | `qwen3.8-27b-mtp-ud-q8-k-xl`, complete nested tool round trip at 256K/high | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
+| llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k`, ROCm depth 12 or Vulkan depth 4, high strength | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | pending | pending |
+| llama.cpp normalized agent comparison | Qwen3.6 MTP, Qwen3.8 MTP, and Muse 256K through Pi under `three-model-256k-v1` | N/P unless every model and context fits the card | N/P unless host memory is deliberately used | pending | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
 
 DwarfStar remains experimental after the bounded smoke. Before promoting it,
@@ -799,44 +798,35 @@ it, so memory-capacity acceptance and IOMMU performance remain separate
 questions. DSpark, MTP, multi-GPU, distributed
 execution, and SSD streaming are not part of the current application contract.
 
-Laguna S remains experimental even after basic startup until chat templating,
-tool use, sustained generation, and output sanity are accepted. Laguna XS has
-useful Strix Halo field evidence, but still needs formal row acceptance and
-coverage on the other applicable hardware profiles.
-
 For the Qwen tool-protocol row, start the managed router and inspect `/props`
 for the expected template capabilities and context. Send a developer message
 and a tool schema with a nested object, require a structured tool call, return
 the result as a tool message, and require a final answer. Repeat the exchange
-with streaming enabled. If the MTP preset fails, repeat it with
-`qwen3.6-27b-q8-0` to separate template handling from speculative decoding.
+with streaming enabled. If either MTP preset fails, repeat it with its matching
+non-MTP preset to separate template handling from speculative decoding.
 Only after the raw API exchange passes should OpenCode, Pi, OMP, and Maki tasks be
 used as the final integration checks.
 
-For the 35B-A3B agent-evaluation row, start the non-MTP preset first and leave
-OpenCode's edit, shell, and subagent approvals enabled. Repeat a focused
-Investigate-mode repository question, a delegated local investigation, a
-bounded delegated web investigation, a raw nested-tool round trip, and the
-concurrent nonce corruption probe before allowing a disposable edit task.
-Confirm that only the two hidden read-only workers are available to
-Investigate and that their reports return to the parent without mutation
-prompts. Repeat the bounded repository task through Pi, OMP, and Maki and
-verify their tool calls and result replay before testing the matching MTP preset.
-Record quality, protocol, or state-corruption failures instead of promoting
-either candidate to a default.
+For the normalized comparison row, run each of the three maintained presets
+through Pi with `--normalized-comparison`, the same tasks and repetition
+count, and unchanged hardware/runtime inputs. Keep edit and shell approvals
+equivalent across runs. Compare the structured results only after all three
+complete; record quality, protocol, state-corruption, or truncation failures
+instead of treating wall time as the sole rank.
 
-For the Muse row, use the 128K DFlash preset for a complete managed OpenCode
-tool loop, then repeat the task with the non-speculative control when behavior
-or output is suspect. Exercise the forced-256K preset with prompts extending
-beyond 128K and inspect retrieval quality, tool selection, draft acceptance,
-latency, and memory rather than treating successful startup as acceptance.
+For the Muse row, begin with the forced-256K DFlash default for a complete
+managed tool loop, then repeat the task with the 128K DFlash and
+non-speculative controls when behavior or output is suspect. Exercise prompts
+extending beyond 128K and inspect retrieval quality, tool selection, draft
+acceptance, latency, and memory rather than treating successful startup as
+acceptance.
 Maki has completed substantial live repository tasks and is the strongest
 validated scaffold for the official target. OpenCode, Pi, and OMP remain exposed
 through the same reviewed function-tool contract, but depth is sensitive to
 their scaffold and prompt. Complete the intended live task in each client
 before allowing unattended writes. Confirm `reasoning-preserve = true` in
 router mode or `--reasoning-preserve` in direct-server startup; do not confuse
-that history policy with a client-selectable reasoning-effort budget.
+that history policy with Muse's client-selectable reasoning strength.
 
 For a host with two matching GPUs, add these single-workload checks:
 

@@ -133,6 +133,10 @@ class LlamaPreset:
     jinja: bool = False
     agent_tools: bool = False
     reasoning_effort_budget: bool = False
+    reasoning_levels: Tuple[str, ...] = field(default_factory=tuple)
+    reasoning_default: str = "off"
+    reasoning_off: bool = False
+    reasoning_parameter: str = ""
     reasoning_preserve: bool = False
     chat_template: str = ""
     flash_attention: Mapping[str, str] = field(default_factory=dict)
@@ -193,7 +197,7 @@ class Catalog:
         except KeyError:
             raise LauncherError(
                 "unknown llama.cpp preset {!r}; "
-                "use 'content install llama-cpp qwen3.6 "
+                "use 'content install llama-cpp muse-glimmer "
                 "--dry-run'".format(identifier)
             )
 
@@ -762,6 +766,10 @@ def _load_llama_preset(
         "jinja",
         "agent_tools",
         "reasoning_effort_budget",
+        "reasoning_levels",
+        "reasoning_default",
+        "reasoning_off",
+        "reasoning_parameter",
         "reasoning_preserve",
         "chat_template",
         "flash_attention",
@@ -957,6 +965,101 @@ def _load_llama_preset(
             "llama.cpp preset {} reasoning_effort_budget requires "
             "agent_tools".format(identifier)
         )
+    reasoning_levels_value = data.get(
+        "reasoning_levels",
+        ["low", "medium", "high"] if reasoning_effort_budget else [],
+    )
+    if not isinstance(reasoning_levels_value, list) or any(
+        not isinstance(level, str)
+        for level in reasoning_levels_value
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_levels must be an array of "
+            "strings".format(identifier)
+        )
+    allowed_reasoning_levels = (
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+    )
+    reasoning_levels = tuple(reasoning_levels_value)
+    if (
+        len(set(reasoning_levels)) != len(reasoning_levels)
+        or any(
+            level not in allowed_reasoning_levels
+            for level in reasoning_levels
+        )
+        or tuple(
+            level
+            for level in allowed_reasoning_levels
+            if level in reasoning_levels
+        )
+        != reasoning_levels
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_levels must be unique, ordered "
+            "values from {}".format(
+                identifier, ", ".join(allowed_reasoning_levels)
+            )
+        )
+    reasoning_default = data.get(
+        "reasoning_default",
+        "medium" if reasoning_effort_budget else "off",
+    )
+    if not isinstance(reasoning_default, str) or reasoning_default not in (
+        "off",
+        *reasoning_levels,
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_default must be off or one of "
+            "its reasoning_levels".format(identifier)
+        )
+    reasoning_off = data.get(
+        "reasoning_off", reasoning_effort_budget
+    )
+    if not isinstance(reasoning_off, bool):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_off must be a boolean".format(
+                identifier
+            )
+        )
+    if (
+        (reasoning_levels or reasoning_default != "off" or reasoning_off)
+        and not reasoning_effort_budget
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning controls require "
+            "reasoning_effort_budget".format(identifier)
+        )
+    if (
+        reasoning_effort_budget
+        and reasoning_default == "off"
+        and not reasoning_off
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_default off requires "
+            "reasoning_off".format(identifier)
+        )
+    reasoning_parameter = data.get(
+        "reasoning_parameter",
+        "budget" if reasoning_effort_budget else "",
+    )
+    if not isinstance(reasoning_parameter, str) or reasoning_parameter not in (
+        "",
+        "budget",
+        "effort",
+        "strength",
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_parameter must be empty, "
+            "budget, effort, or strength".format(identifier)
+        )
+    if reasoning_effort_budget != bool(reasoning_parameter):
+        raise LauncherError(
+            "llama.cpp preset {} reasoning_parameter must be set exactly "
+            "when reasoning_effort_budget is enabled".format(identifier)
+        )
     reasoning_preserve = data.get("reasoning_preserve", False)
     if not isinstance(reasoning_preserve, bool):
         raise LauncherError(
@@ -1036,6 +1139,10 @@ def _load_llama_preset(
         jinja=jinja,
         agent_tools=agent_tools,
         reasoning_effort_budget=reasoning_effort_budget,
+        reasoning_levels=reasoning_levels,
+        reasoning_default=reasoning_default,
+        reasoning_off=reasoning_off,
+        reasoning_parameter=reasoning_parameter,
         reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
         flash_attention=flash_attention,
@@ -1222,7 +1329,7 @@ def _validate_catalog(catalog: Catalog) -> None:
 
 def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
     raw = _read_json_object(path, "catalog")
-    if not isinstance(raw, dict) or raw.get("schema_version") != 21:
+    if not isinstance(raw, dict) or raw.get("schema_version") != 22:
         raise LauncherError("unsupported or invalid catalog schema")
     allowed = {
         "schema_version",

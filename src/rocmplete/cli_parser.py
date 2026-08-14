@@ -166,7 +166,7 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal OpenCode arguments through the launcher:
 
-  opencode -m rocmplete/qwen3.6-35b-a3b-mtp-ud-q8-k-xl
+  opencode -m rocmplete/muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 
 Use a separately running DwarfStar server:
 
@@ -194,7 +194,7 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal Pi arguments through the launcher:
 
-  pi --model qwen3.6-35b-a3b-mtp-ud-q8-k-xl --thinking high
+  pi --model muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k --thinking high
 
 Use a separately running DwarfStar server:
 
@@ -222,7 +222,7 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal OMP arguments through the launcher:
 
-  omp --model rocmplete-llama-cpp/qwen3.6-35b-a3b-mtp-ud-q8-k-xl --thinking high
+  omp --model rocmplete-llama-cpp/muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k --thinking high
 
 Use a separately running DwarfStar server:
 
@@ -245,7 +245,7 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal Maki arguments through the launcher:
 
-  maki -m rocmplete/qwen3.6-35b-a3b-mtp-ud-q8-k-xl
+  maki -m rocmplete/muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 
 Use a separately running DwarfStar server:
 
@@ -304,6 +304,8 @@ Try one of these:
 
   ./rocmplete benchmark run BUNDLE --dry-run
   ./rocmplete benchmark agent --preset qwen3.6-27b-q8-0 --dry-run
+  ./rocmplete benchmark agent --preset qwen3.6-27b-mtp-q8-0 \
+    --normalized-comparison --dry-run
   ./rocmplete benchmark agent --preset PRESET --task re-cancel
   ./rocmplete benchmark agent --list-tasks
   ./rocmplete benchmark llama-cpp --preset qwen3-0.6b-q8-0 --dry-run
@@ -339,8 +341,8 @@ Try one of these:
   Start llama.cpp with an explicit local GGUF model:
     ./rocmplete run llama-cpp server --model /path/to/model.gguf
 
-  Start llama.cpp with the managed starter model:
-    ./rocmplete run llama-cpp server --preset qwen3-0.6b-q8-0
+  Start llama.cpp with the managed default model:
+    ./rocmplete run llama-cpp server --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 
   Start the dense Qwen3.6 MTP model:
     ./rocmplete run llama-cpp server --preset qwen3.6-27b-mtp-q8-0
@@ -377,23 +379,17 @@ Try one of these:
   Start the OpenAI-compatible server:
     ./rocmplete run llama-cpp server --model /path/to/model.gguf
 
-  Start the managed starter model:
-    ./rocmplete run llama-cpp server --preset qwen3-0.6b-q8-0
+  Start the managed default model:
+    ./rocmplete run llama-cpp server --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 
   Start the dense Qwen3.6 MTP model:
     ./rocmplete run llama-cpp server --preset qwen3.6-27b-mtp-q8-0
 
-  Start the sparse high-memory Qwen3.6 MTP model:
-    ./rocmplete run llama-cpp server --preset qwen3.6-35b-a3b-mtp-ud-q8-k-xl
+  Start dense Qwen3.8 with embedded MTP heads:
+    ./rocmplete run llama-cpp server --preset qwen3.8-27b-mtp-ud-q8-k-xl
 
   Start Gemma 4 31B IT Q8_0 with its Q8_0 MTP draft:
     ./rocmplete run llama-cpp server --preset gemma4-31b-it-q8-0-mtp
-
-  Start the experimental Laguna S 2.1 coding/agent model:
-    ./rocmplete run llama-cpp server --preset laguna-s-2.1-q4-k-m
-
-  Start the smaller Laguna XS 2.1 coding/agent model:
-    ./rocmplete run llama-cpp server --preset laguna-xs-2.1-q4-k-m
 
   Route requests among all installed managed presets:
     ./rocmplete run llama-cpp server --router
@@ -1574,14 +1570,22 @@ def _parser() -> argparse.ArgumentParser:
     agent_benchmark.add_argument(
         "--context",
         type=int,
-        default=131072,
+        default=None,
         help="server context shared by every task (default: 131072)",
     )
     agent_benchmark.add_argument(
         "--thinking",
         choices=("off", "minimal", "low", "medium", "high", "xhigh", "max"),
-        default="high",
+        default=None,
         help="explicit Pi thinking level (default: high)",
+    )
+    agent_benchmark.add_argument(
+        "--normalized-comparison",
+        action="store_true",
+        help=(
+            "use the fixed 256K/high/ROCm conditions for the maintained "
+            "three-model comparison"
+        ),
     )
     agent_benchmark.add_argument(
         "--profile",

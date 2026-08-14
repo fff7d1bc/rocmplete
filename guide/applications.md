@@ -123,13 +123,13 @@ model families, and exact bundle installation.
 Use llama.cpp for local text models, an OpenAI-compatible API, or an
 interactive terminal session.
 
-For a useful general assistant:
+For the common managed default:
 
 ```bash
 ./rocmplete build llama-cpp
-./rocmplete content install llama-cpp qwen3.6
+./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete run llama-cpp server \
-  --preset qwen3.6-27b-mtp-q8-0
+  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 ```
 
 For the newer dense coding and agent candidate:
@@ -140,9 +140,10 @@ For the newer dense coding and agent candidate:
   --preset qwen3.8-27b-mtp-ud-q8-k-xl
 ```
 
-The default preset is approximately 27.05 GiB with a 262144-token starting
-context. It uses the dense Qwen3.6 27B MTP Q8_0 model and verifies up to three
-tokens from its embedded prediction heads. On Strix Halo, the preset also
+The default Muse preset uses a 262144-token forced context and twelve DFlash
+draft tokens on ROCm. The dense Qwen3.6 27B MTP Q8_0 comparison preset also
+starts at 262144 tokens and verifies up to three tokens from its embedded
+prediction heads. On Strix Halo, Qwen3.6 MTP also
 enables Flash Attention and a symmetric Q8_0 target K/V cache. That
 long-context policy is separate from the Q8_0 model weights and leaves the MTP
 draft cache at llama.cpp's F16 default. Other profiles retain llama.cpp's
@@ -198,19 +199,15 @@ part of the user message.
 
 ### Choosing a managed Qwen preset
 
-Start with `qwen3.6-27b-mtp-q8-0` when you do not yet have workload results. It
-is the smaller general baseline. For agent work on a high-memory host,
-start with `qwen3.6-35b-a3b-mtp-ud-q8-k-xl`; keep the dense model as a smaller
-general assistant. Install either non-MTP control when you need to isolate the
-effect of speculative decoding:
+Muse is the managed-client default. Use dense Qwen3.6 27B MTP and Qwen3.8 27B
+MTP as the two maintained Qwen comparison points. Install either non-MTP
+control when you need to isolate speculative decoding:
 
 | Preset | What changes | Good use |
 | --- | --- | --- |
 | `qwen3-0.6b-q8-0` | Tiny 0.6B model | Startup, API, and GPU-offload smoke tests |
 | `qwen3.6-27b-mtp-q8-0` | Dense 27B MTP Q8_0 | General assistant and smaller baseline |
 | `qwen3.6-27b-q8-0` | Dense 27B Q8_0 | Non-MTP control for the dense model |
-| `qwen3.6-35b-a3b-ud-q8-k-xl` | Sparse 35B-A3B Dynamic Q8_K_XL | Non-MTP control for the recommended agent model |
-| `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | Matching sparse model with MTP heads | Recommended agent-client default on a high-memory host |
 | `qwen3.8-27b-ud-q8-k-xl` | Dense 27B Dynamic Q8_K_XL | Qwen3.8 non-speculative control |
 | `qwen3.8-27b-mtp-ud-q8-k-xl` | Same GGUF using its embedded MTP heads | New dense coding-agent candidate |
 
@@ -233,7 +230,7 @@ reports large improvements over Qwen3.6-27B on its coding and agent harnesses.
 Treat those numbers as candidate-selection evidence, not acceptance of this
 quantization or local client behavior.
 ROCmplete therefore exposes Qwen3.8 after installation without changing the
-Qwen3.6 agent-client default. The catalog currently serves text only; native
+Muse agent-client default. The catalog currently serves text only; native
 vision needs the optional projector and separate multimodal acceptance.
 
 Initial Strix Halo acceptance measured 19.12 generated tokens/s for the
@@ -244,26 +241,23 @@ and 26 tool calls. The earlier accepted Qwen3.6 27B run solved that task in
 451 seconds, so install Qwen3.8 as a promising candidate rather than assuming
 the upstream benchmark gain transfers directly to every local agent task.
 
-### Ornith and KAT-Coder
+### KAT-Coder
 
-Ornith and KAT-Coder have separate family-oriented recipes, so either Q8_0 35B
-MoE model can be installed independently on a high-memory host:
+KAT-Coder has a separate family-oriented recipe and can be installed
+independently on a high-memory host:
 
 ```bash
-./rocmplete content install llama-cpp ornith
 ./rocmplete content install llama-cpp kat-coder
 ```
 
 | Preset | Source | Current role |
 | --- | --- | --- |
-| `ornith-1.0-35b-q8-0` | DeepReinforce's official Ornith 1.0 GGUF | Agentic-coding candidate |
 | `kat-coder-v2.5-dev-q8-0` | Bartowski's plain Q8_0 conversion of Kwaipilot's public text-only checkpoint | Newer agentic-coding candidate kept separate from APEX and MTP derivatives |
 
-Both presets use their native 256K context. Ornith uses its embedded
-tool-aware Jinja template. KAT-Coder uses the later pinned upstream template
+The preset uses its native 256K context and the later pinned upstream template
 that accepts system messages introduced by an agent after the first turn.
-They appear in both managed client model pickers after installation, but
-neither replaces ROCmplete's Qwen3.6 default. Treat benchmark claims as leads,
+It appears in all managed client model pickers after installation, but does
+not replace ROCmplete's Muse default. Treat benchmark claims as leads,
 then compare tool-call correctness, task completion, repetition, wall time,
 and recovery from long sessions on the same repositories. ROCmplete does not
 catalog the community APEX mixed-precision or grafted-MTP variants because
@@ -426,27 +420,18 @@ OpenCode, Pi, and OMP use these llama.cpp request defaults for coding turns:
 
 | Model family | Temperature | Top-p | Top-k | Min-p | Presence penalty | Repeat penalty |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Qwen3.6 27B and 35B-A3B | 0.6 | 0.95 | 20 | 0 | 0 | 1 |
-| Ornith 1.0 35B | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
+| Qwen3.6 27B | 0.6 | 0.95 | 20 | 0 | 0 | 1 |
+| Qwen3.8 27B | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
 | KAT-Coder V2.5 Dev | 1.0 | 0.95 | 20 | 0 | 1.5 | 1 |
 | Gemma 4 31B IT | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
-| Laguna S and XS 2.1 | 1.0 | 1.0 | 20 | 0 | 0 | 1 |
 | Muse Glimmer 30B | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 
 The sources are Qwen's precise-coding recommendation for
 [Qwen3.6 27B](https://huggingface.co/Qwen/Qwen3.6-27B/blob/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9/README.md)
-and
-[35B-A3B](https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md),
-Ornith's
-[generation configuration](https://huggingface.co/deepreinforce-ai/Ornith-1.0-35B/blob/5df2ed3f675c7beaa490328cc70bb573b65fb660/generation_config.json),
-KAT-Coder's
+, KAT-Coder's
 [agent API example](https://huggingface.co/Kwaipilot/KAT-Coder-V2.5-Dev/blob/7be56fe773e72b6f5ca93c1ae45d828ddb893922/README.md),
 Gemma 4's
 [standardized sampling guidance](https://huggingface.co/google/gemma-4-31B-it/blob/842da3794eaa0b77d5f08bae87a17459d91ff475/README.md),
-Laguna's
-[S generation configuration](https://huggingface.co/poolside/Laguna-S-2.1/blob/00af5a51782109b587a3b3bbf11875e566036fa7/generation_config.json)
-and
-[XS generation configuration](https://huggingface.co/poolside/Laguna-XS-2.1/blob/e9df9a59996d790b94b70f3fef343fe1d9e34bdf/generation_config.json),
 and Muse Glimmer's
 [model card](https://huggingface.co/meta-models/Muse-Glimmer-30B/blob/f84ecc3a0ea984a4c04542a84269e3d065350a6e/README.md).
 Neutral values make parameters omitted by an upstream configuration explicit
@@ -467,7 +452,7 @@ generated main configuration directly into the child process, and points it
 at the read-only TUI keymap in the checkout. It writes no integration files.
 Pulling a catalog or policy update therefore changes the next launch without
 an install step.
-The recommended MTP preset is the default when present. If it is absent, the
+Muse Dynamic DFlash 256K is the default when present. If it is absent, the
 launcher selects another installed agent-capable preset; `-m
 rocmplete/PRESET` still overrides that selection through OpenCode itself.
 Project OpenCode configuration continues to load around the runtime settings.
@@ -521,7 +506,8 @@ provider, while the managed llama.cpp router and DwarfStar service listen on
 different ports. Combining them into one provider would require an additional
 routing proxy rather than a cosmetic model-name prefix.
 
-OMP starts managed sessions with medium thinking where supported and its
+OMP starts managed Muse sessions with high thinking and other reasoning
+models at their catalog default, plus its
 upstream `yolo` approval mode. A later `--model`, `--thinking`, or
 `--approval-mode` argument remains authoritative. OMP management commands such
 as `models`, `config`, and `plugin` use the private state without requiring an
@@ -539,8 +525,8 @@ llama.cpp Chat Completions adapter and publish the exact context, output, and
 thinking capabilities of the reviewed presets. Maki's normal global config,
 sessions, and model choices are not read or modified.
 
-The recommended installed model starts at medium thinking. Maki remembers an
-explicit `/model` or `/thinking` choice in its private state. On the first
+The recommended Muse model starts at an exact 8192-token high ceiling. Maki
+remembers an explicit `/model` or `/thinking` choice in its private state. On the first
 launch, ROCmplete assigns the selected default to Maki's strong, medium, weak,
 and compaction tiers so a local subagent does not silently select another
 alphabetically sorted model. Later tier changes in `/model` are preserved.
@@ -657,16 +643,20 @@ automatic compaction while still accommodating the managed 8K high reasoning
 budget and a final response. This limit is per model turn, not the total
 session.
 
-Presets with reviewed bounded reasoning expose disabled, low, medium, and high
-choices. OpenCode names the disabled choice `instant`; Pi, OMP, and Maki name
-it `off`. OpenCode uses `ctrl+t` or `/variants`, while Pi uses `Shift+Tab`, the
-thinking selector in `/settings`, or the startup `--thinking` option. Pi's
-`/model` changes the model rather than opening a separate reasoning selector.
-OMP also accepts `--thinking`; Maki uses `/thinking`. The disabled choice sends
-`reasoning_effort: none`. The other three are real llama.cpp thinking ceilings
-of 1024, 4096, and 8192 tokens, not just UI labels.
-ROCmplete uses medium until a per-model choice takes precedence. A preset
-without reviewed budget support does not advertise reasoning choices.
+Qwen exposes off/instant, low, medium, and high. Those map to 0, 1024, 4096,
+and 8192 llama.cpp reasoning tokens. Qwen3.8 also receives the named native
+effort in its template; Qwen3.6 is budget-only. Muse always reasons and
+instead exposes native low, medium, high, and xhigh strength with 1024, 4096,
+8192, and 16384-token ceilings. Muse defaults to high and Pi/OpenCode do not
+advertise a false off/instant choice. OpenCode uses `ctrl+t` or `/variants`,
+Pi uses `Shift+Tab`, `/settings`, or `--thinking`, OMP accepts `--thinking`,
+and Maki uses `/thinking`.
+
+Maki's llama.cpp adapter sends numeric `thinking_budget_tokens`; it cannot
+carry the separate Qwen effort or Muse strength name. Its selector therefore
+controls the server-side ceiling only. Use Pi for normalized model-quality
+comparisons so the request carries both the named native control and the
+project's matching ceiling.
 
 All four clients use `/v1/chat/completions` and expose their file and shell
 tools as ordinary function calls. That matches llama.cpp's current tool
@@ -874,36 +864,32 @@ measurements as described in the Qwen section.
 
 The dense Qwen3.6 27B preset uses three draft tokens. On Strix Halo it combines
 that depth with Q8_0 target K/V and Flash Attention based on the project's
-37K- and 94K-context acceptance. The sparse Qwen35-A3B preset retains F16 K/V
-because the same cache change was neutral there. Inspect the resolved policy
-with `content list --models --details` instead of assuming one setting applies
-to every Qwen model.
+37K- and 94K-context acceptance. Inspect the resolved policy with `content
+list --models --details` instead of assuming one setting applies to every
+Qwen model.
 
 ### Muse Glimmer and DFlash
 
 Muse Glimmer is a separate 30B model family rather than another Qwen variant.
 The recipe installs [Meta's official Dynamic Q4_K_XL target and DFlash
 draft](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/93769bc7ab5ad1e9cd22d857e3138cf5d977ae81/README.md),
-plus Meta's current smaller 17 GB
-Q4_K_M target with its own matching Q4_K_M DFlash draft, approximately 36.95
-GiB in total:
+approximately 19.82 GiB in total:
 
 ```bash
 ./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash
+  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 ```
 
-The DFlash preset is the recipe default. It starts at 131072 tokens and uses
-fifteen draft tokens on ROCm, matching the draft's 16-token block, or four on
-Vulkan where the deeper setting regressed controlled Strix Halo workloads.
+The forced-256K DFlash preset is the recipe and managed-agent default. It uses
+twelve draft tokens on ROCm or four on Vulkan. The 128K DFlash control uses
+fifteen on ROCm, matching the draft's 16-token block.
 The dynamic bundle also exposes
 `muse-glimmer-30b-kquant-dynamic-q4-k-xl` as a non-speculative control. This
 makes it possible to compare output, draft acceptance, wall time, and memory
 without changing the target GGUF.
 
-The dynamic bundle also exposes an experimental forced-window policy without
-another download:
+The forced-window policy needs no separate download:
 
 ```bash
 ./rocmplete run llama-cpp server \
@@ -917,23 +903,10 @@ comparison on the pinned llama.cpp build; the 128K XL preset retains fifteen.
 Vulkan continues to use its separately accepted depth of four.
 Meta's pinned target and DFlash metadata declare 131072 tokens. Treat 256K as
 forced extrapolation until retrieval, quality, memory, and draft acceptance
-pass beyond 128K. The 128K DFlash preset therefore remains the recipe default.
+pass beyond 128K. Making it the operational default is a deliberate local
+policy, not evidence that Meta declared a 256K window.
 `--context 0` is intentionally refused for the forced preset; a positive
 override such as `--context 196608` applies to both target and draft metadata.
-
-The 17 GB pair is installed by the same family recipe and has matching base,
-128K DFlash, and forced-256K DFlash policies:
-
-```bash
-./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-17gb-q4-k-m-dflash
-```
-
-On the accepted Strix Halo workloads it improved fixed long-prompt generation
-and reduced ROCm unified-memory use, and it completed the maintained Pi coding
-probe. Its more aggressive quantization still carries a larger quality risk
-than the dynamic target, so the dynamic 128K DFlash preset remains the recipe
-launch default. Each target keeps its own pinned upstream DFlash artifact.
 
 On one `gfx1151` host, a fixed pp512/tg128 ROCm benchmark measured the
 official K-quant at 341.17 prompt and 10.32 generated tokens/s. The previously
@@ -944,7 +917,7 @@ versus 37.5 seconds and 66.77 GB for BF16. These are one-host observations,
 not cross-hardware promises. The complete immutable inputs and caveats are in
 the [maintainer feasibility record](../docs/muse-glimmer-llama-cpp-agent-feasibility.md).
 
-Both targets' base, 128K DFlash, and forced-256K DFlash presets are advertised
+The target's base, 128K DFlash, and forced-256K DFlash presets are advertised
 to the managed OpenCode, Pi, OMP, and Maki clients. OpenCode, Pi, and OMP use
 the pinned upstream temperature 1.0, top-p 0.95, and top-k 64 defaults; Maki
 retains the server sampler defaults because its dynamic-provider schema cannot
@@ -955,13 +928,13 @@ turn, not a server crash: repository-review depth remains sensitive to the
 client scaffold and prompt. Test the actual workflow before granting
 unattended write access.
 
-All six presets enable llama.cpp reasoning preservation so parsed reasoning
-remains available to multi-turn history. This is separate from a bounded
-reasoning-effort selector: Muse does not advertise the Qwen-style effort
-variants. The managed Meta template normalizes an existing `Reasoning effort`
-system directive to Muse's `Reasoning strength` terminology and avoids adding
-a contradictory default-high directive. With no such system directive it
-retains Meta's `Reasoning strength: high` default.
+All three presets enable llama.cpp reasoning preservation so parsed reasoning
+remains available to multi-turn history. Muse does not have a native off mode.
+It exposes low, medium, high, and xhigh `Reasoning strength`, defaulting to
+high; ROCmplete couples those strengths to bounded 1024, 4096, 8192, and
+16384-token sampler ceilings. Pi, OpenCode, and OMP expose the named levels.
+Maki can set the numeric ceiling but its llama.cpp transport cannot carry the
+separate native strength string.
 
 ROCmplete previously installed
 `Muse-Glimmer-30B-UD-Q8_K_XL.gguf` for this recipe. Upgrading the catalog does
@@ -969,97 +942,6 @@ not delete persistent model content. After the official replacement installs
 and verifies successfully, remove the obsolete file manually if it is no
 longer needed. The forced-256K entry remains available for pre-release field
 testing, but its long-context quality and DFlash acceptance are experimental.
-
-### Laguna XS 2.1
-
-Laguna XS 2.1 is a 33B-total, 3B-active mixture-of-experts model for local
-agentic coding and long-horizon work. ROCmplete pins Poolside's official
-Q4_K_M GGUF at 20,274,300,032 bytes, approximately 18.88 GiB. The model's
-native context is 262144 tokens.
-
-Poolside's pinned GGUF card still says that llama.cpp support is pending. That
-note predates the merged
-[`llama.cpp` Laguna PR](https://github.com/ggml-org/llama.cpp/pull/25165).
-ROCmplete's existing llama.cpp pin already contains the merged architecture,
-so this model requires no source update or project patch.
-
-The managed preset enables Jinja tool templates and preserves parsed
-reasoning across multi-turn tool use. It does not advertise Qwen-style
-thinking levels because the model's native reasoning switch is not
-llama.cpp's patched reasoning-effort budget. The model appears as one entry
-in OpenCode, Pi, OMP, and Maki. Qwen3.6 remains the managed client default.
-
-ROCmplete disables Flash Attention for Laguna XS on Strix Halo and Strix
-Point. The tested `gfx1151` ROCm path rejected the model's head size with
-Flash Attention enabled, while Flash Attention off with F16 K/V cache was
-correct. RDNA4 retains llama.cpp's automatic policy. DFlash is not included
-in the initial recipe even though Poolside publishes a draft model. The base
-Q4_K_M path is the accepted control and avoids coupling the first integration
-to a second artifact and speculative-decoding policy.
-
-On a 128 GB Strix Halo host, a fresh 256K allocation used about 58.42 GB of
-container memory and left about 68 GiB available. A shallow request remained
-correct, but the experiment did not fill the complete window with prompt
-tokens. Use `--context 131072` or `--context 65536` when the native allocation
-is unnecessary or host headroom is tighter.
-
-The raw API produced clean arithmetic, a valid structured weather tool call,
-and a correct tool-result follow-up. A read-only Pi repository task completed
-valid tool loops and survived compaction at roughly 30K context, but an
-intentionally broad review prompt overexplored instead of converging. Treat
-that as a model and scaffold discipline caveat, not a server failure. Other
-managed clients inherit the reviewed protocol and sampling metadata but still
-need workload-specific field acceptance.
-
-Poolside's official GGUF repository includes and declares OpenMDW-1.1, so
-installation requires terms acceptance but not the unverified-artifact risk
-flag:
-
-```bash
-./rocmplete content install llama-cpp laguna-xs-2.1 --accept-license
-./rocmplete run llama-cpp server \
-  --preset laguna-xs-2.1-q4-k-m --profile strix-halo
-```
-
-The fixed ROCm pp512/tg128 test measured about 885.81 prompt tokens/s and
-60.59 generated tokens/s on the tested host. Those figures are one
-machine-specific baseline, not a cross-backend or cross-device guarantee.
-
-### Laguna S 2.1
-
-Laguna S 2.1 is a 118B-A8B mixture-of-experts model intended for agentic
-coding and long-horizon work. Its pinned official Q4_K_M file is approximately
-63.56 GiB. It quantizes the routed experts with an importance matrix while
-keeping the attention, shared experts, and embeddings at Q8_0. The official
-Q8_0 file is about 129 GB before allocating a KV cache or runtime buffers, so
-it is not a viable 128 GiB-host alternative. ROCmplete starts Laguna at its
-recommended 262144 tokens, enables Jinja for chat and tool templates, and
-preserves its interleaved reasoning between tool turns. Managed agent clients
-offer bounded low, medium, and high reasoning levels; the llama.cpp server
-maps those levels to 1024, 4096, and 8192 reasoning tokens. ROCmplete disables
-Flash Attention on both RDNA 3.5 APU profiles
-because that backend/model combination has conflicting early reports. RDNA4
-retains llama.cpp's automatic Flash Attention policy. DFlash is not enabled
-because the pinned upstream llama.cpp supports the base Laguna architecture
-but not Poolside's fork-only DFlash path.
-
-Treat the preset as experimental until it has been accepted on target
-hardware. Use `--context 131072` or `--context 65536` if the native window
-does not leave enough room for the KV cache, runtime buffers, and the host.
-Poolside's GGUF repository points to the base OpenMDW-1.1 terms but does not
-independently declare license
-metadata for the conversion, so installation requires both flags shown below.
-
-```bash
-./rocmplete content install llama-cpp laguna-s-2.1 \
-  --accept-license --acknowledge-license-risk
-./rocmplete run llama-cpp server \
-  --preset laguna-s-2.1-q4-k-m --profile strix-halo
-```
-
-Managed presets are text-only; ROCmplete does not install vision projectors.
-For document work, extract text outside ROCmplete and send bounded chunks
-through the API. Parsing, OCR, and retrieval are outside these bundles.
 
 ### Router mode and local GGUF files
 

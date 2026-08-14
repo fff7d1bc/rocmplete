@@ -166,7 +166,7 @@ def _comfyui_guide() -> ApplicationGuide:
 
 
 def _llama_guide() -> ApplicationGuide:
-    assistant = "qwen3.6-27b-mtp-q8-0"
+    assistant = "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
     benchmark = "qwen3.6-27b-q8-0"
     return ApplicationGuide(
         application="llama-cpp",
@@ -176,9 +176,8 @@ def _llama_guide() -> ApplicationGuide:
             GuideSection(
                 "Start here",
                 (
-                    "Build llama.cpp and install the dense and sparse "
-                    "Qwen3.6 MTP pair. The installer prints the command for "
-                    "starting dense 27B MTP.",
+                    "Build llama.cpp and install Muse Glimmer Dynamic with "
+                    "DFlash. The installer prints the 256K default command.",
                 ),
                 (
                     _action(
@@ -190,8 +189,8 @@ def _llama_guide() -> ApplicationGuide:
                         "Build or refresh the llama.cpp application path.",
                     ),
                     _action(
-                        "./rocmplete content install llama-cpp qwen3.6",
-                        "Install both practical Qwen3.6 MTP choices.",
+                        "./rocmplete content install llama-cpp muse-glimmer",
+                        "Install the default Muse Glimmer target/draft pair.",
                     ),
                     _action(
                         "./rocmplete content list --models --details",
@@ -225,26 +224,17 @@ def _llama_guide() -> ApplicationGuide:
                     "are coding clients, so they apply reviewed per-model "
                     "sampling defaults. Direct API requests, terminal mode, "
                     "and Maki keep their own request behavior.",
-                    "The qwen3.6 recipe installs dense 27B MTP Q8_0 and sparse "
-                    "35B-A3B MTP Dynamic Q8_K_XL together. Its printed next "
-                    "step starts dense 27B MTP as the general baseline.",
-                    "The separate ornith and kat-coder recipes install the "
-                    "official Ornith 1.0 35B Q8_0 GGUF or the plain "
-                    "KAT-Coder V2.5 Dev Q8_0 conversion. They are comparison "
-                    "candidates, not replacement defaults.",
-                    "The laguna-xs-2.1 recipe installs Poolside's official "
-                    "33B-total, 3B-active Q4_K_M coding model. It keeps "
-                    "Qwen as the client default and is independent of the "
-                    "much larger Laguna S family.",
+                    "The qwen3.6 recipe installs only dense 27B MTP Q8_0. "
+                    "Its non-MTP control remains an exact advanced bundle.",
+                    "The separate qwen3.8 recipe installs dense 27B Dynamic "
+                    "Q8_K_XL with embedded MTP heads. KAT-Coder remains a "
+                    "separate comparison family.",
                     "For local agent work on a high-memory host, compare "
                     "alternative presets on real repository tasks before "
                     "choosing a default.",
-                    "On Strix Halo, the sparse Qwen3.6 35B-A3B MTP "
-                    "Q8_K_XL preset is the recommended OpenCode starting "
-                    "point. Dense 27B MTP remains the smaller general "
-                    "assistant and comparison point.",
-                    "Matching dense and sparse non-MTP controls remain "
-                    "available as exact advanced bundles.",
+                    "Muse Glimmer Dynamic DFlash at forced 256K is the common "
+                    "managed-client default. Dense Qwen3.6 27B MTP and "
+                    "Qwen3.8 27B MTP are the maintained comparison points.",
                     "MTP proposes and verifies extra tokens during decoding. "
                     "It may improve generation speed, but it is not a "
                     "reasoning mode and does not accelerate prompt ingestion.",
@@ -320,8 +310,8 @@ def _llama_guide() -> ApplicationGuide:
                 (
                     "Router mode exposes every complete managed preset. "
                     "The API model name is the ROCmplete preset name.",
-                    "Qwen3.6, Ornith, KAT-Coder, Gemma 4, and both Laguna "
-                    "families start at their native 256K context. Use "
+                    "Qwen3.6, Qwen3.8, KAT-Coder, Gemma 4, and Muse "
+                    "families have maintained 256K presets. Use "
                     "--context 131072 "
                     "or --context 65536 for a smaller working set. In "
                     "router mode that option "
@@ -340,14 +330,13 @@ def _llama_guide() -> ApplicationGuide:
             GuideSection(
                 "Tool-using clients",
                 (
-                    "Managed Qwen, Ornith, KAT-Coder, Gemma 4, Laguna, and "
+                    "Managed Qwen, KAT-Coder, Gemma 4, and "
                     "Muse agent presets enable reviewed Jinja templates for "
                     "llama.cpp's structured tool-call path. Qwen3.6 uses a "
                     "fixed managed template so later developer instructions "
                     "remain in agent history. Gemma uses Google's canonical "
-                    "tool-calling template. Laguna XS and Muse preserve "
-                    "parsed reasoning without exposing Qwen-style effort "
-                    "levels.",
+                    "tool-calling template. Qwen3.8 and Muse preserve "
+                    "parsed reasoning across tool turns.",
                     "Use the ROCmplete preset ID as the router model ID and "
                     "configure the client with that preset's actual context "
                     "limit. Qwen3 0.6B can smoke-test the protocol but is "
@@ -384,17 +373,22 @@ def _llama_guide() -> ApplicationGuide:
                     "web workers. Their source material stays in separate "
                     "child sessions. Investigate also avoids OpenCode's "
                     "synthetic maximum-step continuation prompt.",
-                    "Managed reasoning presets expose off or instant, low, "
-                    "medium, and high thinking budgets. The disabled choice "
-                    "turns thinking off; medium is the llama.cpp fallback. "
+                    "Qwen reasoning presets expose instant, low, medium, and "
+                    "high. Muse reasons unconditionally and exposes native "
+                    "low, medium, high, and xhigh strength; high is its "
+                    "default. Each named level also has a bounded llama.cpp "
+                    "thinking-token ceiling. "
                     "OpenCode uses ctrl+t or /variants. Pi uses Shift+Tab "
                     "or /settings. OMP accepts --thinking. Maki uses "
-                    "/thinking and Tab toggles its Plan and Build modes.",
+                    "/thinking and Tab toggles its Plan and Build modes. "
+                    "Maki's llama.cpp transport controls numeric budgets; "
+                    "use Pi for comparisons that must also carry Qwen "
+                    "effort or Muse strength into the chat template.",
                 ),
                 (
                     _action(
-                        "./rocmplete content install llama-cpp qwen3.6",
-                        "Install the dense and sparse MTP models.",
+                        "./rocmplete content install llama-cpp muse-glimmer",
+                        "Install the default Muse target/draft pair.",
                     ),
                     _action(
                         "./rocmplete run llama-cpp server "

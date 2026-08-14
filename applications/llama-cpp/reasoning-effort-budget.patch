@@ -2,7 +2,7 @@ diff --git a/tools/server/server-common.cpp b/tools/server/server-common.cpp
 index 5ff7685bb..fd6c593bf 100644
 --- a/tools/server/server-common.cpp
 +++ b/tools/server/server-common.cpp
-@@ -16,6 +16,22 @@
+@@ -16,6 +16,25 @@
  #include <cstring>
  #include <type_traits>
  
@@ -19,13 +19,16 @@ index 5ff7685bb..fd6c593bf 100644
 +    if (effort == "high") {
 +        return 8192;
 +    }
++    if (effort == "xhigh") {
++        return 16384;
++    }
 +    return -1;
 +}
 +
  json format_error_response(const std::string & message, const enum error_type type) {
      std::string type_str;
      int code = 500;
-@@ -1292,12 +1308,19 @@ json oaicompat_chat_params_parse(
+@@ -1292,12 +1311,22 @@ json oaicompat_chat_params_parse(
          throw std::invalid_argument("invalid type for \"enable_thinking\" (expected boolean, got string)");
      }
 
@@ -38,8 +41,11 @@ index 5ff7685bb..fd6c593bf 100644
 -        if (reasoning_effort == "none") {
 +        reasoning_effort_budget = rocmplete_reasoning_effort_budget(reasoning_effort);
 +        if (reasoning_effort_budget > 0) {
-+            // Qwen3.8 consumes the same public effort choice in its template.
++            // Qwen3.8 consumes reasoning_effort; Muse consumes the matching
++            // reasoning_strength. Unknown template variables are harmless.
 +            inputs.chat_template_kwargs["reasoning_effort"] =
++                json(reasoning_effort).dump();
++            inputs.chat_template_kwargs["reasoning_strength"] =
 +                json(reasoning_effort).dump();
 +        } else if (reasoning_effort_budget == 0) {
              inputs.enable_thinking = false;
@@ -48,7 +54,7 @@ index 5ff7685bb..fd6c593bf 100644
      }
 
      inputs.force_pure_content = opt.force_pure_content;
-@@ -1333,15 +1352,24 @@ json oaicompat_chat_params_parse(
+@@ -1333,15 +1362,24 @@ json oaicompat_chat_params_parse(
      {
          int reasoning_budget = json_value(body, "reasoning_budget_tokens",
                                 json_value(body, "thinking_budget_tokens", -1));

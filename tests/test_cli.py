@@ -22,6 +22,7 @@ from rocmplete.cli import (
     _llama_context_policy,
     _llama_flash_attention_policy,
     _llama_kv_cache_policy,
+    _llama_reasoning_policy,
     _llama_speculation_policy,
     _llama_template_policy,
     _parse_gpu_diagnostic_output,
@@ -992,7 +993,7 @@ class CliTests(unittest.TestCase):
         text = output.getvalue()
         normalized = " ".join(text.split())
         self.assertIn("./rocmplete build llama-cpp", text)
-        self.assertIn("./rocmplete content install llama-cpp qwen3.6", text)
+        self.assertIn("./rocmplete content install llama-cpp muse-glimmer", text)
         self.assertIn("./rocmplete content list --models", text)
         self.assertIn("run llama-cpp cli --preset", text)
         self.assertIn("run llama-cpp server --preset", text)
@@ -1002,7 +1003,7 @@ class CliTests(unittest.TestCase):
         )
         self.assertIn("A model is the GGUF weight file", normalized)
         self.assertIn(
-            "qwen3.6 recipe installs dense 27B MTP Q8_0 and sparse",
+            "qwen3.6 recipe installs only dense 27B MTP Q8_0",
             normalized,
         )
         self.assertIn(
@@ -2707,74 +2708,9 @@ class CliTests(unittest.TestCase):
             contents,
         )
 
-    def test_llama_router_renders_every_17gb_muse_policy(self):
-        catalog = load_catalog()
-        preset = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash"
-        )
-        bundle = catalog.bundle(preset.bundle)
-        with tempfile.TemporaryDirectory() as directory:
-            data_dir = Path(directory)
-            for identifier in bundle.artifacts:
-                artifact = catalog.artifact(identifier)
-                path = (
-                    data_dir
-                    / "content"
-                    / "llama-cpp"
-                    / "models"
-                    / artifact.destination
-                )
-                path.parent.mkdir(parents=True, exist_ok=True)
-                with path.open("wb") as handle:
-                    handle.truncate(artifact.size)
-                _record_managed_file(data_dir, path, artifact)
-            contents, installed = _render_llama_router_preset(
-                catalog, data_dir
-            )
-            vulkan_contents, _ = _render_llama_router_preset(
-                catalog, data_dir, "vulkan"
-            )
-        self.assertEqual(
-            installed,
-            (
-                "muse-glimmer-30b-kquant-17gb-q4-k-m",
-                "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
-                "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k",
-            ),
-        )
-        base_section = contents.split(
-            "[muse-glimmer-30b-kquant-17gb-q4-k-m]", 1
-        )[1].split(
-            "[muse-glimmer-30b-kquant-17gb-q4-k-m-dflash]", 1
-        )[0]
-        self.assertNotIn("spec-type", base_section)
-        extended_section = contents.split(
-            "[muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k]", 1
-        )[1]
-        self.assertIn("c = 131072", contents)
-        self.assertIn("c = 262144", extended_section)
-        self.assertIn("fit = off", extended_section)
-        self.assertIn(
-            "override-kv = "
-            "muse-glimmer.context_length=int:262144,"
-            "dflash.context_length=int:262144",
-            extended_section,
-        )
-        self.assertEqual(contents.count("jinja = true"), 3)
-        self.assertEqual(contents.count("reasoning-preserve = true"), 3)
-        self.assertIn("spec-draft-n-max = 15", contents)
-        self.assertIn("spec-draft-n-max = 4", vulkan_contents)
-        self.assertNotIn("spec-draft-n-max = 15", vulkan_contents)
-        self.assertIn(
-            "model-draft = /content/models/"
-            "muse-glimmer-30b-17gb/"
-            "dflash-Muse-Glimmer-30B-Q4_K_M.gguf",
-            contents,
-        )
-
     def test_llama_router_renders_qwen_managed_template_policy(self):
         catalog = load_catalog()
-        identifier = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
+        identifier = "qwen3.6-27b-mtp-q8-0"
         preset = catalog.llama_preset(identifier)
         artifact = catalog.artifact(preset.artifact)
         with tempfile.TemporaryDirectory() as directory:
@@ -2929,69 +2865,6 @@ class CliTests(unittest.TestCase):
         )
         self.assertNotIn("reasoning-preserve", contents)
 
-    def test_llama_router_renders_profile_aware_laguna_policy(self):
-        catalog = load_catalog()
-        preset = catalog.llama_preset(
-            "laguna-s-2.1-q4-k-m"
-        )
-        artifact = catalog.artifact(preset.artifact)
-        with tempfile.TemporaryDirectory() as directory:
-            data_dir = Path(directory)
-            path = (
-                data_dir
-                / "content"
-                / "llama-cpp"
-                / "models"
-                / artifact.destination
-            )
-            path.parent.mkdir(parents=True)
-            with path.open("wb") as handle:
-                handle.truncate(artifact.size)
-            _record_managed_file(data_dir, path, artifact)
-            contents, installed = _render_llama_router_preset(
-                catalog, data_dir
-            )
-        self.assertEqual(
-            installed, ("laguna-s-2.1-q4-k-m",)
-        )
-        self.assertIn("jinja = true", contents)
-        self.assertIn(
-            "rocmplete-flash-attn-strix-halo = off", contents
-        )
-        self.assertIn(
-            "rocmplete-flash-attn-strix-point = off", contents
-        )
-
-    def test_llama_router_renders_laguna_xs_agent_policy(self):
-        catalog = load_catalog()
-        preset = catalog.llama_preset("laguna-xs-2.1-q4-k-m")
-        artifact = catalog.artifact(preset.artifact)
-        with tempfile.TemporaryDirectory() as directory:
-            data_dir = Path(directory)
-            path = (
-                data_dir
-                / "content"
-                / "llama-cpp"
-                / "models"
-                / artifact.destination
-            )
-            path.parent.mkdir(parents=True)
-            with path.open("wb") as handle:
-                handle.truncate(artifact.size)
-            _record_managed_file(data_dir, path, artifact)
-            contents, installed = _render_llama_router_preset(
-                catalog, data_dir
-            )
-        self.assertEqual(installed, ("laguna-xs-2.1-q4-k-m",))
-        self.assertIn("jinja = true", contents)
-        self.assertIn("reasoning-preserve = true", contents)
-        self.assertIn(
-            "rocmplete-flash-attn-strix-halo = off", contents
-        )
-        self.assertIn(
-            "rocmplete-flash-attn-strix-point = off", contents
-        )
-
     def test_llama_router_renders_manually_prompted_translategemma(self):
         catalog = load_catalog()
         preset = catalog.llama_preset("translategemma-27b-it-q8-0")
@@ -3059,108 +2932,6 @@ class CliTests(unittest.TestCase):
         self.assertIn(
             "ROCMLETE_LLAMA_CHAT_TEMPLATE=translategemma-manual",
             command,
-        )
-
-    def test_llama_laguna_preset_dry_run_maps_owned_policy(self):
-        catalog = load_catalog()
-        preset = catalog.llama_preset(
-            "laguna-s-2.1-q4-k-m"
-        )
-        artifact = catalog.artifact(preset.artifact)
-        with tempfile.TemporaryDirectory() as directory:
-            data_dir = Path(directory)
-            model = (
-                data_dir
-                / "content"
-                / "llama-cpp"
-                / "models"
-                / artifact.destination
-            )
-            model.parent.mkdir(parents=True)
-            with model.open("wb") as handle:
-                handle.truncate(artifact.size)
-            _record_managed_file(data_dir, model, artifact)
-            _, arguments = parse_arguments(
-                [
-                    "run",
-                    "llama-cpp",
-                    "server",
-                    "--preset",
-                    preset.identifier,
-                    "--profile",
-                    "auto",
-                    "--data-dir",
-                    str(data_dir),
-                    "--dry-run",
-                ]
-            )
-            with patch(
-                "rocmplete.cli.select_render_nodes",
-                return_value=("/dev/dri/renderD128",),
-            ), patch(
-                "rocmplete.cli.check_gpu_device_access",
-            ), redirect_stdout(io.StringIO()) as output:
-                self.assertEqual(command_run(arguments), 0)
-        command = output.getvalue()
-        self.assertIn("--ctx-size 262144", command)
-        self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
-        self.assertIn(
-            "ROCMLETE_LLAMA_REASONING_PRESERVE=1", command
-        )
-        self.assertIn(
-            "ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO=off", command
-        )
-        self.assertIn(
-            "ROCMLETE_LLAMA_FLASH_ATTN_STRIX_POINT=off", command
-        )
-
-    def test_llama_laguna_xs_preset_dry_run_maps_owned_policy(self):
-        catalog = load_catalog()
-        preset = catalog.llama_preset("laguna-xs-2.1-q4-k-m")
-        artifact = catalog.artifact(preset.artifact)
-        with tempfile.TemporaryDirectory() as directory:
-            data_dir = Path(directory)
-            model = (
-                data_dir
-                / "content"
-                / "llama-cpp"
-                / "models"
-                / artifact.destination
-            )
-            model.parent.mkdir(parents=True)
-            with model.open("wb") as handle:
-                handle.truncate(artifact.size)
-            _record_managed_file(data_dir, model, artifact)
-            _, arguments = parse_arguments(
-                [
-                    "run",
-                    "llama-cpp",
-                    "server",
-                    "--preset",
-                    preset.identifier,
-                    "--profile",
-                    "auto",
-                    "--data-dir",
-                    str(data_dir),
-                    "--dry-run",
-                ]
-            )
-            with patch(
-                "rocmplete.cli.select_render_nodes",
-                return_value=("/dev/dri/renderD128",),
-            ), patch(
-                "rocmplete.cli.check_gpu_device_access",
-            ), redirect_stdout(io.StringIO()) as output:
-                self.assertEqual(command_run(arguments), 0)
-        command = output.getvalue()
-        self.assertIn("--ctx-size 262144", command)
-        self.assertIn("ROCMLETE_LLAMA_JINJA=1", command)
-        self.assertIn("ROCMLETE_LLAMA_REASONING_PRESERVE=1", command)
-        self.assertIn(
-            "ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO=off", command
-        )
-        self.assertIn(
-            "ROCMLETE_LLAMA_FLASH_ATTN_STRIX_POINT=off", command
         )
 
     def test_llama_forced_context_preset_dry_run_maps_override(self):
@@ -3554,7 +3325,7 @@ class CliTests(unittest.TestCase):
 
     def test_llama_benchmark_rejects_speculative_presets(self):
         for preset, speculative_type in (
-            ("qwen3.6-35b-a3b-mtp-ud-q8-k-xl", "draft-mtp"),
+            ("qwen3.6-27b-mtp-q8-0", "draft-mtp"),
             (
                 "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
                 "draft-dflash",
@@ -3705,14 +3476,16 @@ class CliTests(unittest.TestCase):
                 "3",
                 "--thinking",
                 "high",
+                "--normalized-comparison",
             ]
         )
         self.assertEqual(agent.benchmark_command, "agent")
         self.assertEqual(agent.preset, "qwen3.6-27b-q8-0")
         self.assertEqual(agent.task, ["re-align", "fz-eintr"])
         self.assertEqual(agent.repetitions, 3)
-        self.assertEqual(agent.context, 131072)
+        self.assertIsNone(agent.context)
         self.assertEqual(agent.thinking, "high")
+        self.assertTrue(agent.normalized_comparison)
 
         _, isolated = parse_arguments(
             ["benchmark", "suite", "--cache-mode", "isolated"]
@@ -4219,11 +3992,12 @@ class CliTests(unittest.TestCase):
         self.assertNotIn("comfyui all", text)
         self.assertIn("llama-cpp qwen3.6", text)
         self.assertIn("llama-cpp qwen3.8", text)
-        self.assertIn("llama-cpp ornith", text)
+        self.assertNotIn("llama-cpp ornith", text)
         self.assertIn("llama-cpp kat-coder", text)
         self.assertNotIn("llama-cpp assistant", text)
         self.assertNotIn("llama-cpp agent ", text)
-        self.assertIn("llama-cpp laguna-s-2.1", text)
+        self.assertNotIn("llama-cpp laguna-s-2.1", text)
+        self.assertNotIn("llama-cpp laguna-xs-2.1", text)
         self.assertIn("llama-cpp muse-glimmer", text)
         self.assertIn("llama-cpp translation-hy", text)
         self.assertIn("llama-cpp translation-gemma", text)
@@ -4278,7 +4052,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(command_content(arguments, load_catalog()), 0)
         text = output.getvalue()
         self.assertIn("family qwen   8  bundles", text)
-        self.assertIn("all  53  bundles", text)
+        self.assertIn("all  47  bundles", text)
         self.assertNotIn("Exact bundles:", text)
 
     def test_content_list_application_filter_requires_filterable_view(self):
@@ -4511,6 +4285,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("4096 tokens", text)
         self.assertIn("model metadata; Jinja enabled", text)
         self.assertIn("Speculation", text)
+        self.assertIn("Reasoning", text)
+        self.assertIn("not exposed", text)
         self.assertIn("Flash Attention", text)
         self.assertIn("K/V cache", text)
         self.assertIn("llama.cpp default", text)
@@ -4518,7 +4294,7 @@ class CliTests(unittest.TestCase):
     def test_content_model_policy_details_cover_special_presets(self):
         catalog = load_catalog()
         embedded_mtp = catalog.llama_preset(
-            "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
+            "qwen3.6-27b-mtp-q8-0"
         )
         separate_draft = catalog.llama_preset(
             "gemma4-31b-it-q8-0-mtp"
@@ -4529,7 +4305,6 @@ class CliTests(unittest.TestCase):
         dflash_256k = catalog.llama_preset(
             "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         )
-        laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
         qwen27 = catalog.llama_preset("qwen3.6-27b-mtp-q8-0")
         translate = catalog.llama_preset("translategemma-27b-it-q8-0")
 
@@ -4559,15 +4334,16 @@ class CliTests(unittest.TestCase):
             "forced for muse-glimmer, dflash; automatic fitting disabled",
         )
         self.assertEqual(
-            _llama_flash_attention_policy(laguna),
-            "strix-halo=off, strix-point=off; otherwise llama.cpp default",
-        )
-        self.assertEqual(
             _llama_kv_cache_policy(qwen27),
             "strix-halo=q8_0; otherwise llama.cpp default",
         )
         self.assertEqual(
-            _llama_kv_cache_policy(laguna), "llama.cpp default"
+            _llama_reasoning_policy(qwen27),
+            "budget; off, low, medium, high; default medium",
+        )
+        self.assertEqual(
+            _llama_reasoning_policy(dflash_256k),
+            "strength; low, medium, high, xhigh; default high",
         )
         self.assertEqual(
             _llama_template_policy(translate),
@@ -4943,40 +4719,7 @@ class CliTests(unittest.TestCase):
         )
         self.assertNotIn("family", top_level)
 
-    @patch("builtins.input", side_effect=("2", "5"))
-    @patch("rocmplete.cli.sys.stdin")
-    def test_guided_content_install_offers_laguna_recipe(
-        self, stdin, input_mock
-    ):
-        stdin.isatty.return_value = True
-        with redirect_stdout(io.StringIO()) as output:
-            self.assertEqual(
-                _interactive_content_target(load_catalog()),
-                ("llama-cpp", "laguna-s-2.1"),
-            )
-        text = output.getvalue()
-        self.assertIn("llama.cpp content:", text)
-        self.assertIn("laguna-s-2.1", text)
-        self.assertIn("Laguna S 2.1", text)
-        self.assertIn("browse-bundles", text)
-
-    @patch("builtins.input", side_effect=("2", "6"))
-    @patch("rocmplete.cli.sys.stdin")
-    def test_guided_content_install_offers_laguna_xs_recipe(
-        self, stdin, input_mock
-    ):
-        stdin.isatty.return_value = True
-        with redirect_stdout(io.StringIO()) as output:
-            self.assertEqual(
-                _interactive_content_target(load_catalog()),
-                ("llama-cpp", "laguna-xs-2.1"),
-            )
-        text = output.getvalue()
-        self.assertIn("llama.cpp content:", text)
-        self.assertIn("laguna-xs-2.1", text)
-        self.assertIn("Laguna XS 2.1", text)
-
-    @patch("builtins.input", side_effect=("4", "4", "10"))
+    @patch("builtins.input", side_effect=("4", "4", "1"))
     @patch("rocmplete.cli.sys.stdin")
     def test_guided_exact_bundle_browser_uses_categories(
         self, stdin, input_mock
@@ -4985,17 +4728,16 @@ class CliTests(unittest.TestCase):
         with redirect_stdout(io.StringIO()) as output:
             self.assertEqual(
                 _interactive_content_target(load_catalog()),
-                ("llama-laguna-s-2.1-q4-k-m", None),
+                ("llama-qwen3-0.6b-q8-0", None),
             )
         text = output.getvalue()
         self.assertIn("exact-bundles", text)
         self.assertIn("Browse exact bundles:", text)
         self.assertIn("ComfyUI — image models (9 bundles)", text)
-        self.assertIn("llama.cpp (16 bundles)", text)
-        self.assertIn("Laguna S 2.1", text)
-        self.assertIn("laguna-s-2.1-q4-k-m", text)
+        self.assertIn("llama.cpp (10 bundles)", text)
+        self.assertIn("Qwen3 0.6B", text)
 
-    @patch("builtins.input", side_effect=("11", "10"))
+    @patch("builtins.input", side_effect=("8", "1"))
     @patch("rocmplete.cli.sys.stdin")
     def test_llama_recipe_menu_can_browse_exact_llama_bundles(
         self, stdin, input_mock
@@ -5004,7 +4746,7 @@ class CliTests(unittest.TestCase):
         with redirect_stdout(io.StringIO()) as output:
             self.assertEqual(
                 _interactive_content_target(load_catalog(), "llama-cpp"),
-                ("llama-laguna-s-2.1-q4-k-m", None),
+                ("llama-qwen3-0.6b-q8-0", None),
             )
         text = output.getvalue()
         self.assertNotIn("Browse exact bundles:", text)
@@ -5023,7 +4765,7 @@ class CliTests(unittest.TestCase):
                 "comfyui-images": 9,
                 "comfyui-videos": 20,
                 "comfyui-addons": 7,
-                "llama-cpp": 16,
+                "llama-cpp": 10,
                 "dwarfstar": 1,
             },
         )
@@ -5108,31 +4850,18 @@ class CliTests(unittest.TestCase):
             ("comfyui", "i2v"): ("wan-2.2-i2v-14b-fp8-lightning",),
             ("llama-cpp", "qwen3.6"): (
                 "llama-qwen3.6-27b-mtp-q8-0",
-                "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
             ),
             ("llama-cpp", "qwen3.8"): (
                 "llama-qwen3.8-27b-ud-q8-k-xl",
-            ),
-            ("llama-cpp", "ornith"): (
-                "llama-ornith-1.0-35b-q8-0",
             ),
             ("llama-cpp", "kat-coder"): (
                 "llama-kat-coder-v2.5-dev-q8-0",
             ),
             (
                 "llama-cpp",
-                "laguna-s-2.1",
-            ): ("llama-laguna-s-2.1-q4-k-m",),
-            (
-                "llama-cpp",
-                "laguna-xs-2.1",
-            ): ("llama-laguna-xs-2.1-q4-k-m",),
-            (
-                "llama-cpp",
                 "muse-glimmer",
             ): (
                 "llama-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash",
-                "llama-muse-glimmer-30b-kquant-17gb-q4-k-m-dflash",
             ),
             (
                 "llama-cpp",
@@ -5228,8 +4957,8 @@ class CliTests(unittest.TestCase):
                     )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 69)
-        self.assertEqual(len({item.identifier for item in artifacts}), 69)
+        self.assertEqual(len(artifacts), 62)
+        self.assertEqual(len({item.identifier for item in artifacts}), 62)
         self.assertEqual(
             install_artifacts.call_args.args[2],
             "localhost/custom-content-tools",
@@ -5245,7 +4974,7 @@ class CliTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Content ready: 53 bundles and 28 workflows.",
+            "Content ready: 47 bundles and 28 workflows.",
             output.getvalue(),
         )
 
@@ -5273,10 +5002,10 @@ class CliTests(unittest.TestCase):
                 )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 19)
-        self.assertEqual(len({item.identifier for item in artifacts}), 19)
+        self.assertEqual(len(artifacts), 12)
+        self.assertEqual(len({item.identifier for item in artifacts}), 12)
         self.assertIn(
-            "Content ready: 16 bundles and 0 workflows.",
+            "Content ready: 10 bundles and 0 workflows.",
             output.getvalue(),
         )
 
@@ -5317,9 +5046,7 @@ class CliTests(unittest.TestCase):
             rendered,
         )
         self.assertNotIn("--preset qwen3-0.6b-q8-0", rendered)
-        self.assertIn(
-            "--preset qwen3.6-35b-a3b-mtp-ud-q8-k-xl", rendered
-        )
+        self.assertNotIn("qwen3.6-35b", rendered)
         self.assertLess(
             rendered.index("server --router"), rendered.index("opencode")
         )

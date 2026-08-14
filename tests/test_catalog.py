@@ -86,10 +86,10 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 53)
-        self.assertEqual(len(catalog.artifacts), 69)
+        self.assertEqual(len(catalog.bundles), 47)
+        self.assertEqual(len(catalog.artifacts), 62)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 21)
+        self.assertEqual(len(catalog.llama_presets), 13)
         self.assertFalse(
             [
                 artifact.identifier
@@ -129,42 +129,6 @@ class CatalogTests(unittest.TestCase):
         )
         self.assertEqual(dwarfstar_artifact.license.spdx, "MIT")
         self.assertEqual(dwarfstar_artifact.license.status, "verified")
-        qwen35 = catalog.llama_preset(
-            "qwen3.6-35b-a3b-ud-q8-k-xl"
-        )
-        qwen35_artifact = catalog.artifact(qwen35.artifact)
-        self.assertEqual(qwen35.default_context, 262144)
-        self.assertEqual(qwen35.speculative_type, "")
-        self.assertEqual(qwen35.draft_tokens, 0)
-        self.assertTrue(qwen35.agent_tools)
-        self.assertTrue(qwen35.reasoning_effort_budget)
-        self.assertEqual(
-            catalog.bundle_size(catalog.bundle(qwen35.bundle)),
-            38451182560,
-        )
-        self.assertEqual(
-            qwen35_artifact.sha256,
-            "b762215c5f507f4865df4ac3d1afa803828afa41"
-            "e05ecac3fac431a67bbd88e8",
-        )
-        qwen35_mtp = catalog.llama_preset(
-            "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
-        )
-        qwen35_mtp_artifact = catalog.artifact(qwen35_mtp.artifact)
-        self.assertEqual(qwen35_mtp.default_context, 262144)
-        self.assertEqual(qwen35_mtp.speculative_type, "draft-mtp")
-        self.assertEqual(qwen35_mtp.draft_tokens, 3)
-        self.assertTrue(qwen35_mtp.agent_tools)
-        self.assertTrue(qwen35_mtp.reasoning_effort_budget)
-        self.assertEqual(
-            catalog.bundle_size(catalog.bundle(qwen35_mtp.bundle)),
-            39099447584,
-        )
-        self.assertEqual(
-            qwen35_mtp_artifact.sha256,
-            "6c6b816537abad90b250a0972b345466028d861dd"
-            "fe316d5f0de31ca6440f781",
-        )
         assistant = catalog.llama_preset("qwen3.6-27b-q8-0")
         assistant_artifact = catalog.artifact(assistant.artifact)
         self.assertEqual(
@@ -204,12 +168,6 @@ class CatalogTests(unittest.TestCase):
             "6a69f7fc214e9989f86cfa8",
         )
         coding_candidates = {
-            "ornith-1.0-35b-q8-0": (
-                "deepreinforce-ai/Ornith-1.0-35B-GGUF",
-                36903138880,
-                "cbc992bca07901c1a51f33e65e6fc5d687de179c852a772dfd15e4c3261dbf5c",
-                "MIT",
-            ),
             "kat-coder-v2.5-dev-q8-0": (
                 "bartowski/Kwaipilot_KAT-Coder-V2.5-Dev-GGUF",
                 36914690464,
@@ -229,10 +187,6 @@ class CatalogTests(unittest.TestCase):
                 self.assertEqual(artifact.sha256, expected[2])
                 self.assertEqual(artifact.license.spdx, expected[3])
                 self.assertEqual(artifact.license.status, "verified")
-        ornith = catalog.llama_preset("ornith-1.0-35b-q8-0")
-        self.assertTrue(ornith.jinja)
-        self.assertEqual(ornith.chat_template, "")
-        self.assertFalse(ornith.reasoning_preserve)
         kat = catalog.llama_preset("kat-coder-v2.5-dev-q8-0")
         self.assertFalse(kat.jinja)
         self.assertEqual(kat.chat_template, "kat-coder-v2.5")
@@ -270,19 +224,8 @@ class CatalogTests(unittest.TestCase):
         muse_256k = catalog.llama_preset(
             "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         )
-        muse_17gb_base = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-17gb-q4-k-m"
-        )
-        muse_17gb = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash"
-        )
-        muse_17gb_256k = catalog.llama_preset(
-            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k"
-        )
         muse_artifact = catalog.artifact(muse.artifact)
         muse_draft = catalog.artifact(muse.draft_artifact)
-        muse_17gb_artifact = catalog.artifact(muse_17gb.artifact)
-        muse_17gb_draft = catalog.artifact(muse_17gb.draft_artifact)
         self.assertEqual(muse.default_context, 131072)
         self.assertEqual(muse_base.default_context, 131072)
         self.assertEqual(muse_base.speculative_type, "")
@@ -310,9 +253,6 @@ class CatalogTests(unittest.TestCase):
             muse_base,
             muse,
             muse_256k,
-            muse_17gb_base,
-            muse_17gb,
-            muse_17gb_256k,
         ):
             with self.subTest(preset=preset.identifier):
                 self.assertFalse(preset.jinja)
@@ -320,7 +260,14 @@ class CatalogTests(unittest.TestCase):
                     preset.chat_template, "muse-glimmer-atem"
                 )
                 self.assertTrue(preset.agent_tools)
-                self.assertFalse(preset.reasoning_effort_budget)
+                self.assertTrue(preset.reasoning_effort_budget)
+                self.assertEqual(
+                    preset.reasoning_levels,
+                    ("low", "medium", "high", "xhigh"),
+                )
+                self.assertEqual(preset.reasoning_default, "high")
+                self.assertFalse(preset.reasoning_off)
+                self.assertEqual(preset.reasoning_parameter, "strength")
                 self.assertTrue(preset.reasoning_preserve)
         self.assertEqual(
             muse_artifact.source.repository,
@@ -351,46 +298,6 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(
             catalog.bundle_size(catalog.bundle(muse.bundle)),
             21285163296,
-        )
-        self.assertEqual(muse_17gb.default_context, 131072)
-        self.assertEqual(muse_17gb_base.default_context, 131072)
-        self.assertEqual(muse_17gb_base.speculative_type, "")
-        self.assertEqual(muse_17gb_base.artifact, muse_17gb.artifact)
-        self.assertEqual(muse_17gb_base.bundle, muse_17gb.bundle)
-        self.assertEqual(muse_17gb.speculative_type, "draft-dflash")
-        self.assertEqual(muse_17gb.draft_tokens_for_backend("rocm"), 15)
-        self.assertEqual(muse_17gb.draft_tokens_for_backend("vulkan"), 4)
-        self.assertEqual(muse_17gb_256k.artifact, muse_17gb.artifact)
-        self.assertEqual(
-            muse_17gb_256k.draft_artifact, muse_17gb.draft_artifact
-        )
-        self.assertEqual(muse_17gb_256k.bundle, muse_17gb.bundle)
-        self.assertEqual(muse_17gb_256k.default_context, 262144)
-        self.assertEqual(
-            muse_17gb_256k.context_override_architectures,
-            ("muse-glimmer", "dflash"),
-        )
-        self.assertNotEqual(muse_17gb.artifact, muse.artifact)
-        self.assertNotEqual(muse_17gb.draft_artifact, muse.draft_artifact)
-        self.assertEqual(
-            muse_17gb_artifact.source.revision,
-            "43c7eadd41352a299ea8e0a36b3157978dd63596",
-        )
-        self.assertEqual(muse_17gb_artifact.size, 16756683904)
-        self.assertEqual(
-            muse_17gb_artifact.sha256,
-            "4cc57c0f51040a226e5a72cc47b7613f7772950e"
-            "460a665f7083de89f183f60e",
-        )
-        self.assertEqual(muse_17gb_draft.size, 1631208128)
-        self.assertEqual(
-            muse_17gb_draft.sha256,
-            "b2e808bf656086fe86bd0d0bd990f01d33e37753"
-            "7a07c02d45371517c8b264ef",
-        )
-        self.assertEqual(
-            catalog.bundle_size(catalog.bundle(muse_17gb.bundle)),
-            18387892032,
         )
         muse_template = (
             DEFAULT_CATALOG_PATH.parent.parent
@@ -428,8 +335,6 @@ class CatalogTests(unittest.TestCase):
         qwen_presets = (
             assistant,
             assistant_mtp,
-            qwen35,
-            qwen35_mtp,
         )
         self.assertTrue(all(not preset.jinja for preset in qwen_presets))
         self.assertTrue(
@@ -446,6 +351,7 @@ class CatalogTests(unittest.TestCase):
         self.assertTrue(qwen38.jinja)
         self.assertTrue(qwen38.agent_tools)
         self.assertTrue(qwen38.reasoning_effort_budget)
+        self.assertEqual(qwen38.reasoning_parameter, "effort")
         self.assertTrue(qwen38.reasoning_preserve)
         self.assertEqual(qwen38_mtp.speculative_type, "draft-mtp")
         self.assertEqual(qwen38_mtp.draft_tokens, 3)
@@ -463,69 +369,6 @@ class CatalogTests(unittest.TestCase):
             "af36ecb6b5db1407953345b746c14ac93f0657dda413910b4348683a2d990377",
         )
         self.assertEqual(qwen38_artifact.license.spdx, "Apache-2.0")
-        laguna = catalog.llama_preset("laguna-s-2.1-q4-k-m")
-        laguna_bundle = catalog.bundle(laguna.bundle)
-        laguna_artifact = catalog.artifact(laguna.artifact)
-        self.assertEqual(laguna.default_context, 262144)
-        self.assertTrue(laguna.jinja)
-        self.assertTrue(laguna.agent_tools)
-        self.assertTrue(laguna.reasoning_effort_budget)
-        self.assertTrue(laguna.reasoning_preserve)
-        self.assertEqual(
-            laguna.flash_attention,
-            {"strix-halo": "off", "strix-point": "off"},
-        )
-        self.assertEqual(
-            catalog.bundle_size(laguna_bundle), 68248760064
-        )
-        self.assertEqual(laguna_artifact.license.spdx, "NOASSERTION")
-        self.assertEqual(laguna_artifact.license.status, "unverified")
-        self.assertEqual(
-            [
-                item.identifier
-                for item in catalog.bundle_agreements(laguna_bundle)
-            ],
-            ["openmdw-1.1"],
-        )
-        laguna_xs = catalog.llama_preset("laguna-xs-2.1-q4-k-m")
-        laguna_xs_bundle = catalog.bundle(laguna_xs.bundle)
-        laguna_xs_artifact = catalog.artifact(laguna_xs.artifact)
-        self.assertEqual(laguna_xs.default_context, 262144)
-        self.assertTrue(laguna_xs.jinja)
-        self.assertTrue(laguna_xs.agent_tools)
-        self.assertFalse(laguna_xs.reasoning_effort_budget)
-        self.assertTrue(laguna_xs.reasoning_preserve)
-        self.assertEqual(
-            laguna_xs.flash_attention,
-            {"strix-halo": "off", "strix-point": "off"},
-        )
-        self.assertEqual(
-            catalog.bundle_size(laguna_xs_bundle), 20274300032
-        )
-        self.assertEqual(
-            laguna_xs_artifact.source.repository,
-            "poolside/Laguna-XS-2.1-GGUF",
-        )
-        self.assertEqual(
-            laguna_xs_artifact.source.revision,
-            "1a37c0a5fb8c7a18e6106decb6be6327d1b63fa6",
-        )
-        self.assertEqual(
-            laguna_xs_artifact.sha256,
-            "1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb",
-        )
-        self.assertEqual(
-            laguna_xs_artifact.license.spdx,
-            "LicenseRef-OpenMDW-1.1",
-        )
-        self.assertEqual(laguna_xs_artifact.license.status, "verified")
-        self.assertEqual(
-            [
-                item.identifier
-                for item in catalog.bundle_agreements(laguna_xs_bundle)
-            ],
-            ["openmdw-1.1"],
-        )
         hy = catalog.llama_preset("hy-mt1.5-7b-q8-0")
         hy_bundle = catalog.bundle(hy.bundle)
         hy_artifact = catalog.artifact(hy.artifact)
@@ -781,7 +624,7 @@ class CatalogTests(unittest.TestCase):
 
     def test_llama_preset_policy_is_strictly_typed(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
-        preset = raw["llama_presets"]["laguna-s-2.1-q4-k-m"]
+        preset = raw["llama_presets"]["qwen3.8-27b-ud-q8-k-xl"]
         preset["jinja"] = "yes"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
@@ -807,6 +650,7 @@ class CatalogTests(unittest.TestCase):
                 load_catalog(path)
 
         preset["reasoning_effort_budget"] = False
+        preset.pop("reasoning_parameter")
         preset["reasoning_preserve"] = "yes"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
@@ -862,7 +706,7 @@ class CatalogTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             loaded = load_catalog(path).llama_preset(
-                "laguna-s-2.1-q4-k-m"
+                "qwen3.8-27b-ud-q8-k-xl"
             )
         self.assertEqual(
             loaded.flash_attention,
@@ -911,7 +755,7 @@ class CatalogTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             loaded = load_catalog(path).llama_preset(
-                "laguna-s-2.1-q4-k-m"
+                "qwen3.8-27b-ud-q8-k-xl"
             )
         self.assertEqual(loaded.kv_cache, {"strix-halo": "q8_0"})
 
@@ -942,6 +786,25 @@ class CatalogTests(unittest.TestCase):
                 "reasoning_effort_budget requires agent_tools",
             ):
                 load_catalog(path)
+
+    def test_llama_reasoning_controls_fail_closed(self):
+        cases = (
+            ("reasoning_levels", ["high", "low"], "unique, ordered"),
+            ("reasoning_default", "instant", "must be off or one of"),
+            ("reasoning_off", "yes", "reasoning_off must be a boolean"),
+            ("reasoning_parameter", "native", "empty, budget, effort, or strength"),
+        )
+        for field, value, message in cases:
+            with self.subTest(field=field):
+                raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+                preset = raw["llama_presets"][
+                    "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
+                ]
+                preset[field] = value
+                with tempfile.TemporaryDirectory() as directory:
+                    path = self._catalog_copy(directory, raw)
+                    with self.assertRaisesRegex(LauncherError, message):
+                        load_catalog(path)
 
     def test_llama_reasoning_preserve_requires_agent_tools(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())

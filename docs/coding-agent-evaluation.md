@@ -125,13 +125,14 @@ Pi remains the fixed harness for version 5. OpenCode, Maki, and OMP have
 different tool prompts and context behavior and belong in a separately
 labelled harness comparison.
 
-The default 131072-token context fits every maintained candidate used for the
-initial screening. Start with one attempt per task to validate a broad model
-set, then run three fresh repetitions for finalists. Do not tune the prompt or
-hidden grader after seeing a new model's answer. A speculative preset is a
-practical runtime configuration, not proof that speculation preserved task
-quality; retain the matching non-speculative control when that distinction
-matters.
+For the maintained Qwen3.6 27B MTP, Qwen3.8 27B MTP, and Muse Dynamic DFlash
+256K comparison, pass `--normalized-comparison`. It fixes the condition ID,
+Pi harness, ROCm backend, 262144-token context, high reasoning level, and
+8192-token ceiling; the runner rejects other model IDs or conflicting values.
+Each model retains its reviewed sampling, template, and speculative-decoding
+policy because replacing those would test a synthetic configuration. Start
+with one attempt per task, then run three fresh repetitions for finalists. Do
+not tune the prompt or hidden grader after seeing a new model's answer.
 
 Use a 45-minute wall-clock ceiling for each future model-evaluation attempt.
 Apply it at the operator boundary so ordinary benchmark execution remains
@@ -139,7 +140,8 @@ intentionally unbounded:
 
 ```bash
 timeout --foreground --signal=INT --kill-after=90s 45m \
-  ./rocmplete benchmark agent --preset PRESET --task TASK
+  ./rocmplete benchmark agent --preset PRESET \
+    --normalized-comparison --task TASK
 ```
 
 The runner checkpoints an interrupted attempt and removes its model container.

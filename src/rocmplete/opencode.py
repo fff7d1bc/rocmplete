@@ -59,17 +59,19 @@ _DWARFSTAR_VARIANTS = {
     "max": {"disabled": True},
 }
 _DEFAULT_AGENT = "investigate"
-_DEFAULT_REASONING_EFFORT = "medium"
 _PASSTHROUGH_COMMANDS = frozenset(
     ("completion", "plugin", "plug", "upgrade", "uninstall")
 )
 _INFORMATION_ARGUMENTS = frozenset(("--help", "-h", "--version", "-v"))
-_REASONING_VARIANTS = {
-    "instant": {"reasoningEffort": "none"},
-    "low": {"reasoningEffort": "low"},
-    "medium": {"reasoningEffort": "medium"},
-    "high": {"reasoningEffort": "high"},
-}
+_REASONING_VARIANT_NAMES = (
+    "instant",
+    "minimal",
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max",
+)
 _READ_PERMISSION = {
     "*": "allow",
     "*.env": "deny",
@@ -214,8 +216,22 @@ def render_config(
             # OpenCode merges an explicitly selected variant over these model
             # options. Keep a useful fallback without overriding a choice the
             # user has already made for this model.
-            options["reasoningEffort"] = _DEFAULT_REASONING_EFFORT
-            model["variants"] = _REASONING_VARIANTS
+            options["reasoningEffort"] = preset.reasoning_default
+            enabled = set(preset.reasoning_levels)
+            if preset.reasoning_off:
+                enabled.add("instant")
+            model["variants"] = {
+                name: (
+                    {
+                        "reasoningEffort": (
+                            "none" if name == "instant" else name
+                        )
+                    }
+                    if name in enabled
+                    else {"disabled": True}
+                )
+                for name in _REASONING_VARIANT_NAMES
+            }
         model["options"] = options
         models[identifier] = model
     contents = {

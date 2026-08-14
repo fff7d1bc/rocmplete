@@ -47,11 +47,6 @@ _COST = {
     "cacheRead": 0,
     "cacheWrite": 0,
 }
-_REASONING = {
-    "mode": "effort",
-    "efforts": ["low", "medium", "high"],
-    "defaultLevel": "medium",
-}
 _DWARFSTAR_REASONING = {
     "mode": "effort",
     "efforts": ["high"],
@@ -166,7 +161,11 @@ def render_models(
             "compat": _compat(identifier),
         }
         if preset.reasoning_effort_budget:
-            model["thinking"] = _REASONING
+            model["thinking"] = {
+                "mode": "effort",
+                "efforts": list(preset.reasoning_levels),
+                "defaultLevel": preset.reasoning_default,
+            }
             model["compat"]["supportsReasoningEffort"] = True
         models.append(model)
 

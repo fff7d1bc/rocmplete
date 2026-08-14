@@ -5,6 +5,7 @@ import tarfile
 import tempfile
 import unittest
 from contextlib import redirect_stdout
+from dataclasses import replace
 from pathlib import Path
 
 from rocmplete.agent_evaluation import (
@@ -72,6 +73,10 @@ class AgentEvaluationTests(unittest.TestCase):
             identity["flash_attention"], {"strix-halo": "on"}
         )
         self.assertEqual(identity["kv_cache"], {"strix-halo": "q8_0"})
+        self.assertEqual(
+            identity["reasoning"],
+            {"parameter": "budget", "level": "high", "budget_tokens": 8192},
+        )
 
         muse_identity = _model_identity(
             load_catalog(),
@@ -87,6 +92,7 @@ class AgentEvaluationTests(unittest.TestCase):
         self.assertEqual(
             muse_identity["draft_tokens_by_backend"], {"vulkan": 4}
         )
+        self.assertEqual(muse_identity["reasoning"]["parameter"], "strength")
 
     def test_toolchains_select_fixed_controller_commands(self):
         tasks = {task.identifier: task for task in load_coding_suite().tasks}
@@ -434,6 +440,38 @@ class AgentEvaluationTests(unittest.TestCase):
             self.assertEqual(result["status"], "dry-run")
             self.assertFalse(data_dir.exists())
             self.assertIn("Coding-agent evaluation", output.getvalue())
+
+    def test_normalized_comparison_dry_run_enforces_shared_conditions(self):
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory) / "absent"
+            options = AgentEvaluationOptions(
+                data_dir=data_dir,
+                preset="qwen3.8-27b-mtp-ud-q8-k-xl",
+                tasks=("re-align",),
+                context=262144,
+                thinking="high",
+                normalized_comparison=True,
+                dry_run=True,
+            )
+            with redirect_stdout(io.StringIO()) as output:
+                run_agent_evaluation(load_catalog(), options)
+            self.assertIn("Conditions  three-model-256k-v1", output.getvalue())
+            self.assertFalse(data_dir.exists())
+
+            with self.assertRaisesRegex(
+                LauncherError, "normalized comparison requires context"
+            ):
+                run_agent_evaluation(
+                    load_catalog(),
+                    replace(options, context=131072),
+                )
+            with self.assertRaisesRegex(
+                LauncherError, "normalized comparison requires one of"
+            ):
+                run_agent_evaluation(
+                    load_catalog(),
+                    replace(options, preset="kat-coder-v2.5-dev-q8-0"),
+                )
 
     def test_markdown_keeps_solve_rate_separate_from_review(self):
         report = render_agent_evaluation_markdown(

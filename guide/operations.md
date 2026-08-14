@@ -98,7 +98,8 @@ creating data, loading a model, or starting Pi:
 ```bash
 ./rocmplete benchmark agent --list-tasks
 ./rocmplete benchmark agent \
-  --preset qwen3.6-27b-q8-0 --dry-run
+  --preset qwen3.6-27b-mtp-q8-0 \
+  --normalized-comparison --dry-run
 ```
 
 The frozen suite has nine implementation tasks and two read-only review tasks
@@ -107,23 +108,25 @@ the complete suite with one exact managed llama.cpp preset:
 
 ```bash
 ./rocmplete benchmark agent \
-  --preset qwen3.6-27b-q8-0
+  --preset qwen3.6-27b-mtp-q8-0 --normalized-comparison
 ```
 
 Or run selected tasks while calibrating a model:
 
 ```bash
 ./rocmplete benchmark agent \
-  --preset qwen3.6-35b-a3b-mtp-ud-q8-k-xl \
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl \
+  --normalized-comparison \
   --task re-align --task re-cancel
 ```
 
 `--repetitions 3` creates a fresh checkout and Pi session for every attempt.
-The default shared server context is 131072 tokens, the backend is ROCm, and
-Pi receives explicit high thinking plus its managed per-model sampling policy.
-Use the same context, thinking level, backend, task selection, and repetitions
-when comparing models. Do not mix Pi results with OpenCode, OMP, or Maki
-results; harness comparisons are a separate experiment.
+The normalized condition accepts only Qwen3.6 27B MTP, Qwen3.8 27B MTP, and
+Muse Dynamic DFlash 256K. It fixes Pi, ROCm, 262144 context, high reasoning,
+and the 8192-token ceiling while retaining each model's reviewed sampling and
+speculative-decoding policy. Use the same task selection and repetitions for
+all three. Do not mix these Pi results with OpenCode, OMP, or Maki results;
+harness comparisons are a separate experiment.
 
 DwarfStar can run the same suite through its independently managed endpoint:
 

@@ -16,6 +16,7 @@ from .agent_models import (
     DWARFSTAR_PROVIDER_ID,
     PROVIDER_ID,
     RECOMMENDED_MODEL,
+    REASONING_BUDGETS,
     agent_output_limit,
     default_agent_model,
     is_agent_capable,
@@ -115,7 +116,15 @@ def _default_model(
 
 def _render_init(provider: str, model: str, thinking: str) -> bytes:
     model_spec = json.dumps("{}/{}".format(provider, model))
-    thinking_value = json.dumps(thinking)
+    # Maki's llama.cpp adapter accepts a numeric ceiling but cannot forward
+    # the separate native effort/strength label. Pin the managed startup
+    # ceiling exactly; later user-selected named levels remain Maki policy.
+    configured_thinking = (
+        str(REASONING_BUDGETS[thinking])
+        if provider == PROVIDER_ID and thinking in REASONING_BUDGETS
+        else thinking
+    )
+    thinking_value = json.dumps(configured_thinking)
     content = """maki.setup({{
   always_thinking = {thinking},
   provider = {{ default_model = {model} }},
@@ -158,7 +167,7 @@ def create_launch_plan(
     ) or (forwarded[:1] and forwarded[0] in _PASSTHROUGH_COMMANDS)
     management = forwarded[:1] and forwarded[0] in _MANAGEMENT_COMMANDS
     if passthrough or management:
-        provider, model, thinking = PROVIDER_ID, RECOMMENDED_MODEL, "medium"
+        provider, model, thinking = PROVIDER_ID, RECOMMENDED_MODEL, "high"
         mode = "passthrough" if passthrough else "management"
         defaults = (None, None, None)
     else:

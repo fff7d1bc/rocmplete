@@ -126,8 +126,13 @@ from .benchmark import (
 )
 from .agent_evaluation import (
     AgentEvaluationOptions,
+    DEFAULT_CONTEXT as AGENT_EVALUATION_DEFAULT_CONTEXT,
     load_coding_suite,
     run_agent_evaluation,
+)
+from .agent_models import (
+    NORMALIZED_COMPARISON_CONTEXT,
+    NORMALIZED_COMPARISON_THINKING,
 )
 from .build import (
     build_cache_dir,
@@ -3427,6 +3432,19 @@ def _llama_kv_cache_policy(preset: LlamaPreset) -> str:
     return "{}; otherwise llama.cpp default".format(", ".join(policies))
 
 
+def _llama_reasoning_policy(preset: LlamaPreset) -> str:
+    if not preset.reasoning_effort_budget:
+        return "not exposed"
+    levels = list(preset.reasoning_levels)
+    if preset.reasoning_off:
+        levels.insert(0, "off")
+    return "{}; {}; default {}".format(
+        preset.reasoning_parameter,
+        ", ".join(levels),
+        preset.reasoning_default,
+    )
+
+
 def _print_llama_model_details(
     catalog: Catalog, models: Sequence[LlamaModel], root: Path
 ) -> None:
@@ -3462,6 +3480,7 @@ def _print_llama_model_details(
                         "Speculation",
                         _llama_speculation_policy(preset),
                     ),
+                    ("Reasoning", _llama_reasoning_policy(preset)),
                     (
                         "Flash Attention",
                         _llama_flash_attention_policy(preset),
@@ -5026,6 +5045,26 @@ def command_benchmark(
             if arguments.output
             else None
         )
+        if (
+            arguments.normalized_comparison
+            and arguments.context is not None
+            and arguments.context != NORMALIZED_COMPARISON_CONTEXT
+        ):
+            raise LauncherError(
+                "--normalized-comparison fixes --context at {}".format(
+                    NORMALIZED_COMPARISON_CONTEXT
+                )
+            )
+        if (
+            arguments.normalized_comparison
+            and arguments.thinking is not None
+            and arguments.thinking != NORMALIZED_COMPARISON_THINKING
+        ):
+            raise LauncherError(
+                "--normalized-comparison fixes --thinking at {}".format(
+                    NORMALIZED_COMPARISON_THINKING
+                )
+            )
         result_path, _ = run_agent_evaluation(
             catalog,
             AgentEvaluationOptions(
@@ -5034,8 +5073,16 @@ def command_benchmark(
                 dwarfstar=arguments.dwarfstar,
                 tasks=tuple(arguments.task),
                 repetitions=arguments.repetitions,
-                context=arguments.context,
-                thinking=arguments.thinking,
+                context=(
+                    NORMALIZED_COMPARISON_CONTEXT
+                    if arguments.normalized_comparison
+                    else arguments.context or AGENT_EVALUATION_DEFAULT_CONTEXT
+                ),
+                thinking=(
+                    NORMALIZED_COMPARISON_THINKING
+                    if arguments.normalized_comparison
+                    else arguments.thinking or "high"
+                ),
                 profile=arguments.profile,
                 backend=arguments.backend,
                 port=validate_port(arguments.port),
@@ -5043,6 +5090,7 @@ def command_benchmark(
                 output=output,
                 keep_going=arguments.keep_going,
                 dry_run=arguments.dry_run,
+                normalized_comparison=arguments.normalized_comparison,
             ),
         )
         if arguments.dry_run:

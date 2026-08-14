@@ -236,7 +236,8 @@ GPU time:
 ```bash
 ./rocmplete benchmark agent --list-tasks
 ./rocmplete benchmark agent \
-  --preset qwen3.6-27b-q8-0 --task re-align --dry-run
+  --preset qwen3.6-27b-mtp-q8-0 \
+  --normalized-comparison --task re-align --dry-run
 PYTHONPATH=src python3 -m unittest tests.test_agent_evaluation
 ```
 

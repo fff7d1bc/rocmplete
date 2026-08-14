@@ -80,7 +80,7 @@ class PiLauncherTests(unittest.TestCase):
             },
         )
         models = {model["id"]: model for model in provider["models"]}
-        self.assertEqual(len(models), 17)
+        self.assertEqual(len(models), 9)
         self.assertNotIn("qwen3-0.6b-q8-0", models)
         self.assertNotIn("translategemma-27b-it-q8-0", models)
         self.assertIn("qwen3.8-27b-mtp-ud-q8-k-xl", models)
@@ -91,36 +91,25 @@ class PiLauncherTests(unittest.TestCase):
         self.assertEqual(
             models[self.default_model]["thinkingLevelMap"],
             {
-                "off": "none",
+                "off": None,
                 "minimal": None,
                 "low": "low",
                 "medium": "medium",
                 "high": "high",
-                "xhigh": None,
+                "xhigh": "xhigh",
                 "max": None,
             },
-        )
-        self.assertTrue(models["laguna-s-2.1-q4-k-m"]["reasoning"])
-        self.assertEqual(
-            models["laguna-s-2.1-q4-k-m"]["thinkingLevelMap"],
-            models[self.default_model]["thinkingLevelMap"],
-        )
-        self.assertFalse(models["laguna-xs-2.1-q4-k-m"]["reasoning"])
-        self.assertNotIn(
-            "thinkingLevelMap", models["laguna-xs-2.1-q4-k-m"]
         )
         muse = models[
             "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
         ]
         self.assertEqual(muse["contextWindow"], 262144)
-        self.assertFalse(muse["reasoning"])
-        self.assertNotIn("thinkingLevelMap", muse)
-        muse_17gb = models[
-            "muse-glimmer-30b-kquant-17gb-q4-k-m-dflash-256k"
-        ]
-        self.assertEqual(muse_17gb["contextWindow"], 262144)
-        self.assertFalse(muse_17gb["reasoning"])
-        self.assertNotIn("thinkingLevelMap", muse_17gb)
+        self.assertTrue(muse["reasoning"])
+        self.assertEqual(muse["thinkingLevelMap"]["xhigh"], "xhigh")
+        self.assertIsNone(muse["thinkingLevelMap"]["off"])
+        qwen = models["qwen3.6-27b-mtp-q8-0"]
+        self.assertEqual(qwen["thinkingLevelMap"]["off"], "none")
+        self.assertIsNone(qwen["thinkingLevelMap"]["xhigh"])
         for identifier, model in models.items():
             self.assertEqual(
                 model["samplingParams"],
@@ -180,7 +169,7 @@ class PiLauncherTests(unittest.TestCase):
             self.assertEqual(plan.mode, "session")
             self.assertEqual(plan.default_provider, "rocmplete")
             self.assertEqual(plan.default_model, self.default_model)
-            self.assertEqual(plan.default_thinking, "medium")
+            self.assertEqual(plan.default_thinking, "high")
             self.assertEqual(plan.endpoint, "http://127.0.0.1:9090/v1")
             self.assertEqual(
                 plan.dwarfstar_endpoint, "http://127.0.0.1:8001/v1"
@@ -385,7 +374,7 @@ class PiLauncherTests(unittest.TestCase):
             self.assertIn(str(SANDBOX_AGENT_DIR), command)
             self.assertEqual(
                 command[-4:],
-                ["--thinking", "medium", "--print", "ping"],
+                ["--thinking", "high", "--print", "ping"],
             )
             self.assertEqual(sandbox.environment, {"PATH": str(binary_dir)})
             self.assertEqual(sandbox.state_root, paths.root)

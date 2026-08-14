@@ -54,18 +54,14 @@ revisions recorded in `catalog/catalog.json`.
   includes Qwen's Apache-2.0 chat template from base-model revision
   `7e4ae267688d671ddfca3122e4528ee980cf3234` so the older unchanged GGUF
   receives the later content-type and tool-response hardening.
-- Managed Qwen3.6 27B and Qwen3.6 35B-A3B GGUF
-  conversions are downloaded from full pinned Unsloth revisions. Each pinned
-  model card explicitly declares Apache-2.0 and links its corresponding Qwen
-  source-model license. Their four embedded templates are byte-identical.
+- Managed Qwen3.6 27B GGUF conversions are downloaded from one full pinned
+  Unsloth revision. The pinned model card explicitly declares Apache-2.0 and
+  links its corresponding Qwen source-model license. Its two embedded
+  templates are byte-identical.
   The llama.cpp image includes an Apache-2.0 adaptation of that template which
   retains later system and developer messages and omits empty historical
   reasoning blocks. ROCmplete records every GGUF shard's exact size and
   SHA-256 and does not redistribute those weights.
-- Ornith 1.0 35B Q8_0 is downloaded from DeepReinforce's official GGUF
-  repository at one full pinned revision. The repository declares MIT in its
-  model card. ROCmplete records the exact size and SHA-256 and does not
-  redistribute the model.
 - KAT-Coder V2.5 Dev Q8_0 is downloaded from one full pinned Bartowski GGUF
   revision derived from Kwaipilot's public text-only checkpoint. The
   conversion repository declares Apache-2.0 and records its upstream model
@@ -78,16 +74,6 @@ revisions recorded in `catalog/catalog.json`.
   downloaded together from one full pinned llama.cpp project revision. The
   repository declares Apache-2.0. ROCmplete records both files' exact sizes
   and SHA-256 hashes and does not redistribute them.
-- Poolside's official Laguna S 2.1 Q4_K_M GGUF is downloaded from one full
-  pinned revision. Its repository points to the base model's OpenMDW-1.1
-  terms but does not independently declare license metadata for the converted
-  artifact. ROCmplete therefore records the GGUF as `NOASSERTION`, preserves
-  the upstream OpenMDW lineage, and requires both terms acceptance and
-  unverified-artifact acknowledgment. ROCmplete does not redistribute it.
-- Poolside's official Laguna XS 2.1 Q4_K_M GGUF is downloaded from one full
-  pinned revision. The conversion repository includes and declares the
-  OpenMDW-1.1 license. ROCmplete records the exact size and SHA-256, requires
-  acceptance of those terms, and does not redistribute the model.
 - Muse Glimmer 30B dynamic K-quant and its DFlash k-quant draft are downloaded
   together from one full pinned Meta GGUF revision. The repository declares
   Apache-2.0. ROCmplete records both files' exact sizes and SHA-256 hashes and

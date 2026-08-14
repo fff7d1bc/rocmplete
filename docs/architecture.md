@@ -609,13 +609,14 @@ and template may share this protocol evidence, while their distinct context
 or speculative-decoding policies retain separate runtime acceptance.
 
 `reasoning_effort_budget` is the narrower model claim behind agent-client
-reasoning selectors. The pinned llama.cpp server otherwise ignores `low`,
-`medium`, and `high` effort values for these models. A fail-closed source
-patch maps those values to 1024, 4096, and 8192
-`thinking_budget_tokens` for Chat Completions requests; `none` remains zero
-and explicitly disables thinking.
-The catalog must not advertise these levels for a preset whose template does
-not expose the same bounded reasoning behavior.
+reasoning selectors. `reasoning_levels`, `reasoning_default`,
+`reasoning_off`, and `reasoning_parameter` define the exact UI contract and
+distinguish sampler-only budgets, model-native effort, and Muse-native
+strength. The fail-closed server patch maps low, medium, high, and xhigh to
+1024, 4096, 8192, and 16384 sampler tokens. `none` remains zero. Recognized
+positive labels are forwarded as both `reasoning_effort` and
+`reasoning_strength`; each template consumes only its own variable. Muse
+declares no off choice because its official template always reasons.
 
 `bin/rocmplete` is a PATH-friendly delegate to the root checkout launcher and
 resolves symlinks before locating it. The public `agent` command groups coding
@@ -627,12 +628,12 @@ which supplies the main JSON through `OPENCODE_CONFIG_CONTENT` and points
 `OPENCODE_TUI_CONFIG` at the repository-owned read-only keymap. No integration
 file is installed in the user's config directory. The model map contains only
 the reviewed agent set and advertises each preset's managed starting context.
-Presets with `reasoning_effort_budget` also advertise OpenCode instant, low,
-medium, and high variants backed by the same server-side behavior. The
-instant variant sends `none`; the remaining variants use the bounded ceilings.
-The model-level fallback is medium. OpenCode merges an explicitly selected
-variant afterward, so persisted per-model choices continue to take precedence.
-The launcher prefers the recommended installed MTP preset and otherwise uses
+Presets with `reasoning_effort_budget` advertise only their catalog-owned
+OpenCode variants. Qwen has instant, low, medium, and high; Muse has low,
+medium, high, and xhigh with high as its fallback. Unsupported inherited
+variants are explicitly disabled. OpenCode merges a selected variant later,
+so persisted per-model choices continue to take precedence. The launcher
+prefers Muse Dynamic DFlash 256K and otherwise uses
 the first installed agent-capable preset. It refuses to start when none are
 installed. The wrapper resolves and executes the real OpenCode binary while
 excluding itself from the executable search, forwards all OpenCode arguments,
@@ -653,7 +654,8 @@ the host launcher, which atomically refreshes that file below
 `PI_CODING_AGENT_DIR` at the same private state. Pi's ordinary user config is
 never modified. The launcher disables startup network checks, telemetry,
 and project `.pi` trust while leaving normal `AGENTS.md` context discovery
-enabled. It supplies the recommended installed model and medium thinking as
+enabled. It supplies the recommended installed model and its catalog default
+thinking level as
 command-line defaults before forwarded Pi session arguments, so an explicit
 later `--provider`, `--model`, or `--thinking` remains authoritative.
 
@@ -711,7 +713,8 @@ executable dynamic providers below Maki's private XDG configuration. Both use
 Maki's native `llama-cpp` provider as their protocol base, so the exact
 loopback `/v1` URL comes from the generated provider while Chat Completions,
 tool calls, and local thinking budgets remain owned by Maki. A generated
-`init.lua` selects the recommended installed model, medium thinking, and one
+`init.lua` selects the recommended installed model, its catalog thinking
+default as an exact numeric ceiling, and one
 concurrent task subagent. The initial tier file assigns that model to every
 subagent tier. An unchanged seed follows a later default change, while any
 user-edited tier assignment is preserved. Managed configuration and provider
@@ -723,7 +726,11 @@ The tested Maki 0.4.5 dynamic-provider model schema cannot express per-model
 request sampling parameters, and its llama.cpp adapter does not provide a
 request-body hook. The generated provider therefore does not publish fields
 Maki would ignore; Maki requests retain llama.cpp's defaults until upstream
-exposes a clean model or request setting.
+exposes a clean model or request setting. The same adapter sends only numeric
+`thinking_budget_tokens`; ROCmplete pins the initial Muse high ceiling to 8192,
+but Maki's named selector cannot carry the separate Qwen effort or Muse
+strength value. Normalized quality comparisons therefore use Pi, whose request
+includes both the native label and matching sampler ceiling.
 
 DwarfStar is a separate provider at its own loopback endpoint, with the one
 reviewed `deepseek-v4-flash-0731-q2-imatrix` model advertising the same

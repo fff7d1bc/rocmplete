@@ -27,8 +27,7 @@ Recipes are organized by their consuming application:
 comfyui
   image  edit  t2v  i2v
 llama-cpp
-  qwen3.6  qwen3.8  ornith  kat-coder  laguna-s-2.1  laguna-xs-2.1
-  muse-glimmer
+  qwen3.6  qwen3.8  kat-coder  muse-glimmer
   shisa-v2.1  translation-gemma  translation-hy
 dwarfstar
   flash-0731-q2-imatrix
@@ -41,24 +40,16 @@ Install interactively, or select one recipe explicitly:
 ./rocmplete content install comfyui image
 ./rocmplete content install llama-cpp qwen3.6
 ./rocmplete content install llama-cpp qwen3.8
-./rocmplete content install llama-cpp laguna-s-2.1
-./rocmplete content install llama-cpp laguna-xs-2.1 --accept-license
 ./rocmplete content install llama-cpp muse-glimmer
 ./rocmplete content install llama-cpp shisa-v2.1 --accept-license
 ./rocmplete content install llama-cpp translation-gemma --accept-license
 ./rocmplete content install dwarfstar flash-0731-q2-imatrix
 ```
 
-The `qwen3.6` recipe installs both practical MTP choices: dense 27B MTP Q8_0
-and sparse 35B-A3B MTP Dynamic Q8_K_XL. The installer prints the dense 27B MTP
-server command as its next step; the agent launchers prefer the much faster
-sparse model on high-memory hosts. Matching dense and sparse non-MTP controls
-remain available through the exact-bundle browser.
+The `qwen3.6` recipe installs dense 27B MTP Q8_0. Its matching non-MTP GGUF
+remains available through the exact-bundle browser.
 
-The upstream 35B MTP repository gives its GGUF the same basename as the
-non-MTP build. ROCmplete keeps that upstream filename, but identifies the MTP
-variant in its source repository, managed directory, bundle, and preset. The
-same is true of the 27B MTP artifact. Its upstream basename omits `MTP`, while
+The upstream 27B MTP artifact's basename omits `MTP`, while
 its ROCmplete directory, bundle, preset, and pinned source retain the identity.
 
 The separate `qwen3.8` recipe installs one 29.30 GiB Dynamic Q8_K_XL GGUF.
@@ -67,21 +58,16 @@ so the matching base and MTP presets share one verified artifact. The initial
 integration is text-only: the optional vision projector remains outside the
 recipe until its multimodal runtime contract is separately accepted.
 
-The `muse-glimmer` recipe installs two official target/draft pairs: Meta's
-30B Dynamic Q4_K_XL and the smaller 17 GB Q4_K_M. The next-step command keeps
-the dynamic target's 128K DFlash policy as the quality-oriented default. Each
-target also exposes a matching non-speculative 128K control and experimental
-forced-256K DFlash policy, so switching among the six managed presets requires
-no further download. Both pairs preserve parsed reasoning for multi-turn
-agent history. The 17 GB target improved fixed-workload speed and memory use
-on the accepted host, but Meta reports more quantization loss than for the
-dynamic target.
+The `muse-glimmer` recipe installs Meta's 30B Dynamic Q4_K_XL target and
+matching DFlash draft. The next-step command starts the forced-256K DFlash
+preset used by every managed agent launcher. The same pair also exposes a
+non-speculative 128K control and a 128K DFlash preset. All three preserve
+parsed reasoning and advertise Muse's native low, medium, high, and xhigh
+strengths; high is the default and off is not advertised.
 
-The two Laguna recipes are separate model families. `laguna-xs-2.1` installs
-the official 33B-total, 3B-active Q4_K_M model. It is the practical local
-candidate and requires acceptance of the OpenMDW-1.1 terms. The much larger
-`laguna-s-2.1` recipe remains an independent 118B-total, 8B-active experiment
-whose official GGUF also requires an unverified-license acknowledgment.
+Catalog pruning does not delete GGUFs installed by an older checkout. Retired
+files remain visible as local model rows in `content list --models`; remove
+their exact files deliberately only when they are no longer needed.
 
 If a recipe is not specific enough, choose the exact-bundle browser in the
 guided installer. It narrows the catalog by application and task before
