@@ -5819,6 +5819,12 @@ def _command_llama_speculative_benchmark(
                 "--env",
                 "GGML_CUDA_GRAPH_OPT=1",
             ]
+        if arguments.disable_graphs:
+            image_position = command.index(image)
+            command[image_position:image_position] = [
+                "--env",
+                "GGML_CUDA_DISABLE_GRAPHS=1",
+            ]
         command.extend(
             (
                 "--parallel",
@@ -5919,6 +5925,7 @@ def _command_llama_speculative_benchmark(
                 arguments.draft_backend_sampling == "on"
             ),
             graph_optimization=arguments.graph_optimization,
+            disable_graphs=arguments.disable_graphs,
             poll=arguments.poll,
             no_host=arguments.no_host,
             flash_attention=arguments.flash_attn,

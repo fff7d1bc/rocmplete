@@ -88,6 +88,7 @@ class SpeculativeBenchmarkOptions:
     draft_probability_min: float
     draft_backend_sampling: bool
     graph_optimization: bool
+    disable_graphs: bool
     poll: Optional[int]
     no_host: bool
     flash_attention: str
@@ -211,6 +212,7 @@ def _definition(options: SpeculativeBenchmarkOptions) -> Mapping[str, object]:
             "draft_probability_min": options.draft_probability_min,
             "draft_backend_sampling": options.draft_backend_sampling,
             "graph_optimization": options.graph_optimization,
+            "disable_graphs": options.disable_graphs,
             "poll": options.poll,
             "no_host": options.no_host,
             "flash_attention": options.flash_attention,

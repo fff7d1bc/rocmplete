@@ -1791,6 +1791,11 @@ def _parser() -> argparse.ArgumentParser:
         help="enable llama.cpp's experimental CUDA/HIP graph optimizer",
     )
     speculative_benchmark.add_argument(
+        "--disable-graphs",
+        action="store_true",
+        help="disable llama.cpp CUDA/HIP graph capture for this measurement",
+    )
+    speculative_benchmark.add_argument(
         "--poll",
         type=int,
         metavar="0...100",

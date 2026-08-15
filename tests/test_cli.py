@@ -3395,6 +3395,7 @@ class CliTests(unittest.TestCase):
                     "--draft-backend-sampling",
                     "off",
                     "--graph-optimization",
+                    "--disable-graphs",
                     "--poll",
                     "0",
                     "--no-host",
@@ -3446,6 +3447,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--spec-draft-p-min 0.5", command)
         self.assertIn("--no-spec-draft-backend-sampling", command)
         self.assertIn("--env GGML_CUDA_GRAPH_OPT=1", command)
+        self.assertIn("--env GGML_CUDA_DISABLE_GRAPHS=1", command)
         self.assertIn("--poll 0", command)
         self.assertIn("--no-host", command)
         self.assertIn("ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO=on", command)
