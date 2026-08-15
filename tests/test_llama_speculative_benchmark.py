@@ -37,6 +37,14 @@ def _options(root: Path, **changes) -> SpeculativeBenchmarkOptions:
         "repetitions": 1,
         "generation_tokens": 64,
         "seed": 42,
+        "draft_probability_min": 0.0,
+        "draft_backend_sampling": True,
+        "graph_optimization": False,
+        "poll": None,
+        "no_host": False,
+        "flash_attention": "preset",
+        "cache_type_k": "preset",
+        "cache_type_v": "preset",
         "sampling": {"temperature": 1.0, "top_p": 0.95},
         "model": {"artifact": "qwen", "sha256": "c" * 64},
         "commands": {1: ("server", "1"), 2: ("server", "2")},
@@ -193,6 +201,19 @@ class LlamaSpeculativeBenchmarkTests(unittest.TestCase):
             checkpoint = json.loads((root / "result.json").read_text())
             self.assertEqual(checkpoint["status"], "interrupted")
             self.assertEqual(
+                checkpoint["definition"]["runtime"],
+                {
+                    "cache_type_k": "preset",
+                    "cache_type_v": "preset",
+                    "draft_backend_sampling": True,
+                    "draft_probability_min": 0.0,
+                    "flash_attention": "preset",
+                    "graph_optimization": False,
+                    "no_host": False,
+                    "poll": None,
+                },
+            )
+            self.assertEqual(
                 [item["status"] for item in checkpoint["trials"]].count("complete"),
                 1,
             )
@@ -238,7 +259,7 @@ class LlamaSpeculativeBenchmarkTests(unittest.TestCase):
                 options,
                 output=None,
                 resume=root / "result.json",
-                generation_tokens=128,
+                draft_probability_min=0.5,
             )
             with self.assertRaisesRegex(LauncherError, "resume inputs"):
                 run_speculative_benchmark(changed)

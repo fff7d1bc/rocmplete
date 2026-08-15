@@ -326,6 +326,14 @@ native reasoning condition remain fixed. The resulting 96 requests can take
 hours; use `--draft-depth`, `--context-depth`, `--repetitions`, and
 `--generation-tokens` for a bounded smoke before the default campaign.
 
+Controlled tuning runs can additionally fix `--draft-probability-min`,
+`--draft-backend-sampling`, `--graph-optimization`, `--poll`, `--no-host`,
+`--flash-attn`, and the matching `--cache-type-k`/`--cache-type-v` pair. These
+are recorded benchmark conditions, not changes to the managed preset. Target
+cache overrides do not change the separate draft cache. Quantized values
+require `--flash-attn on`; keep one factor different per comparison and inspect
+response hashes as well as throughput.
+
 The checkpoint records immutable model and image identity, the complete
 condition fingerprint, calibrated prompt hashes, server and request time,
 prompt and generation rates, accepted and drafted tokens, finish reason, and

@@ -1770,6 +1770,56 @@ def _parser() -> argparse.ArgumentParser:
         help="explicit model reasoning condition (default: preset policy)",
     )
     speculative_benchmark.add_argument(
+        "--draft-probability-min",
+        type=float,
+        default=0.0,
+        metavar="P",
+        help=(
+            "minimum speculative draft probability from 0 through 1 "
+            "(default: 0)"
+        ),
+    )
+    speculative_benchmark.add_argument(
+        "--draft-backend-sampling",
+        choices=("on", "off"),
+        default="on",
+        help="draft sampler backend offload policy (default: on)",
+    )
+    speculative_benchmark.add_argument(
+        "--graph-optimization",
+        action="store_true",
+        help="enable llama.cpp's experimental CUDA/HIP graph optimizer",
+    )
+    speculative_benchmark.add_argument(
+        "--poll",
+        type=int,
+        metavar="0...100",
+        help="llama.cpp worker polling level (default: upstream policy)",
+    )
+    speculative_benchmark.add_argument(
+        "--no-host",
+        action="store_true",
+        help="bypass llama.cpp host buffers for this measurement",
+    )
+    speculative_benchmark.add_argument(
+        "--flash-attn",
+        choices=("preset", "on", "off", "auto"),
+        default="preset",
+        help="Flash Attention condition (default: preset policy)",
+    )
+    speculative_benchmark.add_argument(
+        "--cache-type-k",
+        choices=("preset", "f16", "q8_0", "q4_0"),
+        default="preset",
+        help="target key-cache condition (default: preset policy)",
+    )
+    speculative_benchmark.add_argument(
+        "--cache-type-v",
+        choices=("preset", "f16", "q8_0", "q4_0"),
+        default="preset",
+        help="target value-cache condition (default: preset policy)",
+    )
+    speculative_benchmark.add_argument(
         "--profile",
         choices=("auto",) + GPU_PROFILES,
         default="auto",

@@ -3390,6 +3390,20 @@ class CliTests(unittest.TestCase):
                     "1",
                     "--thinking",
                     "medium",
+                    "--draft-probability-min",
+                    "0.5",
+                    "--draft-backend-sampling",
+                    "off",
+                    "--graph-optimization",
+                    "--poll",
+                    "0",
+                    "--no-host",
+                    "--flash-attn",
+                    "on",
+                    "--cache-type-k",
+                    "q8_0",
+                    "--cache-type-v",
+                    "q8_0",
                     "--profile",
                     "strix-halo",
                     "--data-dir",
@@ -3425,6 +3439,13 @@ class CliTests(unittest.TestCase):
             "io.github.fff7d1bc.rocmplete.role=benchmark", command
         )
         self.assertIn("--parallel 1", command)
+        self.assertIn("--spec-draft-p-min 0.5", command)
+        self.assertIn("--no-spec-draft-backend-sampling", command)
+        self.assertIn("--env GGML_CUDA_GRAPH_OPT=1", command)
+        self.assertIn("--poll 0", command)
+        self.assertIn("--no-host", command)
+        self.assertIn("ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO=on", command)
+        self.assertIn("ROCMLETE_LLAMA_KV_CACHE_STRIX_HALO=q8_0", command)
         self.assertNotIn("podman run --rm", command)
         self.assertIn("no checkpoint was written", command)
 

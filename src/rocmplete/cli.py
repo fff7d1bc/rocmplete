@@ -5639,6 +5639,18 @@ def _command_llama_speculative_benchmark(
         raise LauncherError("--repetitions must be at least 1")
     if arguments.generation_tokens < 1:
         raise LauncherError("--generation-tokens must be at least 1")
+    if not 0.0 <= arguments.draft_probability_min <= 1.0:
+        raise LauncherError(
+            "--draft-probability-min must be between 0 and 1"
+        )
+    if arguments.poll is not None and not 0 <= arguments.poll <= 100:
+        raise LauncherError("--poll must be between 0 and 100")
+    if arguments.cache_type_v not in ("preset", "f16") and (
+        arguments.flash_attn != "on"
+    ):
+        raise LauncherError(
+            "a quantized value cache requires --flash-attn on"
+        )
     if (
         arguments.seed < 0
         or arguments.seed + arguments.repetitions - 1 > 2**31 - 1
@@ -5733,6 +5745,35 @@ def _command_llama_speculative_benchmark(
                 output
             )
         )
+    profile_flash_attention = (
+        preset.flash_attention
+        if arguments.flash_attn == "preset"
+        else {
+            candidate: arguments.flash_attn for candidate in GPU_PROFILES
+        }
+    )
+    if (arguments.cache_type_k == "preset") != (
+        arguments.cache_type_v == "preset"
+    ):
+        raise LauncherError(
+            "--cache-type-k and --cache-type-v must both use preset or "
+            "both select an explicit type"
+        )
+    if (
+        arguments.cache_type_k != "preset"
+        and arguments.cache_type_k != arguments.cache_type_v
+    ):
+        raise LauncherError(
+            "the managed server currently requires matching key and value "
+            "cache types"
+        )
+    profile_kv_cache = (
+        preset.kv_cache
+        if arguments.cache_type_k == "preset"
+        else {
+            candidate: arguments.cache_type_k for candidate in GPU_PROFILES
+        }
+    )
     commands = {}
     for depth in depths:
         command = llama_command(
@@ -5752,8 +5793,8 @@ def _command_llama_speculative_benchmark(
                 jinja=preset.jinja,
                 reasoning_preserve=preset.reasoning_preserve,
                 chat_template=preset.chat_template,
-                profile_flash_attention=preset.flash_attention,
-                profile_kv_cache=preset.kv_cache,
+                profile_flash_attention=profile_flash_attention,
+                profile_kv_cache=profile_kv_cache,
                 render_nodes=render_nodes,
                 listen="127.0.0.1",
                 port=port,
@@ -5766,7 +5807,26 @@ def _command_llama_speculative_benchmark(
             ),
             podman.selinux_volume_suffix(),
         )
-        command.extend(("--parallel", "1"))
+        if arguments.graph_optimization:
+            image_position = command.index(image)
+            command[image_position:image_position] = [
+                "--env",
+                "GGML_CUDA_GRAPH_OPT=1",
+            ]
+        command.extend(
+            (
+                "--parallel",
+                "1",
+                "--spec-draft-p-min",
+                str(arguments.draft_probability_min),
+            )
+        )
+        if arguments.draft_backend_sampling == "off":
+            command.append("--no-spec-draft-backend-sampling")
+        if arguments.poll is not None:
+            command.extend(("--poll", str(arguments.poll)))
+        if arguments.no_host:
+            command.append("--no-host")
         commands[depth] = tuple(command)
     request_count = len(depths) * len(context_depths) * arguments.repetitions
     print("{} {}".format(style("Model:", "label"), preset.identifier))
@@ -5844,6 +5904,16 @@ def _command_llama_speculative_benchmark(
             repetitions=arguments.repetitions,
             generation_tokens=arguments.generation_tokens,
             seed=arguments.seed,
+            draft_probability_min=arguments.draft_probability_min,
+            draft_backend_sampling=(
+                arguments.draft_backend_sampling == "on"
+            ),
+            graph_optimization=arguments.graph_optimization,
+            poll=arguments.poll,
+            no_host=arguments.no_host,
+            flash_attention=arguments.flash_attn,
+            cache_type_k=arguments.cache_type_k,
+            cache_type_v=arguments.cache_type_v,
             sampling=agent_sampling_parameters(preset.identifier),
             model=model_metadata,
             commands=commands,

@@ -85,6 +85,14 @@ class SpeculativeBenchmarkOptions:
     repetitions: int
     generation_tokens: int
     seed: int
+    draft_probability_min: float
+    draft_backend_sampling: bool
+    graph_optimization: bool
+    poll: Optional[int]
+    no_host: bool
+    flash_attention: str
+    cache_type_k: str
+    cache_type_v: str
     sampling: Mapping[str, object]
     model: Mapping[str, object]
     commands: Mapping[int, Sequence[str]] = field(repr=False)
@@ -197,6 +205,16 @@ def _definition(options: SpeculativeBenchmarkOptions) -> Mapping[str, object]:
             "native": options.native_reasoning,
         },
         "sampling": dict(options.sampling),
+        "runtime": {
+            "draft_probability_min": options.draft_probability_min,
+            "draft_backend_sampling": options.draft_backend_sampling,
+            "graph_optimization": options.graph_optimization,
+            "poll": options.poll,
+            "no_host": options.no_host,
+            "flash_attention": options.flash_attention,
+            "cache_type_k": options.cache_type_k,
+            "cache_type_v": options.cache_type_v,
+        },
         "prompt_generator_version": PROMPT_GENERATOR_VERSION,
         "fresh_server_per_trial": True,
     }
