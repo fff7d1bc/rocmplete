@@ -3394,6 +3394,7 @@ class CliTests(unittest.TestCase):
                     "0.5",
                     "--draft-backend-sampling",
                     "off",
+                    "--ngram-simple",
                     "--graph-optimization",
                     "--disable-graphs",
                     "--poll",
@@ -3446,6 +3447,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("--parallel 1", command)
         self.assertIn("--spec-draft-p-min 0.5", command)
         self.assertIn("--no-spec-draft-backend-sampling", command)
+        self.assertIn("--spec-type ngram-simple", command)
         self.assertIn("--env GGML_CUDA_GRAPH_OPT=1", command)
         self.assertIn("--env GGML_CUDA_DISABLE_GRAPHS=1", command)
         self.assertIn("--poll 0", command)

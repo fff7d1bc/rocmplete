@@ -87,6 +87,7 @@ class SpeculativeBenchmarkOptions:
     seed: int
     draft_probability_min: float
     draft_backend_sampling: bool
+    ngram_simple: bool
     graph_optimization: bool
     disable_graphs: bool
     poll: Optional[int]
@@ -211,6 +212,7 @@ def _definition(options: SpeculativeBenchmarkOptions) -> Mapping[str, object]:
         "runtime": {
             "draft_probability_min": options.draft_probability_min,
             "draft_backend_sampling": options.draft_backend_sampling,
+            "ngram_simple": options.ngram_simple,
             "graph_optimization": options.graph_optimization,
             "disable_graphs": options.disable_graphs,
             "poll": options.poll,

@@ -1786,6 +1786,11 @@ def _parser() -> argparse.ArgumentParser:
         help="draft sampler backend offload policy (default: on)",
     )
     speculative_benchmark.add_argument(
+        "--ngram-simple",
+        action="store_true",
+        help="try draftless n-gram matching before the preset draft strategy",
+    )
+    speculative_benchmark.add_argument(
         "--graph-optimization",
         action="store_true",
         help="enable llama.cpp's experimental CUDA/HIP graph optimizer",

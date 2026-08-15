@@ -327,14 +327,17 @@ hours; use `--draft-depth`, `--context-depth`, `--repetitions`, and
 `--generation-tokens` for a bounded smoke before the default campaign.
 
 Controlled tuning runs can additionally fix `--draft-probability-min`,
-`--draft-backend-sampling`, `--graph-optimization`, `--disable-graphs`,
-`--poll`, `--no-host`, `--flash-attn`, and the matching
+`--draft-backend-sampling`, `--ngram-simple`, `--graph-optimization`,
+`--disable-graphs`, `--poll`, `--no-host`, `--flash-attn`, and the matching
 `--cache-type-k`/`--cache-type-v` pair. These are recorded benchmark
 conditions, not changes to the managed preset. Target cache overrides do not
 change the separate draft cache. Quantized values require `--flash-attn on`;
 keep one factor different per comparison and inspect response hashes as well
 as throughput. `--batch-size` and `--ubatch-size` provide the same explicit
-control for prompt-processing experiments.
+control for prompt-processing experiments. `--ngram-simple` asks llama.cpp's
+minimal-overhead history matcher for a draft first and falls back to the
+preset's MTP or DFlash strategy when no repeated sequence is found; it is most
+relevant to source-code and other repetition-heavy workloads.
 
 The checkpoint records immutable model and image identity, the complete
 condition fingerprint, calibrated prompt hashes, server and request time,

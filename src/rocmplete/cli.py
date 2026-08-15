@@ -5839,6 +5839,12 @@ def _command_llama_speculative_benchmark(
         )
         if arguments.draft_backend_sampling == "off":
             command.append("--no-spec-draft-backend-sampling")
+        if arguments.ngram_simple:
+            # llama.cpp permits repeated --spec-type options and gives
+            # draftless implementations priority before falling back to MTP
+            # or DFlash. Keep this benchmark-only instead of widening the
+            # managed preset policy before target-hardware measurements.
+            command.extend(("--spec-type", "ngram-simple"))
         if arguments.poll is not None:
             command.extend(("--poll", str(arguments.poll)))
         if arguments.no_host:
@@ -5924,6 +5930,7 @@ def _command_llama_speculative_benchmark(
             draft_backend_sampling=(
                 arguments.draft_backend_sampling == "on"
             ),
+            ngram_simple=arguments.ngram_simple,
             graph_optimization=arguments.graph_optimization,
             disable_graphs=arguments.disable_graphs,
             poll=arguments.poll,
