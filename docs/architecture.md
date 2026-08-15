@@ -667,6 +667,11 @@ receives them as per-model `compat.extraBody`; explicit client request settings
 remain higher-precedence caller policy. Catalog presets and server startup
 remain free of task sampling so ordinary API and terminal workloads do not
 inherit coding defaults.
+Qwen3.8's maintained values are explicitly its official thinking-mode policy.
+OpenCode, Pi, and OMP attach that policy statically to the model entry, so a
+later reasoning-off selection does not substitute Qwen's distinct non-thinking
+sampler. Evaluation guidance therefore treats Qwen3.8 off as a labelled
+within-family experiment rather than a normalized comparison.
 
 Pi recognizes package and configuration commands only when the command is its
 first argument. The launcher classifies `install`, `remove`, `uninstall`,

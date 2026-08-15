@@ -441,17 +441,19 @@ exposes the same entries through `/model`.
 
 OpenCode, Pi, and OMP use these llama.cpp request defaults for coding turns:
 
-| Model family | Temperature | Top-p | Top-k | Min-p | Presence penalty | Repeat penalty |
+| Model family / condition | Temperature | Top-p | Top-k | Min-p | Presence penalty | Repeat penalty |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Qwen3.6 27B | 0.6 | 0.95 | 20 | 0 | 0 | 1 |
-| Qwen3.8 27B | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
+| Qwen3.8 27B, thinking | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
 | KAT-Coder V2.5 Dev | 1.0 | 0.95 | 20 | 0 | 1.5 | 1 |
 | Gemma 4 31B IT | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 | Muse Glimmer 30B | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 
 The sources are Qwen's precise-coding recommendation for
-[Qwen3.6 27B](https://huggingface.co/Qwen/Qwen3.6-27B/blob/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9/README.md)
-, KAT-Coder's
+[Qwen3.6 27B](https://huggingface.co/Qwen/Qwen3.6-27B/blob/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9/README.md),
+Qwen's thinking-mode recommendation for
+[Qwen3.8 27B](https://huggingface.co/Qwen/Qwen3.8-27B/blob/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/README.md),
+KAT-Coder's
 [agent API example](https://huggingface.co/Kwaipilot/KAT-Coder-V2.5-Dev/blob/7be56fe773e72b6f5ca93c1ae45d828ddb893922/README.md),
 Gemma 4's
 [standardized sampling guidance](https://huggingface.co/google/gemma-4-31B-it/blob/842da3794eaa0b77d5f08bae87a17459d91ff475/README.md),
@@ -469,6 +471,15 @@ agents still force temperature zero. The tested Maki 0.4.5 dynamic-provider
 schema cannot express per-model sampling fields, so managed Maki sessions
 currently inherit llama.cpp's sampler defaults; ROCmplete does not emit fields
 that Maki would silently ignore.
+
+Qwen3.8's managed sampling is specifically its official thinking-mode policy.
+Selecting `off` disables reasoning in the chat template but does not replace
+the client model's static sampling defaults with Qwen's separate non-thinking
+recommendation. Treat `off` as an explicitly labelled within-family
+experiment, not a normalized comparison condition. Maki is likewise outside
+normalized sampling comparisons because it cannot carry the reviewed policy;
+use Pi with each model's reviewed default reasoning choice for the maintained
+comparison suite.
 
 `bin/opencode` delegates to `./rocmplete agent opencode`, injects the
 generated main configuration directly into the child process, and points it

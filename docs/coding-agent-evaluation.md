@@ -141,6 +141,14 @@ because replacing those would test a synthetic configuration. Start with one
 attempt per task, then run three fresh repetitions for finalists. Do not tune
 the prompt or hidden grader after seeing a new model's answer.
 
+Qwen3.8's reviewed sampling policy is the official thinking-mode condition and
+is attached statically to Pi's model entry. `--thinking off` disables template
+reasoning but does not switch that entry to Qwen's separate non-thinking
+sampling recommendation. Such a run is useful only as an explicitly labelled
+within-family experiment and is not a normalized cross-model result. Maki is
+also outside the fixed comparison because its current dynamic-provider schema
+cannot carry the reviewed per-model sampling policy.
+
 Use a 45-minute wall-clock ceiling for each future model-evaluation attempt.
 Apply it at the operator boundary so ordinary benchmark execution remains
 intentionally unbounded:
