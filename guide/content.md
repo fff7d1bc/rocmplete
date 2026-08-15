@@ -60,10 +60,11 @@ recipe until its multimodal runtime contract is separately accepted.
 
 The `muse-glimmer` recipe installs Meta's 30B Dynamic Q4_K_XL target and
 matching DFlash draft. The next-step command starts the forced-256K DFlash
-preset used by every managed agent launcher. The same pair also exposes a
+preset used as the Muse family comparison. The same pair also exposes a
 non-speculative 128K control and a 128K DFlash preset. All three preserve
 parsed reasoning and advertise Muse's native low, medium, high, and xhigh
-strengths; high is the default and off is not advertised.
+strengths; high is the family default and off is not advertised. Managed agent
+launchers instead prefer Qwen3.8 27B MTP at medium when it is installed.
 
 Catalog pruning does not delete GGUFs installed by an older checkout. Retired
 files remain visible as local model rows in `content list --models`; remove

@@ -133,26 +133,26 @@ Manager, and multi-GPU graphs are covered in the
 
 ### llama.cpp
 
-Muse Glimmer Dynamic Q4_K_XL with DFlash is the common managed default:
+Dense Qwen3.8 27B Dynamic Q8_K_XL with MTP is the common managed default:
 
 ```bash
 ./rocmplete build llama-cpp
-./rocmplete content install llama-cpp muse-glimmer
+./rocmplete content install llama-cpp qwen3.8
 ./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl
 ```
 
-The recipe installs the one official Dynamic target/draft pair. It exposes a
-non-speculative 128K control, a 128K DFlash preset, and the forced-256K DFlash
-default. The 256K preset deliberately overrides the released 128K target and
-draft metadata and therefore remains subject to long-context acceptance.
+The recipe installs one 29.30 GiB GGUF containing the dense target and its MTP
+prediction heads. The default preset starts at 256K context, verifies up to
+three draft tokens, and uses native medium reasoning effort. Its non-MTP
+control shares the same verified artifact.
 
-Qwen3.6 and Qwen3.8 are separate dense 27B comparison families. Their recipes
-install the MTP-capable Q8 choices:
+Qwen3.6 and Muse Glimmer remain separate comparison families. Their recipes
+install dense Qwen3.6 MTP Q8_0 and Muse's Dynamic target/DFlash pair:
 
 ```bash
 ./rocmplete content install llama-cpp qwen3.6
-./rocmplete content install llama-cpp qwen3.8
+./rocmplete content install llama-cpp muse-glimmer
 ```
 
 Qwen3.6 MTP and non-MTP are distinct GGUFs and therefore appear on separate
@@ -233,7 +233,7 @@ For local coding-agent work, start the llama.cpp router and use the sandboxed
 PATH launcher. At least one managed agent model must already be installed.
 
 ```bash
-./rocmplete content install llama-cpp muse-glimmer
+./rocmplete content install llama-cpp qwen3.8
 ./rocmplete run llama-cpp server --router --models-max 1
 export PATH="$PWD/bin:$PATH"
 opencode
@@ -242,12 +242,11 @@ opencode
 # or: maki
 ```
 
-Muse starts at high native reasoning strength. Pi, OpenCode, and OMP expose its
-low, medium, high, and xhigh levels without a false instant variant. Maki
-exposes a generic selector through its numeric llama.cpp transport; the
-managed server recovers the matching native strength for Maki 0.4.5's standard
-values. Use Pi for comparisons that must avoid Maki's additional numeric
-budget policy.
+Qwen3.8 starts at native medium effort. Pi, OpenCode, and OMP expose its off,
+low, medium, and xhigh choices without inventing a `high` level. Maki exposes a
+generic selector through its numeric llama.cpp transport; the managed server
+recovers `medium` for Maki 0.4.5's standard value. Use Pi for comparisons that
+must avoid Maki's additional numeric budget policy.
 
 OpenCode starts new sessions in read-only Investigate mode. All four launchers
 keep the current directory and private client state writable while hiding the

@@ -340,6 +340,15 @@ class CatalogTests(unittest.TestCase):
         ).read_text()
         self.assertIn("reasoning_effort|default('medium')", qwen38_template)
         self.assertIn("('xhigh', 'medium', 'low')", qwen38_template)
+        self.assertIn(
+            "resolved_reasoning_effort == 'xhigh'", qwen38_template
+        )
+        self.assertIn(
+            "resolved_reasoning_effort == 'low'", qwen38_template
+        )
+        self.assertNotIn(
+            "resolved_reasoning_effort == 'medium'", qwen38_template
+        )
         self.assertNotIn(
             "resolved_reasoning_effort == 'high'", qwen38_template
         )

@@ -339,11 +339,11 @@ The public llama.cpp recipes are dense Qwen3.6 27B MTP, the separate
 single-artifact Qwen3.8 dense target with optional embedded-MTP runtime,
 KAT-Coder, Muse Glimmer's one Dynamic target/draft pair, high-memory Japanese
 and English Shisa V2.1, and the focused HY and Gemma translation families.
-Muse's forced-256K DFlash preset is both the recipe launch and managed-client
-default; its 128K base and DFlash controls share the installed pair. Qwen3.8
-remains its own family recipe even though both Qwen releases serve similar
-work. Unrelated models retain separate family recipes instead of being grouped
-under a subjective coding role.
+Muse's forced-256K DFlash preset is the recipe launch; its 128K base and DFlash
+controls share the installed pair. Qwen3.8 MTP at medium is the managed-client
+default and remains its own family recipe even though both Qwen releases serve
+similar work. Unrelated models retain separate family recipes instead of being
+grouped under a subjective coding role.
 Non-MTP Qwen controls, the smoke-test model, and
 other deliberately large models remain exact bundles and presets rather than
 multiplying beginner choices.

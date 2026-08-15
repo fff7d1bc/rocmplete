@@ -40,6 +40,15 @@ class ConfigTests(unittest.TestCase):
             self.assertTrue(application.after_build)
             self.assertTrue(application.after_content)
         self.assertFalse(APPLICATIONS["llama-cpp"].shared_pytorch_base)
+        self.assertEqual(
+            APPLICATIONS["llama-cpp"].after_build,
+            "./rocmplete content install llama-cpp qwen3.8",
+        )
+        self.assertEqual(
+            APPLICATIONS["llama-cpp"].after_content,
+            "./rocmplete run llama-cpp server "
+            "--preset qwen3.8-27b-mtp-ud-q8-k-xl",
+        )
         self.assertFalse(APPLICATIONS["dwarfstar"].shared_pytorch_base)
         self.assertFalse(APPLICATIONS["dwarfstar"].multi_gpu)
 

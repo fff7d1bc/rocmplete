@@ -166,7 +166,7 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal OpenCode arguments through the launcher:
 
-  opencode -m rocmplete/muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
+  opencode -m rocmplete/qwen3.8-27b-mtp-ud-q8-k-xl
 
 Use a separately running DwarfStar server:
 
@@ -194,7 +194,7 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal Pi arguments through the launcher:
 
-  pi --model muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k --thinking high
+  pi --model qwen3.8-27b-mtp-ud-q8-k-xl --thinking medium
 
 Use a separately running DwarfStar server:
 
@@ -222,7 +222,7 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal OMP arguments through the launcher:
 
-  omp --model rocmplete-llama-cpp/muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k --thinking high
+  omp --model rocmplete-llama-cpp/qwen3.8-27b-mtp-ud-q8-k-xl --thinking medium
 
 Use a separately running DwarfStar server:
 
@@ -245,7 +245,7 @@ The PATH launcher uses bubblewrap by default. To troubleshoot without it:
 
 Forward normal Maki arguments through the launcher:
 
-  maki -m rocmplete/muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
+  maki -m rocmplete/qwen3.8-27b-mtp-ud-q8-k-xl
 
 Use a separately running DwarfStar server:
 
@@ -342,7 +342,7 @@ Try one of these:
     ./rocmplete run llama-cpp server --model /path/to/model.gguf
 
   Start llama.cpp with the managed default model:
-    ./rocmplete run llama-cpp server --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
+    ./rocmplete run llama-cpp server --preset qwen3.8-27b-mtp-ud-q8-k-xl
 
   Start the dense Qwen3.6 MTP model:
     ./rocmplete run llama-cpp server --preset qwen3.6-27b-mtp-q8-0
@@ -380,13 +380,13 @@ Try one of these:
     ./rocmplete run llama-cpp server --model /path/to/model.gguf
 
   Start the managed default model:
-    ./rocmplete run llama-cpp server --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
+    ./rocmplete run llama-cpp server --preset qwen3.8-27b-mtp-ud-q8-k-xl
 
   Start the dense Qwen3.6 MTP model:
     ./rocmplete run llama-cpp server --preset qwen3.6-27b-mtp-q8-0
 
-  Start dense Qwen3.8 with embedded MTP heads:
-    ./rocmplete run llama-cpp server --preset qwen3.8-27b-mtp-ud-q8-k-xl
+  Start Muse Glimmer with DFlash at forced 256K:
+    ./rocmplete run llama-cpp server --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 
   Start Gemma 4 31B IT Q8_0 with its Q8_0 MTP draft:
     ./rocmplete run llama-cpp server --preset gemma4-31b-it-q8-0-mtp

@@ -118,7 +118,7 @@ class ApplicationGuideTests(unittest.TestCase):
             text,
         )
         self.assertIn(
-            "Muse Glimmer Dynamic DFlash at forced 256K is the common "
+            "Dense Qwen3.8 27B MTP at native medium effort is the common "
             "managed-client default",
             normalized,
         )
@@ -158,6 +158,9 @@ class ApplicationGuideTests(unittest.TestCase):
         self.assertIn("hidden read-only", text)
         self.assertIn("separate child sessions", text)
         self.assertIn("Muse reasons unconditionally", normalized)
+        self.assertIn(
+            "Qwen3.8 exposes instant, low, medium, and xhigh", normalized
+        )
         self.assertIn("native low, medium, high, and xhigh strength", normalized)
         self.assertIn("Pi uses Shift+Tab or /settings", normalized)
         self.assertIn("OMP accepts --thinking", normalized)

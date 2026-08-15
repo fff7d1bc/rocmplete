@@ -14,9 +14,7 @@ from .errors import LauncherError
 PROVIDER_ID = "rocmplete"
 DWARFSTAR_PROVIDER_ID = "dwarfstar"
 DWARFSTAR_MODEL = "deepseek-v4-flash-0731-q2-imatrix"
-RECOMMENDED_MODEL = (
-    "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
-)
+RECOMMENDED_MODEL = "qwen3.8-27b-mtp-ud-q8-k-xl"
 # Agent sampling is caller policy, not model runtime policy, so it stays out of
 # the catalog presets. Values use llama.cpp's Chat Completions field names;
 # notably, upstream repetition_penalty maps to repeat_penalty here.
@@ -165,18 +163,28 @@ def installed_agent_presets(
     )
 
 
+def recommended_agent_model(catalog: Catalog) -> Tuple[str, str, str]:
+    """Return the shared recommendation with its model-native default."""
+
+    preset = catalog.llama_preset(RECOMMENDED_MODEL)
+    return (
+        PROVIDER_ID,
+        RECOMMENDED_MODEL,
+        reasoning_client_default(preset),
+    )
+
+
 def default_agent_model(
     catalog: Catalog,
     data_dir: Path,
     client_name: str,
-    *,
-    require_installed: bool = True,
 ) -> Tuple[str, str, str]:
     """Select the common managed default for a coding-agent client."""
 
+    recommended = recommended_agent_model(catalog)
     installed = installed_agent_presets(catalog, data_dir)
     if RECOMMENDED_MODEL in installed:
-        return PROVIDER_ID, RECOMMENDED_MODEL, "high"
+        return recommended
     if installed:
         preset = catalog.llama_preset(installed[0])
         thinking = reasoning_client_default(preset)
@@ -189,11 +197,9 @@ def default_agent_model(
         for status in inspect_bundle(catalog, dwarfstar, data_dir)
     ):
         return DWARFSTAR_PROVIDER_ID, DWARFSTAR_MODEL, "high"
-    if not require_installed:
-        return PROVIDER_ID, RECOMMENDED_MODEL, "high"
     raise LauncherError(
         "no installed model is maintained for {}".format(client_name)
-        + "\n  llama.cpp: ./rocmplete content install llama-cpp muse-glimmer"
+        + "\n  llama.cpp: ./rocmplete content install llama-cpp qwen3.8"
         + "\n  DwarfStar: ./rocmplete content install dwarfstar "
         "flash-0731-q2-imatrix"
     )

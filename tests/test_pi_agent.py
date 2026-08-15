@@ -91,11 +91,11 @@ class PiLauncherTests(unittest.TestCase):
         self.assertEqual(
             models[self.default_model]["thinkingLevelMap"],
             {
-                "off": None,
+                "off": "none",
                 "minimal": None,
                 "low": "low",
                 "medium": "medium",
-                "high": "high",
+                "high": None,
                 "xhigh": "xhigh",
                 "max": None,
             },
@@ -202,7 +202,7 @@ class PiLauncherTests(unittest.TestCase):
             self.assertEqual(plan.mode, "session")
             self.assertEqual(plan.default_provider, "rocmplete")
             self.assertEqual(plan.default_model, self.default_model)
-            self.assertEqual(plan.default_thinking, "high")
+            self.assertEqual(plan.default_thinking, "medium")
             self.assertEqual(plan.endpoint, "http://127.0.0.1:9090/v1")
             self.assertEqual(
                 plan.dwarfstar_endpoint, "http://127.0.0.1:8001/v1"
@@ -407,7 +407,7 @@ class PiLauncherTests(unittest.TestCase):
             self.assertIn(str(SANDBOX_AGENT_DIR), command)
             self.assertEqual(
                 command[-4:],
-                ["--thinking", "high", "--print", "ping"],
+                ["--thinking", "medium", "--print", "ping"],
             )
             self.assertEqual(sandbox.environment, {"PATH": str(binary_dir)})
             self.assertEqual(sandbox.state_root, paths.root)

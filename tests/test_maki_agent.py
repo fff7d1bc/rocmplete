@@ -10,6 +10,7 @@ from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
+from rocmplete.agent_models import RECOMMENDED_MODEL
 from rocmplete.bundles import artifact_path
 from rocmplete.catalog import load_catalog
 from rocmplete.cli import command_maki, main
@@ -21,7 +22,6 @@ from rocmplete.config import (
 from rocmplete.content_verification import VerificationStore
 from rocmplete.errors import LauncherError
 from rocmplete.maki_agent import (
-    RECOMMENDED_MODEL,
     WRAPPER_PATH,
     create_launch_plan,
     create_sandbox_plan,
@@ -158,13 +158,13 @@ class MakiLauncherTests(unittest.TestCase):
             self.assertEqual(plan.mode, "session")
             self.assertEqual(plan.default_provider, "rocmplete")
             self.assertEqual(plan.default_model, self.default_model)
-            self.assertEqual(plan.default_thinking, "high")
+            self.assertEqual(plan.default_thinking, "medium")
             self.assertIn(
                 'default_model = "rocmplete/{}"'.format(self.default_model),
                 plan.init_content.decode(),
             )
             self.assertIn(
-                'always_thinking = "high"', plan.init_content.decode()
+                'always_thinking = "medium"', plan.init_content.decode()
             )
             self.assertIn(
                 "max_concurrent = 1", plan.init_content.decode()
@@ -242,6 +242,16 @@ class MakiLauncherTests(unittest.TestCase):
                     )
                     self.assertEqual(plan.mode, mode)
                     self.assertIsNone(plan.default_model)
+                    self.assertIn(
+                        'default_model = "rocmplete/{}"'.format(
+                            self.default_model
+                        ),
+                        plan.init_content.decode(),
+                    )
+                    self.assertIn(
+                        'always_thinking = "medium"',
+                        plan.init_content.decode(),
+                    )
 
     def test_prepare_state_refreshes_managed_files_but_preserves_tiers(self):
         with tempfile.TemporaryDirectory() as directory:

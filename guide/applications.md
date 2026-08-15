@@ -127,23 +127,23 @@ For the common managed default:
 
 ```bash
 ./rocmplete build llama-cpp
-./rocmplete content install llama-cpp muse-glimmer
-./rocmplete run llama-cpp server \
-  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
-```
-
-For the newer dense coding and agent candidate:
-
-```bash
 ./rocmplete content install llama-cpp qwen3.8
 ./rocmplete run llama-cpp server \
   --preset qwen3.8-27b-mtp-ud-q8-k-xl
 ```
 
-The default Muse preset uses a 262144-token forced context and twelve DFlash
-draft tokens on ROCm. The dense Qwen3.6 27B MTP Q8_0 comparison preset also
-starts at 262144 tokens and verifies up to three tokens from its embedded
-prediction heads. On Strix Halo, Qwen3.6 MTP also
+For the Muse Glimmer comparison:
+
+```bash
+./rocmplete content install llama-cpp muse-glimmer
+./rocmplete run llama-cpp server \
+  --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
+```
+
+The default Qwen3.8 preset starts at 262144 tokens and verifies up to three
+tokens from its embedded prediction heads. The dense Qwen3.6 27B MTP Q8_0
+comparison preset has the same context and draft depth. On Strix Halo,
+Qwen3.6 MTP also
 enables Flash Attention and a symmetric Q8_0 target K/V cache. That
 long-context policy is separate from the Q8_0 model weights and leaves the MTP
 draft cache at llama.cpp's F16 default. Other profiles retain llama.cpp's
@@ -199,9 +199,9 @@ part of the user message.
 
 ### Choosing a managed Qwen preset
 
-Muse is the managed-client default. Use dense Qwen3.6 27B MTP and Qwen3.8 27B
-MTP as the two maintained Qwen comparison points. Install either non-MTP
-control when you need to isolate speculative decoding:
+Qwen3.8 27B MTP is the managed-client default. Dense Qwen3.6 27B MTP remains
+the earlier maintained Qwen comparison point. Install either non-MTP control
+when you need to isolate speculative decoding:
 
 | Preset | What changes | Good use |
 | --- | --- | --- |
@@ -209,7 +209,7 @@ control when you need to isolate speculative decoding:
 | `qwen3.6-27b-mtp-q8-0` | Dense 27B MTP Q8_0 | General assistant and smaller baseline |
 | `qwen3.6-27b-q8-0` | Dense 27B Q8_0 | Non-MTP control for the dense model |
 | `qwen3.8-27b-ud-q8-k-xl` | Dense 27B Dynamic Q8_K_XL | Qwen3.8 non-speculative control |
-| `qwen3.8-27b-mtp-ud-q8-k-xl` | Same GGUF using its embedded MTP heads | New dense coding-agent candidate |
+| `qwen3.8-27b-mtp-ud-q8-k-xl` | Same GGUF using its embedded MTP heads | Managed coding-agent default |
 
 Keep whichever model succeeds on representative tasks rather than choosing
 from the parameter count or quantization name alone.
@@ -220,7 +220,10 @@ official message and tool format, but the Unsloth copy silently aliases generic
 `high` to native `xhigh`. Qwen3.8's real effort levels are low, medium, and
 xhigh, plus a separate off toggle. The managed template changes the
 omitted-effort fallback from upstream xhigh to medium; it does not invent a
-high level.
+high level. Upstream `xhigh` adds a short system steering instruction asking
+for careful validation and alternatives, while `medium` adds no reasoning
+instruction. The prompt addition itself is small; the practical risk is the
+much longer reasoning it can trigger.
 `reasoning_effort: none` disables thinking. The managed clients use the
 official thinking-mode sampling policy: temperature 1.0, top-p 0.95, top-k 20,
 min-p 0, presence penalty 0, and repeat penalty 1.
@@ -230,20 +233,25 @@ The pinned
 reports large improvements over Qwen3.6-27B on its coding and agent harnesses.
 Treat those numbers as candidate-selection evidence, not acceptance of this
 quantization or local client behavior.
-ROCmplete therefore exposes Qwen3.8 after installation without changing the
-Muse agent-client default. The catalog currently serves text only; native
-vision needs the optional projector and separate multimodal acceptance.
+The accepted medium-effort tool run and the neutral omitted-effort behavior
+support using the Qwen3.8 MTP preset as ROCmplete's managed-client default. The
+catalog currently serves text only; native vision needs the optional projector
+and separate multimodal acceptance.
 
 Initial Strix Halo acceptance measured 19.12 generated tokens/s for the
 depth-three MTP preset versus 7.20 for its non-speculative control on one fixed
-256-token workload. The real Pi result was less dramatic: Qwen3.8 solved the
-frozen `re-align` coding task with all graders passing, but took 1,514 seconds
-and 26 tool calls. The earlier accepted Qwen3.6 27B run solved that task in
-451 seconds, so install Qwen3.8 as a promising candidate rather than assuming
-the upstream benchmark gain transfers directly to every local agent task.
+256-token workload. The first Pi run selected generic `high`, which the old
+Unsloth template silently mapped to native `xhigh`; it solved `re-align` but
+took 1,514 seconds and 26 tool calls. Under normalized native defaults,
+Qwen3.8 medium solved the same task in 609.8 seconds and 16 tool calls. The two
+runs are evidence that the reasoning setting materially changes this model,
+not a before-and-after performance benchmark.
 
 Early community experience remains unusually sensitive to the exact template
-and reasoning defaults. The rapidly evolving
+and reasoning defaults. The release-day
+[Qwen3.8 megathread](https://www.reddit.com/r/LocalLLaMA/comments/1voojjz/megathread_qwen_38_27b_release_day/)
+collects configurations, template alternatives, and linked experience reports;
+the rapidly evolving
 [Qwen3.8 27B release discussion](https://www.reddit.com/r/LocalLLaMA/comments/1voa3ch/qwen_38_27b_released_please_share_your_experience/)
 is useful for finding failure modes, but its different quantizations, engines,
 templates, and settings are not comparable benchmark evidence. One prominent
@@ -271,7 +279,7 @@ independently on a high-memory host:
 The preset uses its native 256K context and the later pinned upstream template
 that accepts system messages introduced by an agent after the first turn.
 It appears in all managed client model pickers after installation, but does
-not replace ROCmplete's Muse default. Treat benchmark claims as leads,
+not replace ROCmplete's Qwen3.8 default. Treat benchmark claims as leads,
 then compare tool-call correctness, task completion, repetition, wall time,
 and recovery from long sessions on the same repositories. ROCmplete does not
 catalog the community APEX mixed-precision or grafted-MTP variants because
@@ -467,7 +475,7 @@ generated main configuration directly into the child process, and points it
 at the read-only TUI keymap in the checkout. It writes no integration files.
 Pulling a catalog or policy update therefore changes the next launch without
 an install step.
-Muse Dynamic DFlash 256K is the default when present. If it is absent, the
+Qwen3.8 27B MTP is the default when present. If it is absent, the
 launcher selects another installed agent-capable preset; `-m
 rocmplete/PRESET` still overrides that selection through OpenCode itself.
 Project OpenCode configuration continues to load around the runtime settings.
@@ -521,8 +529,8 @@ provider, while the managed llama.cpp router and DwarfStar service listen on
 different ports. Combining them into one provider would require an additional
 routing proxy rather than a cosmetic model-name prefix.
 
-OMP starts managed Muse sessions with high thinking and other reasoning
-models at their catalog default, plus its
+OMP starts Qwen3.8 at medium and every other reasoning model at its catalog
+default, plus its
 upstream `yolo` approval mode. A later `--model`, `--thinking`, or
 `--approval-mode` argument remains authoritative. OMP management commands such
 as `models`, `config`, and `plugin` use the private state without requiring an
@@ -540,7 +548,7 @@ llama.cpp Chat Completions adapter and publish the exact context, output, and
 thinking capabilities of the reviewed presets. Maki's normal global config,
 sessions, and model choices are not read or modified.
 
-The recommended Muse model starts at its native high reasoning strength. Maki
+The recommended Qwen3.8 model starts at native medium effort. Maki
 remembers an explicit `/model` or `/thinking` choice in its private state. On
 the first launch, ROCmplete assigns the selected default to Maki's strong,
 medium, weak, and compaction tiers so a local subagent does not silently select
@@ -908,8 +916,8 @@ approximately 19.82 GiB in total:
   --preset muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k
 ```
 
-The forced-256K DFlash preset is the recipe and managed-agent default. It uses
-twelve draft tokens on ROCm or four on Vulkan. The 128K DFlash control uses
+The forced-256K DFlash preset is the Muse recipe launch. It uses twelve draft
+tokens on ROCm or four on Vulkan. The 128K DFlash control uses
 fifteen on ROCm, matching the draft's 16-token block.
 The dynamic bundle also exposes
 `muse-glimmer-30b-kquant-dynamic-q4-k-xl` as a non-speculative control. This
@@ -930,7 +938,7 @@ comparison on the pinned llama.cpp build; the 128K XL preset retains fifteen.
 Vulkan continues to use its separately accepted depth of four.
 Meta's pinned target and DFlash metadata declare 131072 tokens. Treat 256K as
 forced extrapolation until retrieval, quality, memory, and draft acceptance
-pass beyond 128K. Making it the operational default is a deliberate local
+pass beyond 128K. Making it the Muse recipe default is a deliberate local
 policy, not evidence that Meta declared a 256K window.
 `--context 0` is intentionally refused for the forced preset; a positive
 override such as `--context 196608` applies to both target and draft metadata.

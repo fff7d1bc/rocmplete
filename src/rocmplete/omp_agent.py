@@ -18,6 +18,7 @@ from .agent_models import (
     agent_sampling_parameters,
     default_agent_model,
     is_agent_capable,
+    recommended_agent_model,
     reasoning_client_default,
 )
 from .agent_sandbox import (
@@ -273,13 +274,9 @@ def _reject_profile_arguments(arguments: Sequence[str]) -> None:
             )
 
 
-def _configuration_default(
-    catalog: Catalog, data_dir: Path
-) -> Tuple[str, str, str]:
+def _configuration_default(catalog: Catalog) -> Tuple[str, str, str]:
     # Model-independent commands still need a complete provider overlay.
-    return default_agent_model(
-        catalog, data_dir, "OMP", require_installed=False
-    )
+    return recommended_agent_model(catalog)
 
 
 def create_launch_plan(
@@ -305,9 +302,7 @@ def create_launch_plan(
     ) or (forwarded[:1] and forwarded[0] in _PASSTHROUGH_COMMANDS)
     management = forwarded[:1] and forwarded[0] in _MANAGEMENT_COMMANDS
     if passthrough or management:
-        provider, model, thinking = _configuration_default(
-            catalog, data_dir
-        )
+        provider, model, thinking = _configuration_default(catalog)
         provider = _provider_id(provider)
         defaults = (None, None, None)
         mode = "passthrough" if passthrough else "management"

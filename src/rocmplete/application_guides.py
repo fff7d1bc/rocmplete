@@ -166,7 +166,7 @@ def _comfyui_guide() -> ApplicationGuide:
 
 
 def _llama_guide() -> ApplicationGuide:
-    assistant = "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
+    assistant = "qwen3.8-27b-mtp-ud-q8-k-xl"
     benchmark = "qwen3.6-27b-q8-0"
     return ApplicationGuide(
         application="llama-cpp",
@@ -176,8 +176,9 @@ def _llama_guide() -> ApplicationGuide:
             GuideSection(
                 "Start here",
                 (
-                    "Build llama.cpp and install Muse Glimmer Dynamic with "
-                    "DFlash. The installer prints the 256K default command.",
+                    "Build llama.cpp and install dense Qwen3.8 27B with "
+                    "embedded MTP heads. The installer prints the 256K "
+                    "default command.",
                 ),
                 (
                     _action(
@@ -189,8 +190,8 @@ def _llama_guide() -> ApplicationGuide:
                         "Build or refresh the llama.cpp application path.",
                     ),
                     _action(
-                        "./rocmplete content install llama-cpp muse-glimmer",
-                        "Install the default Muse Glimmer target/draft pair.",
+                        "./rocmplete content install llama-cpp qwen3.8",
+                        "Install the default Qwen3.8 MTP model.",
                     ),
                     _action(
                         "./rocmplete content list --models --details",
@@ -232,9 +233,10 @@ def _llama_guide() -> ApplicationGuide:
                     "For local agent work on a high-memory host, compare "
                     "alternative presets on real repository tasks before "
                     "choosing a default.",
-                    "Muse Glimmer Dynamic DFlash at forced 256K is the common "
-                    "managed-client default. Dense Qwen3.6 27B MTP and "
-                    "Qwen3.8 27B MTP are the maintained comparison points.",
+                    "Dense Qwen3.8 27B MTP at native medium effort is the "
+                    "common managed-client default. Dense Qwen3.6 27B MTP "
+                    "and Muse Glimmer Dynamic DFlash are the maintained "
+                    "comparison points.",
                     "MTP proposes and verifies extra tokens during decoding. "
                     "It may improve generation speed, but it is not a "
                     "reasoning mode and does not accelerate prompt ingestion.",
@@ -373,10 +375,11 @@ def _llama_guide() -> ApplicationGuide:
                     "web workers. Their source material stays in separate "
                     "child sessions. Investigate also avoids OpenCode's "
                     "synthetic maximum-step continuation prompt.",
-                    "Qwen reasoning presets expose instant, low, medium, and "
-                    "high. Muse reasons unconditionally and exposes native "
-                    "low, medium, high, and xhigh strength; high is its "
-                    "default. Each named level also has a bounded llama.cpp "
+                    "Qwen3.6 exposes instant and thinking. Qwen3.8 exposes "
+                    "instant, low, medium, and xhigh and starts at medium. "
+                    "Muse reasons unconditionally and exposes native low, "
+                    "medium, high, and xhigh strength; high is its default. "
+                    "Each named level also has a bounded llama.cpp "
                     "thinking-token ceiling. "
                     "OpenCode uses ctrl+t or /variants. Pi uses Shift+Tab "
                     "or /settings. OMP accepts --thinking. Maki uses "
@@ -387,8 +390,8 @@ def _llama_guide() -> ApplicationGuide:
                 ),
                 (
                     _action(
-                        "./rocmplete content install llama-cpp muse-glimmer",
-                        "Install the default Muse target/draft pair.",
+                        "./rocmplete content install llama-cpp qwen3.8",
+                        "Install the default Qwen3.8 MTP model.",
                     ),
                     _action(
                         "./rocmplete run llama-cpp server "

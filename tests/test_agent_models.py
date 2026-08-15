@@ -4,6 +4,7 @@ from rocmplete.agent_models import (
     RECOMMENDED_MODEL,
     agent_sampling_parameters,
     is_agent_capable,
+    recommended_agent_model,
     reasoning_client_default,
     reasoning_client_levels,
     reasoning_native_value,
@@ -104,7 +105,27 @@ class AgentModelPolicyTests(unittest.TestCase):
             agent_sampling_parameters("unreviewed-agent")
 
     def test_reasoning_controls_are_model_native(self):
-        muse = self.catalog.llama_preset(RECOMMENDED_MODEL)
+        recommended = self.catalog.llama_preset(RECOMMENDED_MODEL)
+        self.assertEqual(RECOMMENDED_MODEL, "qwen3.8-27b-mtp-ud-q8-k-xl")
+        self.assertEqual(
+            reasoning_client_levels(recommended),
+            ("off", "low", "medium", "xhigh"),
+        )
+        self.assertEqual(reasoning_client_default(recommended), "medium")
+        self.assertEqual(
+            reasoning_native_value(recommended, "medium"), "medium"
+        )
+        with self.assertRaisesRegex(LauncherError, "supports --thinking"):
+            reasoning_native_value(recommended, "high")
+
+        qwen36 = self.catalog.llama_preset("qwen3.6-27b-mtp-q8-0")
+        self.assertEqual(reasoning_client_levels(qwen36), ("off", "high"))
+        self.assertEqual(reasoning_client_default(qwen36), "high")
+        self.assertEqual(reasoning_native_value(qwen36, "high"), "on")
+
+        muse = self.catalog.llama_preset(
+            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
+        )
         self.assertEqual(
             reasoning_client_levels(muse),
             ("low", "medium", "high", "xhigh"),
@@ -114,21 +135,11 @@ class AgentModelPolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(LauncherError, "supports --thinking"):
             reasoning_native_value(muse, "off")
 
-        qwen36 = self.catalog.llama_preset("qwen3.6-27b-mtp-q8-0")
-        self.assertEqual(reasoning_client_levels(qwen36), ("off", "high"))
-        self.assertEqual(reasoning_client_default(qwen36), "high")
-        self.assertEqual(reasoning_native_value(qwen36, "high"), "on")
-
-        qwen38 = self.catalog.llama_preset(
-            "qwen3.8-27b-mtp-ud-q8-k-xl"
-        )
+    def test_shared_default_uses_the_recommended_native_reasoning_level(self):
         self.assertEqual(
-            reasoning_client_levels(qwen38),
-            ("off", "low", "medium", "xhigh"),
+            recommended_agent_model(self.catalog),
+            ("rocmplete", "qwen3.8-27b-mtp-ud-q8-k-xl", "medium"),
         )
-        self.assertEqual(reasoning_client_default(qwen38), "medium")
-        with self.assertRaisesRegex(LauncherError, "supports --thinking"):
-            reasoning_native_value(qwen38, "high")
 
 
 if __name__ == "__main__":

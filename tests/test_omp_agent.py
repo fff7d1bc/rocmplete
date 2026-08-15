@@ -195,7 +195,7 @@ class OmpLauncherTests(unittest.TestCase):
             self.assertEqual(plan.mode, "session")
             self.assertEqual(plan.default_provider, "rocmplete-llama-cpp")
             self.assertEqual(plan.default_model, self.default_model)
-            self.assertEqual(plan.default_thinking, "high")
+            self.assertEqual(plan.default_thinking, "medium")
             self.assertEqual(plan.endpoint, "http://127.0.0.1:9090/v1")
             self.assertEqual(
                 plan.dwarfstar_endpoint, "http://127.0.0.1:8001/v1"

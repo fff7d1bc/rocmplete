@@ -63,13 +63,13 @@ tokens. Muse high generated fastest but took 768.0 seconds, 49 calls, and
 and test details before producing the same minimal literal patch as Qwen3.6.
 
 This single easy repetition is enough to validate the three current paths and
-to reject raw token speed as a ranking proxy. It is not enough to replace the
-broader quality groups below or to change the user-selected Muse default.
-Before changing reasoning defaults, compare Qwen3.8 low with medium and Muse
-medium with high on the same frozen task, then carry the winner into the hard
-promotion gate. The official managed Qwen3.8 template showed no matching or
-tool-continuation failure here, so the broader Froggeric community template is
-not the next variable to introduce.
+to reject raw token speed as a ranking proxy. Together with the explicit
+operational policy choice, it selects Qwen3.8 MTP at medium as the managed-client
+default; it is not a broader claim that Qwen3.8 is always the strongest model.
+Qwen3.8 low versus medium and Muse medium versus high remain useful within-model
+sweeps before a hard promotion gate. The official managed Qwen3.8 template
+showed no matching or tool-continuation failure here, so the broader Froggeric
+community template is not the next variable to introduce.
 
 ## Focused Muse M, Muse XL, and Qwen 27B comparison
 

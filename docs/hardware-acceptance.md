@@ -367,11 +367,11 @@ Observed results:
   Treat this as an xhigh Qwen3.8 result, not as a reasoning-matched comparison
   with Qwen3.6 high/on or Muse high.
   This accepts the quantized model and Pi tool contract on `gfx1151`, but the
-  much longer trajectory than the earlier Qwen3.6 27B solve does not justify
-  replacing ROCmplete's current agent default. The optional vision projector
-  and `gfx1150`, `gfx1200`, and `gfx1201` remain deferred. All containers were
-  removed, and the kernel reported no matching GPU reset, page fault, ring
-  timeout, device loss, or OOM event.
+  much longer trajectory than the earlier Qwen3.6 27B solve did not at that
+  point justify replacing ROCmplete's then-current Muse agent default. The
+  optional vision projector and `gfx1150`, `gfx1200`, and `gfx1201` remain
+  deferred. All containers were removed, and the kernel reported no matching
+  GPU reset, page fault, ring timeout, device loss, or OOM event.
 
 #### Reasoning-default calibration (2026-08-14)
 

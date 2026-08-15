@@ -81,11 +81,10 @@ APPLICATIONS = {
         logs=True,
         shared_pytorch_base=False,
         multi_gpu=True,
-        after_build="./rocmplete content install llama-cpp muse-glimmer",
+        after_build="./rocmplete content install llama-cpp qwen3.8",
         after_content=(
             "./rocmplete run llama-cpp server "
-            "--preset "
-            "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"
+            "--preset qwen3.8-27b-mtp-ud-q8-k-xl"
         ),
     ),
     "dwarfstar": ApplicationSpec(

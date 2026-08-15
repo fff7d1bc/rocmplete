@@ -993,7 +993,7 @@ class CliTests(unittest.TestCase):
         text = output.getvalue()
         normalized = " ".join(text.split())
         self.assertIn("./rocmplete build llama-cpp", text)
-        self.assertIn("./rocmplete content install llama-cpp muse-glimmer", text)
+        self.assertIn("./rocmplete content install llama-cpp qwen3.8", text)
         self.assertIn("./rocmplete content list --models", text)
         self.assertIn("run llama-cpp cli --preset", text)
         self.assertIn("run llama-cpp server --preset", text)

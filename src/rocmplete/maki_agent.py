@@ -15,10 +15,10 @@ from .agent_models import (
     DWARFSTAR_MODEL,
     DWARFSTAR_PROVIDER_ID,
     PROVIDER_ID,
-    RECOMMENDED_MODEL,
     agent_output_limit,
     default_agent_model,
     is_agent_capable,
+    recommended_agent_model,
 )
 from .agent_sandbox import (
     AgentSandboxPaths as MakiSandboxPaths,
@@ -162,7 +162,7 @@ def create_launch_plan(
     ) or (forwarded[:1] and forwarded[0] in _PASSTHROUGH_COMMANDS)
     management = forwarded[:1] and forwarded[0] in _MANAGEMENT_COMMANDS
     if passthrough or management:
-        provider, model, thinking = PROVIDER_ID, RECOMMENDED_MODEL, "high"
+        provider, model, thinking = recommended_agent_model(catalog)
         mode = "passthrough" if passthrough else "management"
         defaults = (None, None, None)
     else:
