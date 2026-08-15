@@ -176,6 +176,25 @@ time for that exact token ratio. `LauncherError` from one backend is recorded
 before the other runs; `KeyboardInterrupt` still escapes immediately after
 the current benchmark's normal container cleanup.
 
+For a speculative llama.cpp depth screen:
+
+```text
+installed speculative preset plus reviewed agent request policy
+  → calibrate deterministic chat-template prompts with server tokenizer APIs
+  → fingerprint source, image, model, devices, sampler, reasoning, and plan
+  → start one retained, single-slot benchmark server per trial
+  → issue one seeded Chat Completions request with no reusable prompt cache
+  → capture structured response timings and accepted/drafted token counts
+  → checkpoint atomically before and after every trial
+  → remove the exact benchmark container in finally
+  → aggregate server-timed generation work over total generation time by draft depth
+```
+
+`src/rocmplete/llama_speculative_benchmark.py` owns prompt generation,
+calibration, result compatibility, server/request execution, checkpointing,
+resume, and screening summaries. Native `llama-bench` remains a separate
+non-speculative measurement and the screen does not mutate catalog policy.
+
 For bounded target-hardware smoke acceptance:
 
 ```text

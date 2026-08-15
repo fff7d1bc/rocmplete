@@ -679,6 +679,32 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn("--detach", command)
         self.assertEqual(command[-2:], ["--ctx-size", "8192"])
 
+    def test_llama_server_supports_retained_named_benchmark_lifecycle(self):
+        command = llama_command(
+            LlamaOptions(
+                image="localhost/llama",
+                profile="strix-halo",
+                mode="server",
+                managed_model="qwen/model.gguf",
+                data_dir=Path("/data/rocmplete"),
+                render_nodes=("/dev/dri/renderD128",),
+                detach=True,
+                container_name="rocmplete-llama-speculative-benchmark",
+                container_role="benchmark",
+                auto_remove=False,
+            ),
+            ":rw",
+        )
+        self.assertNotIn("--rm", command)
+        self.assertEqual(
+            command[command.index("--name") + 1],
+            "rocmplete-llama-speculative-benchmark",
+        )
+        self.assertIn(
+            "io.github.fff7d1bc.rocmplete.role=benchmark", command
+        )
+        self.assertIn("--detach", command)
+
     def test_llama_multi_gpu_passes_exact_devices_and_managed_count(self):
         command = llama_command(
             LlamaOptions(

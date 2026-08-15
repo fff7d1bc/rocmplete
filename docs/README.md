@@ -94,6 +94,7 @@ finished. The public contribution path and baseline checks are summarized in
 | Runtime client configuration | `src/rocmplete/opencode.py`, `src/rocmplete/pi_agent.py`, `src/rocmplete/omp_agent.py`, `src/rocmplete/maki_agent.py` |
 | Read-only local GGUF inventory | `src/rocmplete/model_inventory.py` |
 | Native llama.cpp benchmark results | `src/rocmplete/llama_benchmark.py` |
+| Server-side llama.cpp speculative-depth screens | `src/rocmplete/llama_speculative_benchmark.py` |
 | Frozen coding-agent tasks and results | `evaluations/coding/`, `src/rocmplete/agent_evaluation.py` |
 | Checkpointed target-hardware smoke acceptance | `src/rocmplete/acceptance.py` |
 | Third-party provenance summary | `THIRD_PARTY_NOTICES.md` |

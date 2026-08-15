@@ -357,6 +357,20 @@ Sparse and dense models, and even different quantizations from one family,
 can prefer different backends on the same GPU. The
 [tuning guide](guide/tuning.md#benchmarks) covers repeatable comparisons.
 
+Sweep the server-side MTP or DFlash draft depth separately. This path uses the
+managed chat template, reasoning, sampling, cache, and speculative policy that
+native `llama-bench` cannot exercise:
+
+```bash
+./rocmplete benchmark llama-cpp-speculative \
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl \
+  --thinking medium --dry-run
+```
+
+The real run checkpoints every fresh-server request and can resume after an
+interruption. Its default long-context screen is intentionally an unattended
+hardware experiment, not a routine smoke test or an automatic preset change.
+
 Evaluate a managed model as a coding agent against the frozen Go and Python
 task suite:
 

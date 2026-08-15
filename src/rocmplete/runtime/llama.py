@@ -53,6 +53,9 @@ class LlamaOptions:
     detach: bool = False
     interactive: bool = False
     unconfined: bool = False
+    container_name: str = ""
+    container_role: str = "application"
+    auto_remove: bool = True
 
 
 @dataclass(frozen=True)
@@ -79,6 +82,10 @@ class LlamaBenchmarkOptions:
 def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
     layout = StorageLayout(options.data_dir)
     read_only_suffix = read_only_shared_suffix(volume_suffix)
+    container_name = (
+        options.container_name
+        or APPLICATIONS["llama-cpp"].container_name
+    )
     if options.model is not None:
         container_model = "/content/models/{}".format(options.model.name)
         model_root = options.model.parent
@@ -88,12 +95,15 @@ def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
     else:
         container_model = ""
         model_root = layout.llama_models
-    command = [
-        "podman", "run", "--rm", "--userns", "keep-id",
+    command = ["podman", "run"]
+    if options.auto_remove:
+        command.append("--rm")
+    command.extend([
+        "--userns", "keep-id",
         "--umask", podman.current_umask(), "--name",
-        APPLICATIONS["llama-cpp"].container_name,
+        container_name,
         *podman.managed_container_arguments(
-            application="llama-cpp", role="application"
+            application="llama-cpp", role=options.container_role
         ),
         "--read-only", "--cap-drop", "all",
         "--security-opt", "no-new-privileges",
@@ -144,7 +154,7 @@ def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
         "--env", "ROCMLETE_HOST_LISTEN={}".format(options.listen),
         "--env", "ROCMLETE_PORT={}".format(options.port),
         "--env", "ROCMLETE_GPU_COUNT={}".format(len(options.render_nodes)),
-    ]
+    ])
     for profile in GPU_PROFILES:
         command.extend(
             [

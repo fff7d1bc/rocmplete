@@ -1305,7 +1305,7 @@ class CliTests(unittest.TestCase):
     @patch("rocmplete.cli.podman.remove_container")
     @patch(
         "rocmplete.cli.podman.container_exists",
-        side_effect=[True, False, False, False, False],
+        side_effect=[True, False, False, False, False, False],
     )
     @patch("rocmplete.cli.podman.require_rootless")
     def test_cleanup_containers_reports_removed_and_absent_consistently(
@@ -3350,6 +3350,100 @@ class CliTests(unittest.TestCase):
                     ),
                 ):
                     command_benchmark(arguments, load_catalog())
+
+    def test_llama_speculative_benchmark_dry_run_is_checkpointed_server_plan(self):
+        catalog = load_catalog()
+        preset = catalog.llama_preset(
+            "qwen3.8-27b-mtp-ud-q8-k-xl"
+        )
+        artifact = catalog.artifact(preset.artifact)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            model = (
+                data_dir
+                / "content"
+                / "llama-cpp"
+                / "models"
+                / artifact.destination
+            )
+            model.parent.mkdir(parents=True)
+            with model.open("wb") as handle:
+                handle.truncate(artifact.size)
+            _record_managed_file(data_dir, model, artifact)
+            _, arguments = parse_arguments(
+                [
+                    "benchmark",
+                    "llama-cpp-speculative",
+                    "--preset",
+                    preset.identifier,
+                    "--draft-depth",
+                    "2",
+                    "--draft-depth",
+                    "3",
+                    "--context-depth",
+                    "4096",
+                    "--context",
+                    "8192",
+                    "--generation-tokens",
+                    "64",
+                    "--repetitions",
+                    "1",
+                    "--thinking",
+                    "medium",
+                    "--profile",
+                    "strix-halo",
+                    "--data-dir",
+                    str(data_dir),
+                    "--dry-run",
+                ]
+            )
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "rocmplete.cli.select_render_nodes",
+                        return_value=("/dev/dri/renderD128",),
+                    )
+                )
+                stack.enter_context(
+                    patch("rocmplete.cli.check_gpu_device_access")
+                )
+                output = stack.enter_context(redirect_stdout(io.StringIO()))
+                self.assertEqual(
+                    command_benchmark(arguments, catalog), 0
+                )
+            self.assertFalse(
+                (data_dir / "apps" / "llama-cpp").exists()
+            )
+        command = output.getvalue()
+        self.assertIn("2 requests", command)
+        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=2", command)
+        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=3", command)
+        self.assertIn(
+            "--name rocmplete-llama-speculative-benchmark", command
+        )
+        self.assertIn(
+            "io.github.fff7d1bc.rocmplete.role=benchmark", command
+        )
+        self.assertIn("--parallel 1", command)
+        self.assertNotIn("podman run --rm", command)
+        self.assertIn("no checkpoint was written", command)
+
+    def test_llama_speculative_benchmark_requires_speculative_preset(self):
+        _, arguments = parse_arguments(
+            [
+                "benchmark",
+                "llama-cpp-speculative",
+                "--preset",
+                "qwen3.8-27b-ud-q8-k-xl",
+                "--profile",
+                "strix-halo",
+                "--dry-run",
+            ]
+        )
+        with self.assertRaisesRegex(
+            LauncherError, "does not enable speculative decoding"
+        ):
+            command_benchmark(arguments, load_catalog())
 
     def test_real_run_resolution_prepares_data_directory(self):
         with tempfile.TemporaryDirectory() as directory:

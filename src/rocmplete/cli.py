@@ -131,7 +131,10 @@ from .agent_evaluation import (
     run_agent_evaluation,
 )
 from .agent_models import (
+    agent_sampling_parameters,
+    is_agent_capable,
     reasoning_client_default,
+    reasoning_native_value,
 )
 from .build import (
     build_cache_dir,
@@ -164,6 +167,12 @@ from .cli_parser import (
 from .llama_benchmark import (
     run_llama_benchmark,
     write_backend_comparison,
+)
+from .llama_speculative_benchmark import (
+    CONTAINER_NAME as LLAMA_SPECULATIVE_BENCHMARK_CONTAINER_NAME,
+    DEFAULT_CONTEXT_DEPTHS as LLAMA_SPECULATIVE_CONTEXT_DEPTHS,
+    SpeculativeBenchmarkOptions,
+    run_speculative_benchmark,
 )
 from .model_inventory import LlamaModel, llama_models
 from .opencode import (
@@ -5020,7 +5029,8 @@ def command_benchmark(
     if action is None:
         return _print_incomplete_command(
             arguments.command_parser,
-            "choose run, suite, agent, llama-cpp, or report",
+            "choose run, suite, agent, llama-cpp, "
+            "llama-cpp-speculative, or report",
             BENCHMARK_EXAMPLES,
         )
     if action == "agent":
@@ -5089,6 +5099,8 @@ def command_benchmark(
         return 0
     if action == "llama-cpp":
         return _command_llama_benchmark(arguments, catalog)
+    if action == "llama-cpp-speculative":
+        return _command_llama_speculative_benchmark(arguments, catalog)
     if action == "report":
         if arguments.output and arguments.report_format == "both":
             raise LauncherError(
@@ -5515,6 +5527,338 @@ def _command_llama_benchmark(
         )
     )
     return 1 if errors else 0
+
+
+def _print_llama_speculative_summary(value: Mapping[str, object]) -> None:
+    summary = value.get("summary")
+    if not isinstance(summary, dict):
+        return
+    depths = summary.get("depths")
+    if not isinstance(depths, dict) or not depths:
+        return
+    print("\n{}".format(style("Speculative depth screen", "heading")))
+    print(
+        "  {:>5} {:>10} {:>11} {:>12} {:>7}".format(
+            "Depth", "Generate", "Acceptance", "Prompt", "Trials"
+        )
+    )
+    for raw_depth, raw_metrics in sorted(
+        depths.items(), key=lambda item: int(item[0])
+    ):
+        if not isinstance(raw_metrics, dict):
+            continue
+        print(
+            "  {:>5} {:>7.2f} t/s {:>9.1f}% {:>9.2f} t/s {:>7}".format(
+                raw_depth,
+                float(raw_metrics["generation_tokens_per_second"]),
+                float(raw_metrics["acceptance_percent"]),
+                float(raw_metrics["prompt_tokens_per_second"]),
+                int(raw_metrics["complete_trials"]),
+            )
+        )
+    winner = summary.get("winner_depth")
+    improvement = summary.get("winner_improvement_percent")
+    decision = summary.get("screening_decision")
+    if winner is not None and improvement is not None:
+        print(
+            "\n{} depth {} ({:+.2f}% versus incumbent depth {})".format(
+                style("Screening winner:", "label"),
+                winner,
+                float(improvement),
+                summary.get("incumbent_depth"),
+            )
+        )
+    if decision == "retest-candidate":
+        print(
+            style(
+                "The winner cleared the screening gate; repeat it against "
+                "the incumbent before changing the managed preset.",
+                "warning",
+            )
+        )
+    elif decision == "keep-incumbent":
+        print("The incumbent remains the supported draft depth.")
+    digest_counts = summary.get("response_digest_counts")
+    if isinstance(digest_counts, dict):
+        divergent = [
+            key
+            for key, count in digest_counts.items()
+            if isinstance(count, int) and count > 1
+        ]
+        if divergent:
+            print(
+                style(
+                    "WARNING: output diverged across depths for {} paired "
+                    "context/seed conditions; inspect responses before "
+                    "treating throughput as actionable.".format(
+                        len(divergent)
+                    ),
+                    "warning",
+                )
+            )
+
+
+def _command_llama_speculative_benchmark(
+    arguments: argparse.Namespace, catalog: Catalog
+) -> int:
+    preset = catalog.llama_preset(arguments.preset)
+    if not preset.speculative_type:
+        raise LauncherError(
+            "preset '{}' does not enable speculative decoding".format(
+                preset.identifier
+            )
+        )
+    if not is_agent_capable(preset):
+        raise LauncherError(
+            "preset '{}' has no reviewed Chat Completions policy".format(
+                preset.identifier
+            )
+        )
+    maximum_depth = 8 if preset.speculative_type == "draft-mtp" else 15
+    depths = tuple(
+        sorted(
+            set(arguments.draft_depth or range(1, maximum_depth + 1))
+        )
+    )
+    if not depths or any(depth < 1 or depth > maximum_depth for depth in depths):
+        raise LauncherError(
+            "--draft-depth must be between 1 and {} for {}".format(
+                maximum_depth, preset.speculative_type
+            )
+        )
+    if len(depths) != len(arguments.draft_depth or depths):
+        raise LauncherError("--draft-depth values must be unique")
+    context_depths = tuple(
+        sorted(set(arguments.context_depth or LLAMA_SPECULATIVE_CONTEXT_DEPTHS))
+    )
+    if not context_depths or any(depth < 1 for depth in context_depths):
+        raise LauncherError("--context-depth must be positive")
+    if len(context_depths) != len(arguments.context_depth or context_depths):
+        raise LauncherError("--context-depth values must be unique")
+    if arguments.repetitions < 1:
+        raise LauncherError("--repetitions must be at least 1")
+    if arguments.generation_tokens < 1:
+        raise LauncherError("--generation-tokens must be at least 1")
+    if (
+        arguments.seed < 0
+        or arguments.seed + arguments.repetitions - 1 > 2**31 - 1
+    ):
+        raise LauncherError(
+            "--seed and repetition-derived seeds must be between 0 and 2^31-1"
+        )
+    if arguments.context < 1 or arguments.context > preset.default_context:
+        raise LauncherError(
+            "--context must be between 1 and the preset limit {}".format(
+                preset.default_context
+            )
+        )
+    if (
+        max(context_depths) + arguments.generation_tokens + 1024
+        > arguments.context
+    ):
+        raise LauncherError(
+            "--context must leave at least 1024 tokens beyond the largest "
+            "--context-depth and generation allowance"
+        )
+    profile = validate_profile(arguments.profile)
+    if profile == "cpu":
+        raise LauncherError("speculative depth sweeps require a GPU profile")
+    render_nodes = select_render_nodes(
+        requested_render_nodes(arguments.render_node)
+    )
+    check_gpu_device_access(render_nodes)
+    thinking = arguments.thinking or reasoning_client_default(preset)
+    native_reasoning = reasoning_native_value(preset, thinking)
+    requested_data = selected_data_dir(arguments.data_dir)
+    data_dir = inspect_data_path(requested_data)
+    managed_model, installed = _llama_preset_status(
+        catalog, preset.identifier, data_dir
+    )
+    managed_draft = (
+        catalog.artifact(preset.draft_artifact).destination
+        if preset.draft_artifact
+        else ""
+    )
+    artifact = catalog.artifact(preset.artifact)
+    model_metadata = {
+        "kind": "catalog",
+        "preset": preset.identifier,
+        "bundle": preset.bundle,
+        "path": str(installed),
+        "artifact": artifact.identifier,
+        "repository": artifact.source.repository,
+        "revision": artifact.source.revision,
+        "source_path": artifact.source.path,
+        "size": artifact.size,
+        "sha256": artifact.sha256,
+    }
+    if preset.draft_artifact:
+        draft_artifact = catalog.artifact(preset.draft_artifact)
+        model_metadata["draft"] = {
+            "artifact": draft_artifact.identifier,
+            "repository": draft_artifact.source.repository,
+            "revision": draft_artifact.source.revision,
+            "source_path": draft_artifact.source.path,
+            "size": draft_artifact.size,
+            "sha256": draft_artifact.sha256,
+        }
+    image = arguments.image or APPLICATIONS["llama-cpp"].image
+    port = validate_port(arguments.port)
+    try:
+        output = (
+            Path(arguments.output).expanduser().resolve(strict=False)
+            if arguments.output
+            else None
+        )
+        resume = (
+            Path(arguments.resume).expanduser().resolve(strict=True)
+            if arguments.resume
+            else None
+        )
+    except OSError as error:
+        raise LauncherError(
+            "cannot resolve speculative benchmark result path: {}".format(
+                error
+            )
+        )
+    if resume is not None and not resume.is_file():
+        raise LauncherError(
+            "speculative benchmark resume is not a regular file: {}".format(
+                resume
+            )
+        )
+    if output is not None and output.exists():
+        raise LauncherError(
+            "refusing to replace existing speculative benchmark: {}".format(
+                output
+            )
+        )
+    commands = {}
+    for depth in depths:
+        command = llama_command(
+            LlamaOptions(
+                image=image,
+                profile=profile,
+                mode="server",
+                data_dir=data_dir,
+                backend=arguments.backend,
+                managed_model=managed_model,
+                managed_draft=managed_draft,
+                speculative_type=preset.speculative_type,
+                draft_tokens=depth,
+                context_override_architectures=(
+                    preset.context_override_architectures
+                ),
+                jinja=preset.jinja,
+                reasoning_preserve=preset.reasoning_preserve,
+                chat_template=preset.chat_template,
+                profile_flash_attention=preset.flash_attention,
+                profile_kv_cache=preset.kv_cache,
+                render_nodes=render_nodes,
+                listen="127.0.0.1",
+                port=port,
+                context=arguments.context,
+                detach=True,
+                unconfined=arguments.unconfined,
+                container_name=LLAMA_SPECULATIVE_BENCHMARK_CONTAINER_NAME,
+                container_role="benchmark",
+                auto_remove=False,
+            ),
+            podman.selinux_volume_suffix(),
+        )
+        command.extend(("--parallel", "1"))
+        commands[depth] = tuple(command)
+    request_count = len(depths) * len(context_depths) * arguments.repetitions
+    print("{} {}".format(style("Model:", "label"), preset.identifier))
+    print(
+        "{} {}, depths {}, targets {}, {} repetitions ({} requests)".format(
+            style("Parameters:", "label"),
+            preset.speculative_type,
+            ",".join(str(depth) for depth in depths),
+            ",".join(str(depth) for depth in context_depths),
+            arguments.repetitions,
+            request_count,
+        )
+    )
+    print(
+        "{} {}, seed {}, {} generated tokens, context {}, parallel 1".format(
+            style("Condition:", "label"),
+            thinking,
+            arguments.seed,
+            arguments.generation_tokens,
+            arguments.context,
+        )
+    )
+    if arguments.dry_run:
+        for depth in depths:
+            print(
+                "\n{} {}\n  {}".format(
+                    style("Draft depth:", "label"),
+                    depth,
+                    style(shlex.join(commands[depth]), "command"),
+                )
+            )
+        print(
+            style(
+                "No container was started and no checkpoint was written.",
+                "muted",
+            )
+        )
+        return 0
+    data_dir = prepare_data_dir(requested_data)
+    StorageLayout(data_dir).prepare_runtime("llama-cpp")
+    podman.require_rootless()
+    if not podman.image_exists(image):
+        raise LauncherError(
+            "image not found: {} (run './rocmplete build llama-cpp')".format(
+                image
+            )
+        )
+    if podman.container_exists(LLAMA_SPECULATIVE_BENCHMARK_CONTAINER_NAME):
+        raise LauncherError(
+            "benchmark container {!r} already exists".format(
+                LLAMA_SPECULATIVE_BENCHMARK_CONTAINER_NAME
+            )
+        )
+    # The data path was only inspected while commands were constructed. Its
+    # resolved value is unchanged after preparation, so the mount commands
+    # remain valid and dry-run never creates it.
+    result_path, result = run_speculative_benchmark(
+        SpeculativeBenchmarkOptions(
+            data_dir=data_dir,
+            preset=preset.identifier,
+            image=image,
+            image_id=podman.image_id(image),
+            source_identity=source_identity(),
+            profile=profile,
+            backend=arguments.backend,
+            render_nodes=render_nodes,
+            port=port,
+            context=arguments.context,
+            thinking=thinking,
+            native_reasoning=native_reasoning,
+            speculative_type=preset.speculative_type,
+            incumbent_depth=preset.draft_tokens_for_backend(arguments.backend),
+            depths=depths,
+            context_depths=context_depths,
+            repetitions=arguments.repetitions,
+            generation_tokens=arguments.generation_tokens,
+            seed=arguments.seed,
+            sampling=agent_sampling_parameters(preset.identifier),
+            model=model_metadata,
+            commands=commands,
+            output=output,
+            resume=resume,
+            keep_going=arguments.keep_going,
+        )
+    )
+    _print_llama_speculative_summary(result)
+    print(
+        "\n{} {}".format(
+            style("Speculative benchmark checkpoint:", "success"), result_path
+        )
+    )
+    return 0 if result.get("status") == "complete" else 1
 
 
 def _llama_backend_name(backend: str) -> str:

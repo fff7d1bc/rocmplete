@@ -19,6 +19,12 @@ from .config import (
     SHELL_APPLICATIONS,
 )
 from .hardware_profiles import SUPPORTED_ARCHITECTURES
+from .llama_speculative_benchmark import (
+    DEFAULT_GENERATION_TOKENS as SPECULATIVE_DEFAULT_GENERATION_TOKENS,
+    DEFAULT_REPETITIONS as SPECULATIVE_DEFAULT_REPETITIONS,
+    DEFAULT_SEED as SPECULATIVE_DEFAULT_SEED,
+    DEFAULT_SERVER_CONTEXT as SPECULATIVE_DEFAULT_SERVER_CONTEXT,
+)
 from .recipes import APPLICATION_RECIPES
 from .remote_import import IMPORT_KINDS
 
@@ -312,6 +318,10 @@ Try one of these:
   ./rocmplete benchmark llama-cpp --preset PRESET --compare-backends
   ./rocmplete benchmark llama-cpp --preset PRESET --context-depth 32768 \
     --cache-type-k q8_0 --cache-type-v q8_0 --flash-attn on
+  ./rocmplete benchmark llama-cpp-speculative \
+    --preset qwen3.8-27b-mtp-ud-q8-k-xl --thinking medium --dry-run
+  ./rocmplete benchmark llama-cpp-speculative --preset PRESET \
+    --resume RESULT.json
   ./rocmplete benchmark suite --family qwen --dry-run
   ./rocmplete benchmark report SUITE.json
 """
@@ -1702,6 +1712,103 @@ def _parser() -> argparse.ArgumentParser:
     )
     llama_benchmark.add_argument("--unconfined", action="store_true")
     llama_benchmark.add_argument("--dry-run", action="store_true")
+    speculative_benchmark = benchmark_commands.add_parser(
+        "llama-cpp-speculative",
+        help="sweep server-side speculative draft depths",
+        allow_abbrev=False,
+    )
+    speculative_benchmark.add_argument(
+        "--preset", required=True, help="installed speculative llama.cpp preset"
+    )
+    speculative_benchmark.add_argument(
+        "--draft-depth",
+        action="append",
+        default=[],
+        type=int,
+        metavar="TOKENS",
+        help="draft depth to test; repeatable (default: every supported depth)",
+    )
+    speculative_benchmark.add_argument(
+        "--context-depth",
+        action="append",
+        default=[],
+        type=int,
+        metavar="TOKENS",
+        help=(
+            "target prompt depth; repeatable "
+            "(default: 4096, 32768, 65536, 122880)"
+        ),
+    )
+    speculative_benchmark.add_argument(
+        "--repetitions",
+        type=int,
+        default=SPECULATIVE_DEFAULT_REPETITIONS,
+        help="fresh seeded repetitions per depth and context (default: 3)",
+    )
+    speculative_benchmark.add_argument(
+        "--generation-tokens",
+        type=int,
+        default=SPECULATIVE_DEFAULT_GENERATION_TOKENS,
+        help="maximum generated tokens per request (default: 512)",
+    )
+    speculative_benchmark.add_argument(
+        "--seed",
+        type=int,
+        default=SPECULATIVE_DEFAULT_SEED,
+        help="first request seed; repetitions increment it (default: 42)",
+    )
+    speculative_benchmark.add_argument(
+        "--context",
+        type=int,
+        default=SPECULATIVE_DEFAULT_SERVER_CONTEXT,
+        help="single-slot server context (default: 131072)",
+    )
+    speculative_benchmark.add_argument(
+        "--thinking",
+        choices=("off", "minimal", "low", "medium", "high", "xhigh", "max"),
+        default=None,
+        help="explicit model reasoning condition (default: preset policy)",
+    )
+    speculative_benchmark.add_argument(
+        "--profile",
+        choices=("auto",) + GPU_PROFILES,
+        default="auto",
+        help="GPU execution profile (default: auto)",
+    )
+    speculative_benchmark.add_argument(
+        "--backend",
+        choices=LLAMA_BACKENDS,
+        default="rocm",
+        help="llama.cpp backend (default: rocm)",
+    )
+    _add_render_node_arguments(speculative_benchmark, multi_gpu=True)
+    speculative_benchmark.add_argument(
+        "--port", default="8190", help="private benchmark server port (default: 8190)"
+    )
+    speculative_benchmark.add_argument(
+        "--data-dir", help="persistent data directory"
+    )
+    speculative_benchmark.add_argument(
+        "--image", help="override the local llama.cpp image tag"
+    )
+    speculative_destination = speculative_benchmark.add_mutually_exclusive_group()
+    speculative_destination.add_argument(
+        "--output", help="new checkpoint JSON; default is llama.cpp benchmark storage"
+    )
+    speculative_destination.add_argument(
+        "--resume", help="resume a compatible speculative benchmark JSON"
+    )
+    speculative_benchmark.add_argument(
+        "--keep-going",
+        action="store_true",
+        help="continue after an individual server or request failure",
+    )
+    speculative_benchmark.add_argument("--unconfined", action="store_true")
+    speculative_benchmark.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="validate and print the complete sweep without starting or writing",
+    )
     benchmark_report = benchmark_commands.add_parser(
         "report", help="render reports from an existing suite JSON"
     )

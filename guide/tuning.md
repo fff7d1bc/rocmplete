@@ -305,9 +305,48 @@ reproducibility evidence.
 Speculative presets are intentionally rejected here. `llama-bench` measures
 the main model without ROCmplete's speculative-decoding policy, so accepting
 an MTP or DFlash preset would produce a clean-looking result for a different
-runtime. Measure it through the llama.cpp server API when you need end-to-end
-generation throughput, or select a non-speculative control for a native
-`llama-bench` comparison.
+runtime. Select a non-speculative control for a native `llama-bench`
+comparison, or use the separate managed server sweep:
+
+```bash
+./rocmplete benchmark llama-cpp-speculative \
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl \
+  --thinking medium --dry-run
+./rocmplete benchmark llama-cpp-speculative \
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl \
+  --thinking medium
+```
+
+For MTP, the default screen tests draft depths 1 through 8. It calibrates one
+deterministic synthetic Go repository prompt at approximately 4K, 32K, 64K,
+and 120K tokens, then issues three seeded 512-token requests per depth and
+prompt size. Each request starts a fresh single-slot server, so no candidate
+inherits a prompt cache. The model's reviewed sampling policy and selected
+native reasoning condition remain fixed. The resulting 96 requests can take
+hours; use `--draft-depth`, `--context-depth`, `--repetitions`, and
+`--generation-tokens` for a bounded smoke before the default campaign.
+
+The checkpoint records immutable model and image identity, the complete
+condition fingerprint, calibrated prompt hashes, server and request time,
+prompt and generation rates, accepted and drafted tokens, finish reason, and
+assistant response hashes and content. Aggregate generation throughput weights
+llama.cpp's server-reported timed generation work by its generation interval;
+it never sums or takes an unweighted average of reported rates. A three-percent
+screen only names a candidate for a focused incumbent retest; the command
+never edits a catalog preset. The synthetic task checks repeatability and
+output divergence but is not model-quality acceptance.
+
+Resume with the same options and the printed checkpoint path:
+
+```bash
+./rocmplete benchmark llama-cpp-speculative \
+  --preset qwen3.8-27b-mtp-ud-q8-k-xl \
+  --thinking medium --resume RESULT.json
+```
+
+Completed trials are skipped. A running, interrupted, or failed trial is
+retried, and a changed source tree, image, model, sampler, context, depth set,
+or prompt policy is rejected instead of silently mixing conditions.
 
 The llama.cpp image contains both ROCm and Vulkan. Compare them unattended:
 
