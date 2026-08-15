@@ -5645,6 +5645,12 @@ def _command_llama_speculative_benchmark(
         )
     if arguments.poll is not None and not 0 <= arguments.poll <= 100:
         raise LauncherError("--poll must be between 0 and 100")
+    if arguments.batch_size < 1:
+        raise LauncherError("--batch-size must be at least 1")
+    if arguments.ubatch_size < 1:
+        raise LauncherError("--ubatch-size must be at least 1")
+    if arguments.ubatch_size > arguments.batch_size:
+        raise LauncherError("--ubatch-size must not exceed --batch-size")
     if arguments.cache_type_v not in ("preset", "f16") and (
         arguments.flash_attn != "on"
     ):
@@ -5819,6 +5825,10 @@ def _command_llama_speculative_benchmark(
                 "1",
                 "--spec-draft-p-min",
                 str(arguments.draft_probability_min),
+                "--batch-size",
+                str(arguments.batch_size),
+                "--ubatch-size",
+                str(arguments.ubatch_size),
             )
         )
         if arguments.draft_backend_sampling == "off":
@@ -5914,6 +5924,8 @@ def _command_llama_speculative_benchmark(
             flash_attention=arguments.flash_attn,
             cache_type_k=arguments.cache_type_k,
             cache_type_v=arguments.cache_type_v,
+            batch_size=arguments.batch_size,
+            ubatch_size=arguments.ubatch_size,
             sampling=agent_sampling_parameters(preset.identifier),
             model=model_metadata,
             commands=commands,

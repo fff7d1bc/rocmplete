@@ -3404,6 +3404,10 @@ class CliTests(unittest.TestCase):
                     "q8_0",
                     "--cache-type-v",
                     "q8_0",
+                    "--batch-size",
+                    "2048",
+                    "--ubatch-size",
+                    "1024",
                     "--profile",
                     "strix-halo",
                     "--data-dir",
@@ -3446,6 +3450,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("--no-host", command)
         self.assertIn("ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO=on", command)
         self.assertIn("ROCMLETE_LLAMA_KV_CACHE_STRIX_HALO=q8_0", command)
+        self.assertIn("--batch-size 2048", command)
+        self.assertIn("--ubatch-size 1024", command)
         self.assertNotIn("podman run --rm", command)
         self.assertIn("no checkpoint was written", command)
 

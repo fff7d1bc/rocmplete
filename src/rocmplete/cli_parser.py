@@ -1820,6 +1820,18 @@ def _parser() -> argparse.ArgumentParser:
         help="target value-cache condition (default: preset policy)",
     )
     speculative_benchmark.add_argument(
+        "--batch-size",
+        type=int,
+        default=2048,
+        help="logical prompt batch size (default: 2048)",
+    )
+    speculative_benchmark.add_argument(
+        "--ubatch-size",
+        type=int,
+        default=512,
+        help="physical prompt microbatch size (default: 512)",
+    )
+    speculative_benchmark.add_argument(
         "--profile",
         choices=("auto",) + GPU_PROFILES,
         default="auto",

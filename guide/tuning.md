@@ -332,7 +332,8 @@ Controlled tuning runs can additionally fix `--draft-probability-min`,
 are recorded benchmark conditions, not changes to the managed preset. Target
 cache overrides do not change the separate draft cache. Quantized values
 require `--flash-attn on`; keep one factor different per comparison and inspect
-response hashes as well as throughput.
+response hashes as well as throughput. `--batch-size` and `--ubatch-size`
+provide the same explicit control for prompt-processing experiments.
 
 The checkpoint records immutable model and image identity, the complete
 condition fingerprint, calibrated prompt hashes, server and request time,

@@ -45,6 +45,8 @@ def _options(root: Path, **changes) -> SpeculativeBenchmarkOptions:
         "flash_attention": "preset",
         "cache_type_k": "preset",
         "cache_type_v": "preset",
+        "batch_size": 2048,
+        "ubatch_size": 512,
         "sampling": {"temperature": 1.0, "top_p": 0.95},
         "model": {"artifact": "qwen", "sha256": "c" * 64},
         "commands": {1: ("server", "1"), 2: ("server", "2")},
@@ -205,6 +207,8 @@ class LlamaSpeculativeBenchmarkTests(unittest.TestCase):
                 {
                     "cache_type_k": "preset",
                     "cache_type_v": "preset",
+                    "batch_size": 2048,
+                    "ubatch_size": 512,
                     "draft_backend_sampling": True,
                     "draft_probability_min": 0.0,
                     "flash_attention": "preset",

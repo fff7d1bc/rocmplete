@@ -93,6 +93,8 @@ class SpeculativeBenchmarkOptions:
     flash_attention: str
     cache_type_k: str
     cache_type_v: str
+    batch_size: int
+    ubatch_size: int
     sampling: Mapping[str, object]
     model: Mapping[str, object]
     commands: Mapping[int, Sequence[str]] = field(repr=False)
@@ -214,6 +216,8 @@ def _definition(options: SpeculativeBenchmarkOptions) -> Mapping[str, object]:
             "flash_attention": options.flash_attention,
             "cache_type_k": options.cache_type_k,
             "cache_type_v": options.cache_type_v,
+            "batch_size": options.batch_size,
+            "ubatch_size": options.ubatch_size,
         },
         "prompt_generator_version": PROMPT_GENERATOR_VERSION,
         "fresh_server_per_trial": True,
