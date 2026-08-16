@@ -401,9 +401,9 @@ class CatalogTests(unittest.TestCase):
             "af36ecb6b5db1407953345b746c14ac93f0657dda413910b4348683a2d990377",
         )
         self.assertEqual(qwen38_artifact.license.spdx, "Apache-2.0")
-        qwen38_q4 = catalog.llama_preset("qwen3.8-27b-q4-k-m")
+        qwen38_q4 = catalog.llama_preset("qwen3.8-27b-ud-q4-k-xl")
         qwen38_q4_mtp = catalog.llama_preset(
-            "qwen3.8-27b-mtp-q4-k-m"
+            "qwen3.8-27b-mtp-ud-q4-k-xl"
         )
         qwen38_q4_artifact = catalog.artifact(qwen38_q4.artifact)
         self.assertEqual(qwen38_q4.bundle, qwen38_q4_mtp.bundle)
@@ -420,7 +420,7 @@ class CatalogTests(unittest.TestCase):
         self.assertTrue(qwen38_q4.reasoning_preserve)
         self.assertEqual(qwen38_q4_mtp.speculative_type, "draft-mtp")
         self.assertEqual(qwen38_q4_mtp.draft_tokens, 3)
-        self.assertEqual(qwen38_q4_artifact.size, 17106773984)
+        self.assertEqual(qwen38_q4_artifact.size, 17923394624)
         self.assertEqual(
             qwen38_q4_artifact.source.repository,
             "unsloth/Qwen3.8-27B-GGUF",
@@ -431,7 +431,7 @@ class CatalogTests(unittest.TestCase):
         )
         self.assertEqual(
             qwen38_q4_artifact.sha256,
-            "7b2aec3b9ababdfd75aa17552ee95607d866e44decf547f6f12fcef85cc89f1b",
+            "bee238bbeb3dc0a34bde4d0dedbaee1f98c009e8bb4226f03070054c12fb1372",
         )
         self.assertEqual(qwen38_q4_artifact.license.spdx, "Apache-2.0")
         hy = catalog.llama_preset("hy-mt1.5-7b-q8-0")

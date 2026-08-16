@@ -103,9 +103,9 @@ class MakiLauncherTests(unittest.TestCase):
             by_id = {model["id"]: model for model in models}
             self.assertNotIn("qwen3-0.6b-q8-0", by_id)
             self.assertIn("qwen3.8-27b-mtp-ud-q8-k-xl", by_id)
-            self.assertIn("qwen3.8-27b-mtp-q4-k-m", by_id)
+            self.assertIn("qwen3.8-27b-mtp-ud-q4-k-xl", by_id)
             self.assertEqual(
-                by_id["qwen3.8-27b-mtp-q4-k-m"]["context_window"],
+                by_id["qwen3.8-27b-mtp-ud-q4-k-xl"]["context_window"],
                 65536,
             )
             self.assertEqual(

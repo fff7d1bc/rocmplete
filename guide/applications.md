@@ -210,34 +210,36 @@ when you need to isolate speculative decoding:
 | `qwen3.6-27b-q8-0` | Dense 27B Q8_0 | Non-MTP control for the dense model |
 | `qwen3.8-27b-ud-q8-k-xl` | Dense 27B Dynamic Q8_K_XL | Qwen3.8 non-speculative control |
 | `qwen3.8-27b-mtp-ud-q8-k-xl` | Same GGUF using its embedded MTP heads | Managed coding-agent default |
-| `qwen3.8-27b-q4-k-m` | Dense 27B Q4_K_M at 64K | Optional smaller non-speculative control |
-| `qwen3.8-27b-mtp-q4-k-m` | Same Q4_K_M GGUF using its embedded MTP heads | Optional smaller agent preset |
+| `qwen3.8-27b-ud-q4-k-xl` | Dense 27B Dynamic Q4_K_XL at 64K | Optional smaller non-speculative control |
+| `qwen3.8-27b-mtp-ud-q4-k-xl` | Same Dynamic Q4_K_XL GGUF using its embedded MTP heads | Optional smaller agent preset |
 
 Keep whichever model succeeds on representative tasks rather than choosing
 from the parameter count or quantization name alone.
 
 The guided `qwen3.8` recipe intentionally installs only Dynamic Q8_K_XL. Use
-`./rocmplete content install llama-qwen3.8-27b-q4-k-m` when the 15.93 GiB
-Q4_K_M capacity and throughput tradeoff is useful. The Q4 presets do not
-change the recommended model or any client default.
+`./rocmplete content install llama-qwen3.8-27b-ud-q4-k-xl` when the 16.69 GiB
+Dynamic Q4_K_XL capacity and throughput tradeoff is useful. The Q4 presets do
+not change the recommended model or any client default.
 
-On the accepted Fedora Strix Halo host, run the optional MTP preset with
-Vulkan for the best measured throughput:
+On the accepted Fedora Strix Halo host, start the optional MTP preset with the
+normal ROCm backend unless the local workload favors Vulkan:
 
 ```bash
 ./rocmplete run llama-cpp server \
-  --preset qwen3.8-27b-mtp-q4-k-m \
-  --backend vulkan
+  --preset qwen3.8-27b-mtp-ud-q4-k-xl
 ```
 
-At a 4K populated prompt, the controlled depth-three screen measured 22.56
-generated tokens/s on Vulkan and 16.40 on ROCm. One matched 32K confirmation
-measured 18.20 versus 16.49 tokens/s and reduced request time from 170.19 to
-151.44 seconds. Depths two through four were within 1.5% on Vulkan, so the
-managed preset retains depth three rather than copying AMD's screenshot depth
-four. A separate medium-effort Pi run at the preset's 64K context solved the
-frozen `re-align` task, including every hidden and public grade. This is useful
-single-host evidence, not an equivalent-quality claim against Dynamic Q8_K_XL
+At a 4K populated prompt, depth-three Vulkan generated 22.22 tokens/s and
+finished the two requests in 78.19 seconds; ROCm generated 16.98 tokens/s and
+took 86.04 seconds. At 32K, Vulkan generated faster (20.07 versus 15.44
+tokens/s) but slower prefill made its whole request 3.5% slower (170.29 versus
+164.59 seconds). The mixed result does not justify a backend override.
+
+Against the retired Q4_K_M path, Dynamic Q4_K_XL stayed within 12.4% on these
+whole requests. Against the default Dynamic Q8_K_XL on matched ROCm requests,
+it generated 25% faster at 4K and 30% faster at 32K. A medium-effort Pi run at
+64K and a nested-tool router probe both passed. This is useful single-host
+evidence, not an equivalent-quality claim against Dynamic Q8_K_XL.
 or proof that the model fits a dedicated 32 GB card.
 
 Qwen3.8 uses ROCmplete's reviewed copy of the pinned official base-model Jinja

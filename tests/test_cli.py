@@ -2807,7 +2807,7 @@ class CliTests(unittest.TestCase):
 
     def test_llama_router_renders_qwen38_q4_base_and_embedded_mtp_policy(self):
         catalog = load_catalog()
-        preset = catalog.llama_preset("qwen3.8-27b-q4-k-m")
+        preset = catalog.llama_preset("qwen3.8-27b-ud-q4-k-xl")
         artifact = catalog.artifact(preset.artifact)
         with tempfile.TemporaryDirectory() as directory:
             data_dir = Path(directory)
@@ -2828,14 +2828,14 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             installed,
             (
-                "qwen3.8-27b-q4-k-m",
-                "qwen3.8-27b-mtp-q4-k-m",
+                "qwen3.8-27b-ud-q4-k-xl",
+                "qwen3.8-27b-mtp-ud-q4-k-xl",
             ),
         )
         self.assertEqual(contents.count("jinja = true"), 2)
         self.assertEqual(contents.count("reasoning-preserve = true"), 2)
         mtp_section = contents.split(
-            "[qwen3.8-27b-mtp-q4-k-m]", 1
+            "[qwen3.8-27b-mtp-ud-q4-k-xl]", 1
         )[1]
         self.assertIn("spec-type = draft-mtp", mtp_section)
         self.assertIn("spec-draft-n-max = 3", mtp_section)

@@ -84,9 +84,9 @@ class PiLauncherTests(unittest.TestCase):
         self.assertNotIn("qwen3-0.6b-q8-0", models)
         self.assertNotIn("translategemma-27b-it-q8-0", models)
         self.assertIn("qwen3.8-27b-mtp-ud-q8-k-xl", models)
-        self.assertIn("qwen3.8-27b-mtp-q4-k-m", models)
+        self.assertIn("qwen3.8-27b-mtp-ud-q4-k-xl", models)
         self.assertEqual(
-            models["qwen3.8-27b-mtp-q4-k-m"]["contextWindow"], 65536
+            models["qwen3.8-27b-mtp-ud-q4-k-xl"]["contextWindow"], 65536
         )
         self.assertEqual(
             models[self.default_model]["contextWindow"], 262144

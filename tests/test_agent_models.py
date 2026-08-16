@@ -52,7 +52,7 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
-            "qwen3.8-27b-q4-k-m": (
+            "qwen3.8-27b-ud-q4-k-xl": (
                 1.0,
                 0.95,
                 20,
@@ -60,7 +60,7 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
-            "qwen3.8-27b-mtp-q4-k-m": (
+            "qwen3.8-27b-mtp-ud-q4-k-xl": (
                 1.0,
                 0.95,
                 20,

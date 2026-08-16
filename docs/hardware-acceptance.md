@@ -466,68 +466,78 @@ for this preset. No candidate patch is accepted into the application image.
 The complete campaign produced no matching GPU reset, page fault, ring timeout,
 device loss, SVM mapping failure, general-protection fault, or OOM kernel event.
 
-#### Qwen3.8 Q4_K_M optional path (2026-08-16)
+#### Qwen3.8 Dynamic Q4_K_XL optional path (2026-08-16)
 
-The optional Q4 path used source commit
-`8cd2159b9bfe960fc1235236285f3f0406fc23ea`, the same stock r23 image and
-image ID as the Dynamic Q8 tuning above, and Unsloth's
-`Qwen3.8-27B-Q4_K_M.gguf` from revision
+The accepted smaller path uses Unsloth's
+`Qwen3.8-27B-UD-Q4_K_XL.gguf` from revision
 `4604b899a826000505a834e623272db5b7fd62f6`. The managed installer verified
-the exact 17,106,773,984-byte file as SHA-256
-`7b2aec3b9ababdfd75aa17552ee95607d866e44decf547f6f12fcef85cc89f1b`.
-The loader reported 27,320,697,856 parameters, Q4_K_M tensors, 262144 trained
-context, and working embedded MTP initialization. The managed presets retain a
-conservative 65536-token default and native medium effort; neither replaces
-the Dynamic Q8 managed-client default.
+the exact 17,923,394,624-byte file as SHA-256
+`bee238bbeb3dc0a34bde4d0dedbaee1f98c009e8bb4226f03070054c12fb1372`.
+Tests used source commit `9fb84ba89d34f6065af815d6700bdb51637c8889`
+and the stock r23 image
+`sha256:bf8a00950a0ea1611cb95486eb8517c17e0d8d3261a3bfa643c28c56ee9d2fb1`.
+The artifact loaded with working embedded MTP initialization on both ROCm and
+Vulkan. Its managed presets retain a conservative 65536-token context,
+depth-three MTP, and native medium effort. Dynamic Q8_K_XL remains the
+managed-client default.
 
-A fixed native control at 4K depth used three repetitions, 512 prompt tokens,
-256 generated tokens, f16 K/V, and forced Flash Attention. ROCm measured
-306.49 prompt and 12.18 generated tokens/s; Vulkan measured 276.34 and 12.57.
-That shallow non-speculative workload favored Vulkan by only 2.1% estimated
-end-to-end time, below the 3% decision threshold.
+The previous 17,106,773,984-byte Q4_K_M artifact was retained as a controlled
+comparison and then retired from the catalog. A fixed native control at 4K
+depth used three repetitions, 512 prompt tokens, 256 generated tokens, f16
+K/V, and forced Flash Attention:
 
-The server-side MTP path differed materially. A fresh server per request,
-medium reasoning, the reviewed sampling policy, 4K populated prompts, two
-seeds, 512 generated tokens, and depths two through four produced:
+| Backend | Quantization | Prompt tok/s | Generated tok/s | Estimated request |
+| --- | --- | ---: | ---: | ---: |
+| ROCm | Q4_K_M | 306.49 | 12.18 | 22.69 s |
+| ROCm | Dynamic Q4_K_XL | 320.91 | 11.62 | 23.63 s |
+| Vulkan | Q4_K_M | 276.34 | 12.57 | 22.22 s |
+| Vulkan | Dynamic Q4_K_XL | 267.90 | 11.79 | 23.62 s |
 
-| Backend | Depth 2 | Depth 3 | Depth 4 | Depth-3 draft acceptance |
-| --- | ---: | ---: | ---: | ---: |
-| ROCm | 17.30 tok/s | 16.40 tok/s | 15.97 tok/s | 51.7% |
-| Vulkan | 22.22 tok/s | 22.56 tok/s | 22.26 tok/s | 53.7% |
+Dynamic Q4_K_XL was 4.1% slower end to end on ROCm and 6.3% slower on Vulkan.
+The server-side MTP comparison used a fresh server per request, medium effort,
+the reviewed sampling policy, depth three, and 512 generated tokens:
 
-ROCm's small screen nominated depth two by 5.55%, which requires a separate
-confirmation before a policy change. Vulkan kept depth three, with all three
-depths within 1.5%. The managed preset therefore retains depth three on both
-backends. At depth three, Vulkan was 37.6% faster than ROCm in this 4K screen.
-Seeded response hashes diverged between some depths and between backends, as
-they also did in earlier speculative screens, so these are throughput results
-and not response-equivalence or answer-quality evidence.
+| Context | Backend | Quantization | Prompt tok/s | Generated tok/s | Acceptance | Request |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| 4K | ROCm | Q4_K_M | 307.27 | 16.40 | 51.7% | 89.27 s |
+| 4K | ROCm | Dynamic Q4_K_XL | 320.01 | 16.98 | 52.2% | 86.04 s |
+| 4K | Vulkan | Q4_K_M | 301.27 | 22.56 | 53.7% | 72.77 s |
+| 4K | Vulkan | Dynamic Q4_K_XL | 256.99 | 22.22 | 56.7% | 78.19 s |
+| 32K | ROCm | Q4_K_M | 235.58 | 16.49 | 61.0% | 170.19 s |
+| 32K | ROCm | Dynamic Q4_K_XL | 249.37 | 15.44 | 52.5% | 164.59 s |
+| 32K | Vulkan | Q4_K_M | 265.79 | 18.20 | 47.7% | 151.44 s |
+| 32K | Vulkan | Dynamic Q4_K_XL | 226.42 | 20.07 | 60.1% | 170.29 s |
 
-One matched depth-three confirmation populated 32,787 prompt tokens in a
-65536-token, single-slot server. ROCm measured 235.58 prompt and 16.49
-generated tokens/s, 61.0% draft acceptance, and 170.19 seconds total. Vulkan
-measured 265.79 prompt and 18.20 generated tokens/s, 47.7% acceptance, and
-151.44 seconds total. This accepts Vulkan as the preferred backend for the
-optional Q4 MTP preset on `gfx1151`; backend selection remains an explicit
-runtime dimension and the project's general default stays ROCm. ROCm container
-accounting was about 24.15 GB during the 64K/32K run. Vulkan device memory is
-not represented by the same rootless accounting, and Strix Halo UMA does not
-prove fit on a dedicated 32 GB R9700, so every RDNA 4 capacity column remains
-pending.
+The new quantization ranged from 3.6% faster to 12.4% slower by whole-request
+time. Vulkan won the Dynamic Q4_K_XL 4K requests by 9.1%, while ROCm won the
+32K request by 3.5%; this mixed result does not justify the Q4_K_M path's old
+blanket Vulkan recommendation. The global ROCm default therefore applies and
+Vulkan remains an explicit workload choice.
 
-The actual lazy Vulkan router advertised both Q4 aliases and rendered the MTP
-alias with depth three, the reviewed Qwen3.8 template, preserved reasoning,
-and 64K context. A required function call emitted the exact nested semantic
-argument `outer.value = 7`; its tool-result continuation returned exact
-`TOOL_OK_42`. Finally, Pi 0.84.1 ran the frozen version 5
-`re-align` task through the Q4 MTP alias at medium effort, Vulkan, and 64K.
-It solved the task in 299.084 seconds with 16,804 prompt, 204,255 cache-read,
-and 5,512 output tokens at 223.42 prompt and 23.36 generated tokens/s. Public
-tests, hidden tests, the build, dependency, generated-artifact, and offline
-network grades all passed. The retained result is
-`apps/agent-evaluation/results/qwen38-q4-vulkan-medium-re-align-8cd2159-retry.json`.
-One easy solve establishes practical agent viability but is not a normalized
-Q4-versus-Q8 quality comparison.
+The default Dynamic Q8_K_XL's matched ROCm depth-three trials generated 13.60
+tokens/s at 4K and 11.91 at 32K. Dynamic Q4_K_XL generated 16.98 and 15.44,
+respectively: 25% and 30% faster. Its request time improved 15% at 4K and 7.5%
+at 32K. This visible smaller-tier speedup, plus the close Q4_K_M comparison,
+is the basis for replacing Q4_K_M rather than offering two similar 17 GB
+variants. It is not an equivalent-quality claim against Dynamic Q8_K_XL.
+
+The actual lazy Vulkan router rendered the candidate with depth three, the
+reviewed Qwen3.8 template, preserved reasoning, and 64K context. A required
+function call emitted the exact nested semantic argument `outer.value = 7`;
+its tool-result continuation returned exact `TOOL_OK_42`.
+
+Pi 0.84.2 then ran the frozen version 5 `re-align` task at medium effort,
+Vulkan, and 64K. Dynamic Q4_K_XL solved every public, hidden, build,
+dependency, generated-artifact, and offline-network grade in 551.771 seconds,
+with 11,568 prompt, 270,439 cache-read, and 10,833 output tokens at 98.55
+prompt and 22.39 generated tokens/s. A same-version Q4_K_M control also solved
+in 258.640 seconds with 9,167 prompt, 128,734 cache-read, and 5,150 output
+tokens at 145.50 prompt and 24.78 generated tokens/s. The two correct but
+different patches demonstrate substantial stochastic agent-economy variance;
+one easy task does not rank quantization quality. The retained candidate result
+is
+`apps/agent-evaluation/results/qwen38-q4xl-vulkan-medium-re-align-20260816-retry.json`
+under the isolated `rocmplete-q4xl-eval` data root.
 
 All transient containers were removed. The kernel journal for the complete
 download, ROCm/Vulkan benchmark, router, and agent-evaluation interval had no
@@ -945,7 +955,7 @@ local source image.
 | llama.cpp offload smoke | `llama-qwen3-0.6b-q8-0` | pending | pending | pending | pending |
 | llama.cpp Qwen3.6 tool protocol | `qwen3.6-27b-mtp-q8-0`, complete nested tool round trip at 256K with thinking on (Pi `high`) and off | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp Qwen3.8 tool protocol | `qwen3.8-27b-mtp-ud-q8-k-xl`, complete nested tool round trip at 256K with off, low, medium, and xhigh | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
-| llama.cpp Qwen3.8 Q4 optional path | `qwen3.8-27b-mtp-q4-k-m`, 64K medium-effort tool round trip and one frozen Pi task; compare ROCm and Vulkan | pending | pending | accepted 2026-08-16 on Vulkan | pending |
+| llama.cpp Qwen3.8 Q4 optional path | `qwen3.8-27b-mtp-ud-q4-k-xl`, 64K medium-effort tool round trip and one frozen Pi task; compare ROCm and Vulkan | pending | pending | accepted 2026-08-16 on Vulkan | pending |
 | llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k`, ROCm depth 12 or Vulkan depth 4, high strength | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | accepted 2026-08-14 on ROCm | pending |
 | llama.cpp agent default comparison | Qwen3.6 MTP on, Qwen3.8 MTP medium, and Muse 256K high through Pi with the same tasks and runtime conditions | N/P unless every model and context fits the card | N/P unless host memory is deliberately used | accepted 2026-08-14 on `re-align` | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
