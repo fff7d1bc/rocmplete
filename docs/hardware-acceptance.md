@@ -423,6 +423,49 @@ protocol, role, or continuation failure. The pinned Froggeric template remains
 a separate diagnostic candidate; this result alone does not justify an A/B or
 replacing the official-template adaptation.
 
+#### Qwen3.8 speculative runtime tuning (2026-08-15 to 2026-08-16)
+
+A follow-up on the same `gfx1151` host measured the stock r23 image, image ID
+`bf8a00950a0ea1611cb95486eb8517c17e0d8d3261a3bfa643c28c56ee9d2fb1`,
+with Qwen3.8 medium reasoning, its reviewed sampling policy, one server slot,
+and a fresh server for every request. The complete MTP depth screen covered
+depths one through eight at approximately 4K, 32K, 64K, and 120K populated
+context, with three seeds and 512 generated tokens in every cell: 96 requests
+completed without a failure.
+
+Depth three generated at 11.86 tokens/s over the complete matrix versus 11.49
+for depth two, a 3.22% aggregate advantage. It also won at every context size:
+13.29, 12.54, 11.92, and 10.15 tokens/s versus depth two's 12.77, 12.17,
+11.26, and 10.10. Depths four through eight regressed progressively, while
+depth one reached only 9.81 tokens/s. All requests reached the 512-token limit
+while still emitting reasoning, so this accepts depth three as the throughput
+policy across the tested context range, not as answer-quality evidence.
+
+Focused follow-ups did not establish another production win. AMD-oriented GDN
+layout and chunking candidates improved native `pp4096` by 7.53% but improved
+managed-server generation by only 0.56%; the matching native generation result
+was flat. Full input-layer GPU offload improved native `pp4096` by 3.86% but
+changed server generation by 0.02% and made total request time 0.09% worse.
+Default polling also beat `--poll 0` end to end. Graph disabling, graph
+optimization, host-buffer disabling, simple n-gram drafting, draft-backend
+sampling control, and draft minimum probabilities 0.05 and 0.10 produced no
+repeatable benefit.
+
+An exploratory four-request screen made draft `p_min=0.20` look 2.14% faster,
+so it received a stock-image ABBA confirmation at 4K and 32K with eight 1,024-
+token requests per condition. It changed aggregate generation from 12.693 to
+12.726 tokens/s, only +0.27%, while prompt processing fell 1.03% and aggregate
+request time increased 0.36%. It helped the short-context cells but regressed
+the 32K cells, and only two of eight paired response hashes matched. The
+candidate therefore fails the performance gate without requiring a separate
+quality run.
+
+Retain depth three, draft `p_min=0`, the default poll value, current input
+placement and graph policy, backend draft sampling, and no n-gram augmentation
+for this preset. No candidate patch is accepted into the application image.
+The complete campaign produced no matching GPU reset, page fault, ring timeout,
+device loss, SVM mapping failure, general-protection fault, or OOM kernel event.
+
 #### Coding-agent comparison (2026-08-11)
 
 The [model quality baseline](coding-agent-model-quality.md) groups these
