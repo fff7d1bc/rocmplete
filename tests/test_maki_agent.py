@@ -99,10 +99,15 @@ class MakiLauncherTests(unittest.TestCase):
                     "has_auth": False,
                 },
             )
-            self.assertEqual(len(models), 9)
+            self.assertEqual(len(models), 11)
             by_id = {model["id"]: model for model in models}
             self.assertNotIn("qwen3-0.6b-q8-0", by_id)
             self.assertIn("qwen3.8-27b-mtp-ud-q8-k-xl", by_id)
+            self.assertIn("qwen3.8-27b-mtp-q4-k-m", by_id)
+            self.assertEqual(
+                by_id["qwen3.8-27b-mtp-q4-k-m"]["context_window"],
+                65536,
+            )
             self.assertEqual(
                 by_id[self.default_model]["context_window"], 262144
             )

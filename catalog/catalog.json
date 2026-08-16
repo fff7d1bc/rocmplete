@@ -1152,6 +1152,23 @@
         "url": "https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4604b899a826000505a834e623272db5b7fd62f6/README.md"
       }
     },
+    "qwen3.8-27b-q4-k-m-gguf": {
+      "description": "Qwen3.8 27B Q4_K_M GGUF with embedded MTP heads for llama.cpp",
+      "source": {
+        "repository": "unsloth/Qwen3.8-27B-GGUF",
+        "revision": "4604b899a826000505a834e623272db5b7fd62f6",
+        "path": "Qwen3.8-27B-Q4_K_M.gguf"
+      },
+      "destination": "qwen3.8-27b-q4-k-m/Qwen3.8-27B-Q4_K_M.gguf",
+      "target": "llama-models",
+      "size": 17106773984,
+      "sha256": "7b2aec3b9ababdfd75aa17552ee95607d866e44decf547f6f12fcef85cc89f1b",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/blob/4604b899a826000505a834e623272db5b7fd62f6/README.md"
+      }
+    },
     "gemma4-31b-it-q8-gguf": {
       "description": "Gemma 4 31B instruction-tuned Q8_0 GGUF from the llama.cpp project",
       "source": {
@@ -1811,6 +1828,17 @@
         "llama"
       ]
     },
+    "llama-qwen3.8-27b-q4-k-m": {
+      "description": "Qwen3.8 27B Q4_K_M llama.cpp model with embedded MTP heads",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3.8-27b-q4-k-m-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
     "llama-gemma4-31b-it-q8-0-mtp": {
       "description": "Gemma 4 31B IT Q8_0 llama.cpp model with Q8_0 MTP draft",
       "application": "llama-cpp",
@@ -2426,6 +2454,40 @@
       "bundle": "llama-qwen3.8-27b-ud-q8-k-xl",
       "artifact": "qwen3.8-27b-ud-q8-k-xl-gguf",
       "default_context": 262144,
+      "speculative_type": "draft-mtp",
+      "draft_tokens": 3,
+      "chat_template": "qwen3.8",
+      "agent_tools": true,
+      "reasoning_control": "effort",
+      "reasoning_levels": [
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "reasoning_default": "medium",
+      "reasoning_off": true,
+      "reasoning_preserve": true
+    },
+    "qwen3.8-27b-q4-k-m": {
+      "bundle": "llama-qwen3.8-27b-q4-k-m",
+      "artifact": "qwen3.8-27b-q4-k-m-gguf",
+      "default_context": 65536,
+      "chat_template": "qwen3.8",
+      "agent_tools": true,
+      "reasoning_control": "effort",
+      "reasoning_levels": [
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "reasoning_default": "medium",
+      "reasoning_off": true,
+      "reasoning_preserve": true
+    },
+    "qwen3.8-27b-mtp-q4-k-m": {
+      "bundle": "llama-qwen3.8-27b-q4-k-m",
+      "artifact": "qwen3.8-27b-q4-k-m-gguf",
+      "default_context": 65536,
       "speculative_type": "draft-mtp",
       "draft_tokens": 3,
       "chat_template": "qwen3.8",

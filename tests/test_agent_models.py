@@ -52,6 +52,22 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
+            "qwen3.8-27b-q4-k-m": (
+                1.0,
+                0.95,
+                20,
+                0.0,
+                0.0,
+                1.0,
+            ),
+            "qwen3.8-27b-mtp-q4-k-m": (
+                1.0,
+                0.95,
+                20,
+                0.0,
+                0.0,
+                1.0,
+            ),
             "gemma4-31b-it-q8-0-mtp": (
                 1.0,
                 0.95,

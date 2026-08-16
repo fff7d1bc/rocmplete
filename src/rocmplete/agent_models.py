@@ -55,6 +55,8 @@ _AGENT_SAMPLING_PARAMETERS = {
     "qwen3.6-27b-mtp-q8-0": _QWEN36_PRECISE_CODING,
     "qwen3.8-27b-ud-q8-k-xl": _QWEN38_THINKING,
     "qwen3.8-27b-mtp-ud-q8-k-xl": _QWEN38_THINKING,
+    "qwen3.8-27b-q4-k-m": _QWEN38_THINKING,
+    "qwen3.8-27b-mtp-q4-k-m": _QWEN38_THINKING,
     "gemma4-31b-it-q8-0-mtp": {
         "temperature": 1.0,
         "top_p": 0.95,

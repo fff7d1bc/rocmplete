@@ -2805,6 +2805,42 @@ class CliTests(unittest.TestCase):
         self.assertIn("spec-draft-n-max = 3", mtp_section)
         self.assertNotIn("model-draft", mtp_section)
 
+    def test_llama_router_renders_qwen38_q4_base_and_embedded_mtp_policy(self):
+        catalog = load_catalog()
+        preset = catalog.llama_preset("qwen3.8-27b-q4-k-m")
+        artifact = catalog.artifact(preset.artifact)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            path = (
+                data_dir
+                / "content"
+                / "llama-cpp"
+                / "models"
+                / artifact.destination
+            )
+            path.parent.mkdir(parents=True)
+            with path.open("wb") as handle:
+                handle.truncate(artifact.size)
+            _record_managed_file(data_dir, path, artifact)
+            contents, installed = _render_llama_router_preset(
+                catalog, data_dir
+            )
+        self.assertEqual(
+            installed,
+            (
+                "qwen3.8-27b-q4-k-m",
+                "qwen3.8-27b-mtp-q4-k-m",
+            ),
+        )
+        self.assertEqual(contents.count("jinja = true"), 2)
+        self.assertEqual(contents.count("reasoning-preserve = true"), 2)
+        mtp_section = contents.split(
+            "[qwen3.8-27b-mtp-q4-k-m]", 1
+        )[1]
+        self.assertIn("spec-type = draft-mtp", mtp_section)
+        self.assertIn("spec-draft-n-max = 3", mtp_section)
+        self.assertNotIn("model-draft", mtp_section)
+
     def test_llama_router_renders_updated_kat_template_policy(self):
         catalog = load_catalog()
         identifier = "kat-coder-v2.5-dev-q8-0"
@@ -4176,7 +4212,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(command_content(arguments, load_catalog()), 0)
         text = output.getvalue()
         self.assertIn("family qwen   8  bundles", text)
-        self.assertIn("all  47  bundles", text)
+        self.assertIn("all  48  bundles", text)
         self.assertNotIn("Exact bundles:", text)
 
     def test_content_list_application_filter_requires_filterable_view(self):
@@ -4858,7 +4894,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("exact-bundles", text)
         self.assertIn("Browse exact bundles:", text)
         self.assertIn("ComfyUI — image models (9 bundles)", text)
-        self.assertIn("llama.cpp (10 bundles)", text)
+        self.assertIn("llama.cpp (11 bundles)", text)
         self.assertIn("Qwen3 0.6B", text)
 
     @patch("builtins.input", side_effect=("8", "1"))
@@ -4889,7 +4925,7 @@ class CliTests(unittest.TestCase):
                 "comfyui-images": 9,
                 "comfyui-videos": 20,
                 "comfyui-addons": 7,
-                "llama-cpp": 10,
+                "llama-cpp": 11,
                 "dwarfstar": 1,
             },
         )
@@ -5081,8 +5117,8 @@ class CliTests(unittest.TestCase):
                     )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 62)
-        self.assertEqual(len({item.identifier for item in artifacts}), 62)
+        self.assertEqual(len(artifacts), 63)
+        self.assertEqual(len({item.identifier for item in artifacts}), 63)
         self.assertEqual(
             install_artifacts.call_args.args[2],
             "localhost/custom-content-tools",
@@ -5098,7 +5134,7 @@ class CliTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Content ready: 47 bundles and 28 workflows.",
+            "Content ready: 48 bundles and 28 workflows.",
             output.getvalue(),
         )
 
@@ -5126,10 +5162,10 @@ class CliTests(unittest.TestCase):
                 )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 12)
-        self.assertEqual(len({item.identifier for item in artifacts}), 12)
+        self.assertEqual(len(artifacts), 13)
+        self.assertEqual(len({item.identifier for item in artifacts}), 13)
         self.assertIn(
-            "Content ready: 10 bundles and 0 workflows.",
+            "Content ready: 11 bundles and 0 workflows.",
             output.getvalue(),
         )
 

@@ -210,9 +210,16 @@ when you need to isolate speculative decoding:
 | `qwen3.6-27b-q8-0` | Dense 27B Q8_0 | Non-MTP control for the dense model |
 | `qwen3.8-27b-ud-q8-k-xl` | Dense 27B Dynamic Q8_K_XL | Qwen3.8 non-speculative control |
 | `qwen3.8-27b-mtp-ud-q8-k-xl` | Same GGUF using its embedded MTP heads | Managed coding-agent default |
+| `qwen3.8-27b-q4-k-m` | Dense 27B Q4_K_M at 64K | Optional smaller non-speculative control |
+| `qwen3.8-27b-mtp-q4-k-m` | Same Q4_K_M GGUF using its embedded MTP heads | Optional smaller agent preset |
 
 Keep whichever model succeeds on representative tasks rather than choosing
 from the parameter count or quantization name alone.
+
+The guided `qwen3.8` recipe intentionally installs only Dynamic Q8_K_XL. Use
+`./rocmplete content install llama-qwen3.8-27b-q4-k-m` when the 15.93 GiB
+Q4_K_M capacity and throughput tradeoff is useful. The Q4 presets do not
+change the recommended model or any client default.
 
 Qwen3.8 uses ROCmplete's reviewed copy of the pinned official base-model Jinja
 template instead of the template embedded in the Unsloth GGUF. It keeps Qwen's

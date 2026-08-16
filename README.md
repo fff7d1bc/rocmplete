@@ -147,6 +147,18 @@ prediction heads. The default preset starts at 256K context, verifies up to
 three draft tokens, and uses native medium reasoning effort. Its non-MTP
 control shares the same verified artifact.
 
+A separate 15.93 GiB Q4_K_M bundle keeps the same model family available for
+more constrained GPUs without changing the recipe or managed-client default:
+
+```bash
+./rocmplete content install llama-qwen3.8-27b-q4-k-m
+./rocmplete run llama-cpp server --preset qwen3.8-27b-mtp-q4-k-m
+```
+
+The Q4_K_M presets start at a conservative 64K context. Treat the smaller
+quantization as a capacity and throughput tradeoff, not an equivalent-quality
+replacement for the Dynamic Q8_K_XL default.
+
 Qwen3.6 and Muse Glimmer remain separate comparison families. Their recipes
 install dense Qwen3.6 MTP Q8_0 and Muse's Dynamic target/DFlash pair:
 
@@ -156,8 +168,8 @@ install dense Qwen3.6 MTP Q8_0 and Muse's Dynamic target/DFlash pair:
 ```
 
 Qwen3.6 MTP and non-MTP are distinct GGUFs and therefore appear on separate
-`content list --models` rows. Qwen3.8's base and MTP presets share one GGUF
-with embedded MTP heads, so the list prints those preset aliases on one
+`content list --models` rows. Each Qwen3.8 quantization shares one GGUF between
+its base and MTP presets, so the list prints each pair of preset aliases on one
 comma-separated row. Muse's three presets similarly share one artifact pair.
 
 For an API serving several installed presets, use the managed router:

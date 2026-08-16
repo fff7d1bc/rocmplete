@@ -58,6 +58,19 @@ so the matching base and MTP presets share one verified artifact. The initial
 integration is text-only: the optional vision projector remains outside the
 recipe until its multimodal runtime contract is separately accepted.
 
+The exact `llama-qwen3.8-27b-q4-k-m` bundle installs the 15.93 GiB Q4_K_M
+variant from the same pinned Unsloth revision. It deliberately stays outside
+the guided `qwen3.8` recipe so installing the recommended model does not also
+download a second quantization:
+
+```bash
+./rocmplete content install llama-qwen3.8-27b-q4-k-m
+```
+
+Its base and embedded-MTP presets start at 64K context for more constrained
+hardware. The smaller quantization is optional and never displaces Dynamic
+Q8_K_XL as the managed-client default.
+
 The `muse-glimmer` recipe installs Meta's 30B Dynamic Q4_K_XL target and
 matching DFlash draft. The next-step command starts the forced-256K DFlash
 preset used as the Muse family comparison. The same pair also exposes a
