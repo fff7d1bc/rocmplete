@@ -34,7 +34,7 @@ passed.
 | Host | GPU target | Workloads exercised |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 and Qwen3.8 llama.cpp MTP/tool paths; three-model 256K Pi reasoning-default screen; OMP and ROCm/Vulkan paths; Muse Glimmer dynamic plus historical 17 GB agent and 256K probes; historical Laguna XS and Ling feasibility controls |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; managed Qwen3.6 and Qwen3.8 llama.cpp MTP/tool paths, including the optional Qwen3.8 Q4_K_M Vulkan path at 64K; three-model 256K Pi reasoning-default screen; OMP and ROCm/Vulkan paths; Muse Glimmer dynamic plus historical 17 GB agent and 256K probes; historical Laguna XS and Ling feasibility controls |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -157,7 +157,12 @@ more constrained GPUs without changing the recipe or managed-client default:
 
 The Q4_K_M presets start at a conservative 64K context. Treat the smaller
 quantization as a capacity and throughput tradeoff, not an equivalent-quality
-replacement for the Dynamic Q8_K_XL default.
+replacement for the Dynamic Q8_K_XL default. On the accepted Strix Halo host,
+Vulkan materially outperformed ROCm for this Q4 MTP path at both 4K and 32K
+populated context, so prefer `--backend vulkan` when selecting it there. This
+model-specific recommendation changes neither the global ROCm backend default
+nor the managed-client Q8 model default. Dedicated 32 GB RDNA 4 capacity still
+needs acceptance on that hardware.
 
 Qwen3.6 and Muse Glimmer remain separate comparison families. Their recipes
 install dense Qwen3.6 MTP Q8_0 and Muse's Dynamic target/DFlash pair:

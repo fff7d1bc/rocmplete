@@ -221,6 +221,25 @@ The guided `qwen3.8` recipe intentionally installs only Dynamic Q8_K_XL. Use
 Q4_K_M capacity and throughput tradeoff is useful. The Q4 presets do not
 change the recommended model or any client default.
 
+On the accepted Fedora Strix Halo host, run the optional MTP preset with
+Vulkan for the best measured throughput:
+
+```bash
+./rocmplete run llama-cpp server \
+  --preset qwen3.8-27b-mtp-q4-k-m \
+  --backend vulkan
+```
+
+At a 4K populated prompt, the controlled depth-three screen measured 22.56
+generated tokens/s on Vulkan and 16.40 on ROCm. One matched 32K confirmation
+measured 18.20 versus 16.49 tokens/s and reduced request time from 170.19 to
+151.44 seconds. Depths two through four were within 1.5% on Vulkan, so the
+managed preset retains depth three rather than copying AMD's screenshot depth
+four. A separate medium-effort Pi run at the preset's 64K context solved the
+frozen `re-align` task, including every hidden and public grade. This is useful
+single-host evidence, not an equivalent-quality claim against Dynamic Q8_K_XL
+or proof that the model fits a dedicated 32 GB card.
+
 Qwen3.8 uses ROCmplete's reviewed copy of the pinned official base-model Jinja
 template instead of the template embedded in the Unsloth GGUF. It keeps Qwen's
 official message and tool format, but the Unsloth copy silently aliases generic
