@@ -630,7 +630,9 @@ Networking cannot be unshared because the managed router is normally on host
 loopback. The sandbox can therefore still reach the Internet, LAN, and other
 localhost services, and it can still alter or delete anything in the writable
 launch directory. It is a practical damage boundary, not a VM or network
-policy.
+policy. `/etc` remains read-only; when its `resolv.conf` symlink points into
+the otherwise private `/run`, the launcher restores only that exact resolver
+target as a read-only bind so DNS continues to follow the host configuration.
 
 The launcher refuses `/`, the host home directory, or another ancestor of the
 home as the writable scope. Start it from the repository you intend to expose.

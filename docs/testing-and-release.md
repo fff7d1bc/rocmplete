@@ -103,13 +103,14 @@ For agent-client sandbox changes, run real OpenCode, Pi, OMP, and Maki bubblewra
 probes on Linux. Confirm each client starts and exits cleanly, its launch
 directory and private XDG state are writable, and the real home, SSH agent,
 inherited token variables, ordinary client state, and GPU devices are absent.
-Confirm that the host loopback llama.cpp endpoint remains reachable. Repeat
-with Linuxbrew
-client installations because their prefix lives below `/home`, which the
-sandbox otherwise hides. For Pi, OMP, and Maki, also confirm `AGENTS.md` loads
-while unapproved project `.pi` resources do not affect Pi. For OMP, confirm
-the generated model catalog loads, every auxiliary role remains local, and
-ordinary host `~/.omp` state and inherited named profiles are absent.
+Confirm that the host loopback llama.cpp endpoint remains reachable. On a host
+with external connectivity, resolve one external hostname from inside the
+sandbox, especially when `/etc/resolv.conf` points into `/run`. Repeat with
+Linuxbrew client installations because their prefix lives below `/home`, which
+the sandbox otherwise hides. For Pi, OMP, and Maki, also confirm `AGENTS.md`
+loads while unapproved project `.pi` resources do not affect Pi. For OMP,
+confirm the generated model catalog loads, every auxiliary role remains local,
+and ordinary host `~/.omp` state and inherited named profiles are absent.
 On Fedora-family hosts where `/home` links to `/var/home`, confirm that both
 absolute spellings resolve to the mounted project while sibling home content
 remains absent.

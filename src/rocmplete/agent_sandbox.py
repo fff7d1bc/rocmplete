@@ -259,6 +259,46 @@ def _directory_arguments(paths: Sequence[Path]) -> Tuple[str, ...]:
     return tuple(arguments)
 
 
+def _runtime_resolver_target(
+    resolv_conf: Path = Path("/etc/resolv.conf"),
+    runtime_root: Path = Path("/run"),
+) -> Optional[Path]:
+    """Return a dynamic resolver target hidden by the private /run mount."""
+
+    try:
+        link_status = resolv_conf.lstat()
+    except FileNotFoundError:
+        return None
+    except OSError as error:
+        raise LauncherError(
+            "cannot inspect host resolver {}: {}".format(
+                resolv_conf, error
+            )
+        )
+    if not stat.S_ISLNK(link_status.st_mode):
+        return None
+    try:
+        target = resolv_conf.resolve(strict=True)
+        target_status = target.stat()
+    except (OSError, RuntimeError) as error:
+        raise LauncherError(
+            "cannot resolve host resolver symlink {}: {}".format(
+                resolv_conf, error
+            )
+        )
+    try:
+        target.relative_to(runtime_root)
+    except ValueError:
+        return None
+    if target == runtime_root or not stat.S_ISREG(target_status.st_mode):
+        raise LauncherError(
+            "host resolver target is not a regular file below {}: {}".format(
+                runtime_root, target
+            )
+        )
+    return target
+
+
 def _home_alias_arguments(
     home: Path = Path("/home"),
     expected_target: Path = Path("/var/home"),
@@ -346,6 +386,7 @@ def create_sandbox_plan(
     bwrap = _resolved_executable("bwrap", env)
     executable = Path(command[0]).resolve(strict=True)
     prefix = _linuxbrew_prefix(executable)
+    resolver_target = _runtime_resolver_target()
     mount_paths = [
         SANDBOX_HOME,
         SANDBOX_HOME / ".config",
@@ -356,6 +397,8 @@ def create_sandbox_plan(
         SANDBOX_RUNTIME,
         working.parent,
     ]
+    if resolver_target is not None:
+        mount_paths.append(resolver_target.parent)
     mount_paths.extend(
         destination.parent for _, destination in read_only_mounts
     )
@@ -403,6 +446,17 @@ def create_sandbox_plan(
         arguments.extend(("--symlink", "usr/lib64", "/lib64"))
     arguments.extend(_home_alias_arguments())
     arguments.extend(_directory_arguments(mount_paths))
+    if resolver_target is not None:
+        # /etc is visible read-only, but its resolv.conf symlink commonly
+        # points into /run. Recreate only that exact target after /run becomes
+        # a private tmpfs so shared host networking retains working DNS.
+        arguments.extend(
+            (
+                "--ro-bind",
+                str(resolver_target),
+                str(resolver_target),
+            )
+        )
     if prefix is not None:
         arguments.extend(("--ro-bind", str(prefix), str(prefix)))
     elif not (

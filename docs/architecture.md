@@ -786,8 +786,11 @@ available namespaces while deliberately restoring host networking for the
 loopback model endpoints. They drop capabilities, start a new session, and use
 parent-death cleanup. `/usr`, `/etc`, and the resolved client installation are
 read-only; OpenCode's one repository-owned TUI JSON file is mounted read-only
-as well. The exact resolved working directory is the only general persistent
-writable mount and keeps its host path. This preserves project identity,
+as well. If `/etc/resolv.conf` points to a dynamic regular file below `/run`,
+that exact file is rebound read-only after the private `/run` tmpfs is created;
+DNS remains usable without exposing another runtime tree. The exact resolved
+working directory is the only general persistent writable mount and keeps its
+host path. This preserves project identity,
 session directories, and absolute paths while exposing no siblings from the
 host filesystem. When the
 host uses Fedora's `/home -> var/home` link, the same link is recreated in the

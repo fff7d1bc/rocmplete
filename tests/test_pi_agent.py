@@ -390,17 +390,22 @@ class PiLauncherTests(unittest.TestCase):
             )
             paths = sandbox_paths(data_dir)
             prepare_state(plan, paths, data_dir)
-            sandbox = create_sandbox_plan(
-                plan,
-                data_dir,
-                workdir,
-                {
-                    "PATH": str(binary_dir),
-                    "TERM": "xterm-256color",
-                    "HF_TOKEN": "must-not-leak",
-                    "SSH_AUTH_SOCK": "/run/ssh-agent",
-                },
-            )
+            resolver = Path("/run/systemd/resolve/stub-resolv.conf")
+            with patch(
+                "rocmplete.agent_sandbox._runtime_resolver_target",
+                return_value=resolver,
+            ):
+                sandbox = create_sandbox_plan(
+                    plan,
+                    data_dir,
+                    workdir,
+                    {
+                        "PATH": str(binary_dir),
+                        "TERM": "xterm-256color",
+                        "HF_TOKEN": "must-not-leak",
+                        "SSH_AUTH_SOCK": "/run/ssh-agent",
+                    },
+                )
             command = list(sandbox.command)
             self.assertEqual(command[0], str(bwrap.resolve()))
             self.assertIn("--clearenv", command)
@@ -409,6 +414,13 @@ class PiLauncherTests(unittest.TestCase):
             self.assertNotIn("must-not-leak", command)
             self.assertNotIn("/run/ssh-agent", command)
             self.assertIn(str(SANDBOX_AGENT_DIR), command)
+            triples = [
+                command[index : index + 3]
+                for index in range(len(command) - 2)
+            ]
+            self.assertIn(
+                ["--ro-bind", str(resolver), str(resolver)], triples
+            )
             self.assertEqual(
                 command[-4:],
                 ["--thinking", "medium", "--print", "ping"],
