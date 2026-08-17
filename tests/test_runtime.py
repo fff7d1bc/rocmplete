@@ -206,11 +206,16 @@ class RuntimeCommandTests(unittest.TestCase):
             'inputs.chat_template_kwargs["reasoning_effort"]',
             reasoning_patch,
         )
+        self.assertIn("has_native_reasoning_level", reasoning_patch)
         self.assertIn(
-            'inputs.chat_template_kwargs["reasoning_strength"]',
+            'find("reasoning_strength")', reasoning_patch
+        )
+        self.assertNotIn(
+            'inputs.chat_template_kwargs["reasoning_strength"] =',
             reasoning_patch,
         )
-        self.assertIn('reasoning_level == "none"', reasoning_patch)
+        self.assertIn("thinking_budget == 0", reasoning_patch)
+        self.assertIn("!inputs.enable_thinking", reasoning_patch)
         for budget, level in (
             (1638, "low"),
             (3276, "low"),

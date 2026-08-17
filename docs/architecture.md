@@ -630,11 +630,12 @@ or speculative-decoding policies retain separate runtime acceptance.
 `reasoning_control` is the narrower model claim behind agent-client reasoning
 selectors. `reasoning_levels`, `reasoning_default`, and `reasoning_off` define
 the exact UI contract. Qwen3.6 declares a toggle, Qwen3.8 declares native
-effort, and Muse declares native strength. The fail-closed server bridge
-forwards recognized OpenAI-compatible labels as both `reasoning_effort` and
-`reasoning_strength`; each template consumes only its own variable. It also
-recovers labels from Maki 0.4.5's deterministic numeric values while retaining
-the client-requested sampler ceiling. Muse declares no off choice because its
+effort, and Muse declares native strength. llama.cpp forwards recognized
+OpenAI-compatible labels through its template capability layer as both
+`reasoning_effort` and `reasoning_strength`; each template consumes only its
+own variable. The fail-closed server bridge adds label recovery for Maki
+0.4.8's deterministic numeric values while retaining the client-requested
+sampler ceiling. Muse declares no off choice because its
 official template always reasons; clients that cannot hide their generic off
 choice are conservatively clamped to Muse low.
 
@@ -747,13 +748,13 @@ scripts are refreshed atomically and reject links or multiply linked files.
 Maki update, rollback, migration, and informational commands pass through to
 the real executable. Other management commands use the private state without
 requiring an installed model.
-The tested Maki 0.4.5 dynamic-provider model schema cannot express per-model
+The tested Maki 0.4.8 dynamic-provider model schema cannot express per-model
 request sampling parameters, and its llama.cpp adapter does not provide a
 request-body hook. The generated provider therefore does not publish fields
 Maki would ignore; Maki requests retain llama.cpp's defaults until upstream
 exposes a clean model or request setting. The same adapter sends only numeric
 `thinking_budget_tokens`. The managed llama.cpp bridge recognizes Maki
-0.4.5's standard values, derives the corresponding native label, and forwards
+0.4.8's standard values, derives the corresponding native label, and forwards
 it while retaining Maki's sampler ceiling. Maki still exposes generic choices
 that some models do not support, so reasoning-sensitive quality comparisons
 use Pi and an explicit model-native condition.

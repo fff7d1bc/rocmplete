@@ -495,7 +495,7 @@ These are client defaults, not locks. OpenCode model options or an agent's
 provider options, Pi per-request sampling parameters, and explicit OMP request
 configuration can override them. OMP receives the exact policy as per-model
 `extraBody`, after its global sampling settings. OpenCode's managed Investigate
-agents still force temperature zero. The tested Maki 0.4.5 dynamic-provider
+agents still force temperature zero. The tested Maki 0.4.8 dynamic-provider
 schema cannot express per-model sampling fields, so managed Maki sessions
 currently inherit llama.cpp's sampler defaults; ROCmplete does not emit fields
 that Maki would silently ignore.
@@ -728,7 +728,7 @@ OpenCode hide unsupported choices. OMP exposes all real levels but its schema
 cannot suppress the generic off choice for Muse; the server conservatively
 maps that choice to Muse low. Maki exposes a generic selector and converts it
 to numeric `thinking_budget_tokens`. The managed server recognizes Maki
-0.4.5's standard numeric values and recovers the matching native effort or
+0.4.8's standard numeric values and recovers the matching native effort or
 strength while retaining the numeric sampler ceiling. Unsupported generic
 Maki choices are not model-native controls, and Muse off likewise becomes
 low. Use Pi for reasoning-sensitive model comparisons because it carries the
@@ -1009,7 +1009,7 @@ remains available to multi-turn history. Muse does not have a native off mode.
 It exposes low, medium, high, and xhigh `Reasoning strength`, defaulting to
 high. Pi, OpenCode, and OMP expose the named levels. Maki converts its generic
 selector to a numeric ceiling; the managed llama.cpp compatibility bridge
-recovers and forwards the corresponding native strength for Maki 0.4.5's
+recovers and forwards the corresponding native strength for Maki 0.4.8's
 standard values.
 
 ROCmplete previously installed
