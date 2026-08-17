@@ -141,21 +141,23 @@ For the Muse Glimmer comparison:
 ```
 
 The default Qwen3.8 preset starts at 262144 tokens and verifies up to three
-tokens from its embedded prediction heads. The dense Qwen3.6 27B MTP Q8_0
-comparison preset has the same context and draft depth. On Strix Halo,
-Qwen3.6 MTP also
-enables Flash Attention and a symmetric Q8_0 target K/V cache. That
-long-context policy is separate from the Q8_0 model weights and leaves the MTP
-draft cache at llama.cpp's F16 default. Other profiles retain llama.cpp's
-cache and Flash Attention defaults until separately accepted. `--context`
-overrides the catalog default.
+tokens from its embedded prediction heads. The dense Qwen3.6 27B MTP Q8_0 and
+sparse Qwen3.6 35B-A3B MTP Dynamic Q8_K_XL comparison presets have the same
+context and draft depth. On Strix Halo, only dense Qwen3.6 27B MTP enables
+Flash Attention and a symmetric Q8_0 target K/V cache. The sparse model
+retains F16 K/V and llama.cpp's Flash Attention default because controlled
+tests found no useful Q8 K/V gain. Other profiles retain llama.cpp's cache and
+Flash Attention defaults until separately accepted. `--context` overrides the
+catalog default.
 
 All managed Qwen3.6 presets start at their native 256K. The pinned
-[Qwen3.6 model card](https://huggingface.co/unsloth/Qwen3.6-27B-MTP-GGUF/blob/5cb35eb3dcbf52dbce5f87dbc64df6aaffadcace/README.md)
-calls 256K the native context and recommends at least 128K to preserve thinking
-capabilities. The value is a ceiling, not an amount of prompt text ROCmplete
-feeds the model. llama.cpp prepares context capacity at startup, while request
-work still follows the tokens actually sent.
+[27B](https://huggingface.co/unsloth/Qwen3.6-27B-MTP-GGUF/blob/5cb35eb3dcbf52dbce5f87dbc64df6aaffadcace/README.md)
+and
+[35B-A3B](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/blob/5bc3e238d916f48a861bac2f8a1990a0e9b7e98d/README.md)
+model cards call 256K the native context and recommend at least 128K to
+preserve thinking capabilities. The value is a ceiling, not an amount of
+prompt text ROCmplete feeds the model. llama.cpp prepares context capacity at
+startup, while request work still follows the tokens actually sent.
 
 Use 128K or 64K when memory matters more than the full native window:
 
@@ -186,7 +188,7 @@ A model and a ROCmplete preset are related, but they are not interchangeable:
 
 | Layer | What it owns | Examples |
 | --- | --- | --- |
-| GGUF model | Architecture, trained weights, and quantization | Qwen3.6 27B Q6_K, Q8_0, or Dynamic Q8_K_XL |
+| GGUF model | Architecture, trained weights, and quantization | Qwen3.6 27B Q8_0 or 35B-A3B Dynamic Q8_K_XL |
 | ROCmplete preset | Model artifact, context size, and required model runtime policy | Chat template, Jinja, profile-specific Flash Attention and K/V cache, MTP or DFlash settings |
 | Server launch | Machine and service policy for this run | ROCm or Vulkan, hardware profile, render nodes, listen address, port |
 | API request or client | The current task and generation behavior | System message, conversation history, temperature, top-p, maximum tokens |
@@ -200,14 +202,18 @@ part of the user message.
 ### Choosing a managed Qwen preset
 
 Qwen3.8 27B MTP is the managed-client default. Dense Qwen3.6 27B MTP remains
-the earlier maintained Qwen comparison point. Install either non-MTP control
-when you need to isolate speculative decoding:
+the smaller earlier comparison point, while sparse Qwen3.6 35B-A3B MTP is
+restored for users who prefer its established agent behavior. Neither becomes
+the default. Install either non-MTP control when you need to isolate
+speculative decoding:
 
 | Preset | What changes | Good use |
 | --- | --- | --- |
 | `qwen3-0.6b-q8-0` | Tiny 0.6B model | Startup, API, and GPU-offload smoke tests |
 | `qwen3.6-27b-mtp-q8-0` | Dense 27B MTP Q8_0 | General assistant and smaller baseline |
 | `qwen3.6-27b-q8-0` | Dense 27B Q8_0 | Non-MTP control for the dense model |
+| `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | Sparse 35B-A3B MTP Dynamic Q8_K_XL | Established high-throughput agent comparison |
+| `qwen3.6-35b-a3b-ud-q8-k-xl` | Sparse 35B-A3B Dynamic Q8_K_XL | Non-MTP control for the sparse model |
 | `qwen3.8-27b-ud-q8-k-xl` | Dense 27B Dynamic Q8_K_XL | Qwen3.8 non-speculative control |
 | `qwen3.8-27b-mtp-ud-q8-k-xl` | Same GGUF using its embedded MTP heads | Managed coding-agent default |
 | `qwen3.8-27b-ud-q4-k-xl` | Dense 27B Dynamic Q4_K_XL at 64K | Optional smaller non-speculative control |
@@ -411,12 +417,14 @@ selector for Gemma 4.
 ### Tool-using clients
 
 Managed Qwen, Gemma 4, and Muse Glimmer agent presets enable llama.cpp's Jinja
-engine. This is required for structured OpenAI-style tool calls. The pinned
-Unsloth Qwen3.6 GGUFs include their developer-role and tool-calling fixes, and
-Gemma 4 uses Google's canonical embedded template. Muse uses Meta's later
-pinned ATEM template from the base repository because its unchanged official
-GGUF still embeds the original release template. ROCmplete does not replace
-these model-specific protocols with a generic one.
+engine. This is required for structured OpenAI-style tool calls. All four
+Qwen3.6 presets select ROCmplete's current fixed `qwen3.6.jinja`: it retains
+later system and developer messages and avoids a closed empty reasoning block
+before a historical tool call while preserving the model's protocol. Gemma 4
+uses Google's canonical embedded template. Muse uses Meta's later pinned ATEM
+template from the base repository because its unchanged official GGUF still
+embeds the original release template. ROCmplete does not replace these
+model-specific protocols with a generic one.
 
 The Qwen3 0.6B preset follows the same protocol and is useful for a cheap API
 smoke test, but it is too small to treat as a dependable repository agent.
@@ -471,14 +479,16 @@ OpenCode, Pi, and OMP use these llama.cpp request defaults for coding turns:
 
 | Model family / condition | Temperature | Top-p | Top-k | Min-p | Presence penalty | Repeat penalty |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Qwen3.6 27B | 0.6 | 0.95 | 20 | 0 | 0 | 1 |
+| Qwen3.6 27B and 35B-A3B | 0.6 | 0.95 | 20 | 0 | 0 | 1 |
 | Qwen3.8 27B, thinking | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
 | KAT-Coder V2.5 Dev | 1.0 | 0.95 | 20 | 0 | 1.5 | 1 |
 | Gemma 4 31B IT | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 | Muse Glimmer 30B | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 
 The sources are Qwen's precise-coding recommendation for
-[Qwen3.6 27B](https://huggingface.co/Qwen/Qwen3.6-27B/blob/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9/README.md),
+[Qwen3.6 27B](https://huggingface.co/Qwen/Qwen3.6-27B/blob/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9/README.md)
+and
+[Qwen3.6 35B-A3B](https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md),
 Qwen's thinking-mode recommendation for
 [Qwen3.8 27B](https://huggingface.co/Qwen/Qwen3.8-27B/blob/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/README.md),
 KAT-Coder's
@@ -710,7 +720,7 @@ The maintained model families have three different native contracts:
 
 | Family | Native control | Managed choices | Default |
 | --- | --- | --- | --- |
-| Qwen3.6 27B | thinking toggle | off, on | on |
+| Qwen3.6 27B and 35B-A3B | thinking toggle | off, on | on |
 | Qwen3.8 27B | reasoning effort | off, low, medium, xhigh | medium |
 | Muse Glimmer 30B | reasoning strength | low, medium, high, xhigh | high |
 
@@ -938,11 +948,12 @@ separate pinned draft. Performance and output behavior depend on the llama.cpp
 revision, context, backend, and hardware. Use the server API for end-to-end MTP
 measurements as described in the Qwen section.
 
-The dense Qwen3.6 27B preset uses three draft tokens. On Strix Halo it combines
-that depth with Q8_0 target K/V and Flash Attention based on the project's
-37K- and 94K-context acceptance. Inspect the resolved policy with `content
-list --models --details` instead of assuming one setting applies to every
-Qwen model.
+Both Qwen3.6 MTP presets use three draft tokens. On Strix Halo, dense 27B
+combines that depth with Q8_0 target K/V and Flash Attention based on the
+project's 37K- and 94K-context acceptance. Sparse 35B-A3B retains F16 target
+K/V and the default Flash Attention policy because its controlled cache test
+was neutral. Inspect the resolved policy with `content list --models
+--details` instead of assuming one setting applies to every Qwen model.
 
 ### Muse Glimmer and DFlash
 

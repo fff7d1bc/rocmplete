@@ -34,7 +34,10 @@ class ContentRecipeTests(unittest.TestCase):
         )
         self.assertEqual(
             llama.bundles,
-            ("llama-qwen3.6-27b-mtp-q8-0",),
+            (
+                "llama-qwen3.6-27b-mtp-q8-0",
+                "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
+            ),
         )
         self.assertEqual(
             qwen38.next_command,

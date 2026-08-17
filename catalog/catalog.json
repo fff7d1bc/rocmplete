@@ -1135,6 +1135,40 @@
         "url": "https://huggingface.co/unsloth/Qwen3.6-27B-MTP-GGUF/blob/5cb35eb3dcbf52dbce5f87dbc64df6aaffadcace/README.md"
       }
     },
+    "qwen3.6-35b-a3b-ud-q8-k-xl-gguf": {
+      "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
+      "source": {
+        "repository": "unsloth/Qwen3.6-35B-A3B-GGUF",
+        "revision": "a483e9e6cbd595906af30beda3187c2663a1118c",
+        "path": "Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf"
+      },
+      "destination": "qwen3.6-35b-a3b/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
+      "target": "llama-models",
+      "size": 38451182560,
+      "sha256": "b762215c5f507f4865df4ac3d1afa803828afa41e05ecac3fac431a67bbd88e8",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF/blob/a483e9e6cbd595906af30beda3187c2663a1118c/README.md"
+      }
+    },
+    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf": {
+      "description": "Qwen3.6 35B-A3B MTP Unsloth Dynamic Q8_K_XL GGUF for llama.cpp",
+      "source": {
+        "repository": "unsloth/Qwen3.6-35B-A3B-MTP-GGUF",
+        "revision": "5bc3e238d916f48a861bac2f8a1990a0e9b7e98d",
+        "path": "Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf"
+      },
+      "destination": "qwen3.6-35b-a3b-mtp/Qwen3.6-35B-A3B-UD-Q8_K_XL.gguf",
+      "target": "llama-models",
+      "size": 39099447584,
+      "sha256": "6c6b816537abad90b250a0972b345466028d861ddfe316d5f0de31ca6440f781",
+      "license": {
+        "spdx": "Apache-2.0",
+        "status": "verified",
+        "url": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/blob/5bc3e238d916f48a861bac2f8a1990a0e9b7e98d/README.md"
+      }
+    },
     "qwen3.8-27b-ud-q8-k-xl-gguf": {
       "description": "Qwen3.8 27B Unsloth Dynamic Q8_K_XL GGUF with embedded MTP heads for llama.cpp",
       "source": {
@@ -1834,6 +1868,28 @@
         "llama"
       ]
     },
+    "llama-qwen3.6-35b-a3b-ud-q8-k-xl": {
+      "description": "Qwen3.6 35B-A3B Unsloth Dynamic Q8_K_XL llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3.6-35b-a3b-ud-q8-k-xl-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
+    "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl": {
+      "description": "Qwen3.6 35B-A3B MTP Unsloth Dynamic Q8_K_XL llama.cpp model",
+      "application": "llama-cpp",
+      "artifacts": [
+        "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf"
+      ],
+      "groups": [
+        "all",
+        "llama"
+      ]
+    },
     "llama-qwen3.8-27b-ud-q8-k-xl": {
       "description": "Qwen3.8 27B Unsloth Dynamic Q8_K_XL llama.cpp model with embedded MTP heads",
       "application": "llama-cpp",
@@ -2462,6 +2518,28 @@
       "kv_cache": {
         "strix-halo": "q8_0"
       }
+    },
+    "qwen3.6-35b-a3b-ud-q8-k-xl": {
+      "bundle": "llama-qwen3.6-35b-a3b-ud-q8-k-xl",
+      "artifact": "qwen3.6-35b-a3b-ud-q8-k-xl-gguf",
+      "default_context": 262144,
+      "chat_template": "qwen3.6",
+      "agent_tools": true,
+      "reasoning_control": "toggle",
+      "reasoning_default": "on",
+      "reasoning_off": true
+    },
+    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": {
+      "bundle": "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
+      "artifact": "qwen3.6-35b-a3b-mtp-ud-q8-k-xl-gguf",
+      "default_context": 262144,
+      "speculative_type": "draft-mtp",
+      "draft_tokens": 3,
+      "chat_template": "qwen3.6",
+      "agent_tools": true,
+      "reasoning_control": "toggle",
+      "reasoning_default": "on",
+      "reasoning_off": true
     },
     "qwen3.8-27b-ud-q8-k-xl": {
       "bundle": "llama-qwen3.8-27b-ud-q8-k-xl",

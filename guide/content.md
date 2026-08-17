@@ -47,11 +47,14 @@ Install interactively, or select one recipe explicitly:
 ./rocmplete content install dwarfstar flash-0731-q2-imatrix-dspark
 ```
 
-The `qwen3.6` recipe installs dense 27B MTP Q8_0. Its matching non-MTP GGUF
-remains available through the exact-bundle browser.
+The `qwen3.6` recipe installs both reviewed MTP choices: dense 27B MTP Q8_0
+and sparse 35B-A3B MTP Dynamic Q8_K_XL. Its next-step command starts dense
+27B, and Qwen3.8 remains the managed-client default. Matching dense and sparse
+non-MTP GGUFs remain available through the exact-bundle browser.
 
-The upstream 27B MTP artifact's basename omits `MTP`, while
-its ROCmplete directory, bundle, preset, and pinned source retain the identity.
+The upstream 27B and 35B-A3B MTP artifact basenames omit `MTP`. Their
+ROCmplete directories, bundles, presets, and pinned sources retain the exact
+MTP identity and prevent collisions with the non-MTP files.
 
 The separate `qwen3.8` recipe installs one 29.30 GiB Dynamic Q8_K_XL GGUF.
 That file contains the dense 27B target and its trained MTP prediction heads,

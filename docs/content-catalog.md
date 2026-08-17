@@ -338,18 +338,20 @@ them stable and descriptive. Router startup includes
 installed presets, ignores wholly missing presets, and refuses partial
 managed installs.
 
-The public llama.cpp recipes are dense Qwen3.6 27B MTP, the separate
-single-artifact Qwen3.8 dense target with optional embedded-MTP runtime,
-KAT-Coder, Muse Glimmer's one Dynamic target/draft pair, high-memory Japanese
-and English Shisa V2.1, and the focused HY and Gemma translation families.
+The public llama.cpp recipes are the paired Qwen3.6 dense 27B and sparse
+35B-A3B MTP selection, the separate single-artifact Qwen3.8 dense target with
+optional embedded-MTP runtime, KAT-Coder, Muse Glimmer's one Dynamic
+target/draft pair, high-memory Japanese and English Shisa V2.1, and the
+focused HY and Gemma translation families.
 Muse's forced-256K DFlash preset is the recipe launch; its 128K base and DFlash
 controls share the installed pair. Qwen3.8 MTP at medium is the managed-client
 default and remains its own family recipe even though both Qwen releases serve
 similar work. Unrelated models retain separate family recipes instead of being
 grouped under a subjective coding role.
-Non-MTP Qwen controls, the smoke-test model, and
-other deliberately large models remain exact bundles and presets rather than
-multiplying beginner choices.
+The Qwen3.6 recipe still launches dense 27B, and neither Qwen3.6 model changes
+the Qwen3.8 managed-client default. Non-MTP Qwen controls, the smoke-test
+model, and other deliberately large models remain exact bundles and presets
+rather than multiplying beginner choices.
 The mandatory internal `all` and `llama` tags still support the literal global
 aggregate and application ownership.
 

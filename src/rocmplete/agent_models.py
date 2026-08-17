@@ -53,6 +53,8 @@ _AGENT_SAMPLING_PARAMETERS = {
     },
     "qwen3.6-27b-q8-0": _QWEN36_PRECISE_CODING,
     "qwen3.6-27b-mtp-q8-0": _QWEN36_PRECISE_CODING,
+    "qwen3.6-35b-a3b-ud-q8-k-xl": _QWEN36_PRECISE_CODING,
+    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": _QWEN36_PRECISE_CODING,
     "qwen3.8-27b-ud-q8-k-xl": _QWEN38_THINKING,
     "qwen3.8-27b-mtp-ud-q8-k-xl": _QWEN38_THINKING,
     "qwen3.8-27b-ud-q4-k-xl": _QWEN38_THINKING,

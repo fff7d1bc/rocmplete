@@ -225,8 +225,10 @@ def _llama_guide() -> ApplicationGuide:
                     "are coding clients, so they apply reviewed per-model "
                     "sampling defaults. Direct API requests, terminal mode, "
                     "and Maki keep their own request behavior.",
-                    "The qwen3.6 recipe installs only dense 27B MTP Q8_0. "
-                    "Its non-MTP control remains an exact advanced bundle.",
+                    "The qwen3.6 recipe installs dense 27B MTP Q8_0 and "
+                    "sparse 35B-A3B MTP Dynamic Q8_K_XL together. Its "
+                    "printed next step still starts dense 27B, and both "
+                    "non-MTP controls remain exact advanced bundles.",
                     "The separate qwen3.8 recipe installs dense 27B Dynamic "
                     "Q8_K_XL with embedded MTP heads. KAT-Coder remains a "
                     "separate comparison family.",
@@ -234,9 +236,9 @@ def _llama_guide() -> ApplicationGuide:
                     "alternative presets on real repository tasks before "
                     "choosing a default.",
                     "Dense Qwen3.8 27B MTP at native medium effort is the "
-                    "common managed-client default. Dense Qwen3.6 27B MTP "
-                    "and Muse Glimmer Dynamic DFlash are the maintained "
-                    "comparison points.",
+                    "common managed-client default. Dense Qwen3.6 27B MTP, "
+                    "sparse Qwen3.6 35B-A3B MTP, and Muse Glimmer Dynamic "
+                    "DFlash are the maintained comparison points.",
                     "MTP proposes and verifies extra tokens during decoding. "
                     "It may improve generation speed, but it is not a "
                     "reasoning mode and does not accelerate prompt ingestion.",

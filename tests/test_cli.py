@@ -1003,7 +1003,8 @@ class CliTests(unittest.TestCase):
         )
         self.assertIn("A model is the GGUF weight file", normalized)
         self.assertIn(
-            "qwen3.6 recipe installs only dense 27B MTP Q8_0",
+            "qwen3.6 recipe installs dense 27B MTP Q8_0 and sparse "
+            "35B-A3B MTP Dynamic Q8_K_XL together",
             normalized,
         )
         self.assertIn(
@@ -2621,6 +2622,48 @@ class CliTests(unittest.TestCase):
                 "ROCMLETE_LLAMA_CHAT_TEMPLATE=qwen3-0.6b", command
             )
 
+    def test_llama_qwen35_mtp_dry_run_uses_current_template_policy(self):
+        catalog = load_catalog()
+        preset = catalog.llama_preset(
+            "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
+        )
+        artifact = catalog.artifact(preset.artifact)
+        with tempfile.TemporaryDirectory() as directory:
+            data_dir = Path(directory)
+            model = (
+                data_dir
+                / "content"
+                / "llama-cpp"
+                / "models"
+                / artifact.destination
+            )
+            model.parent.mkdir(parents=True)
+            with model.open("wb") as handle:
+                handle.truncate(artifact.size)
+            _record_managed_file(data_dir, model, artifact)
+            _, arguments = parse_arguments(
+                [
+                    "run",
+                    "llama-cpp",
+                    "server",
+                    "--preset",
+                    preset.identifier,
+                    "--profile",
+                    "cpu",
+                    "--data-dir",
+                    str(data_dir),
+                    "--dry-run",
+                ]
+            )
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(command_run(arguments), 0)
+        command = output.getvalue()
+        self.assertIn("--ctx-size 262144", command)
+        self.assertIn("ROCMLETE_LLAMA_SPECULATIVE_TYPE=draft-mtp", command)
+        self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=3", command)
+        self.assertIn("ROCMLETE_LLAMA_JINJA=0", command)
+        self.assertIn("ROCMLETE_LLAMA_CHAT_TEMPLATE=qwen3.6", command)
+
     def test_llama_router_dry_run_does_not_write_generated_preset(self):
         catalog = load_catalog()
         artifact = catalog.artifact("qwen3-0.6b-q8-gguf")
@@ -2780,7 +2823,7 @@ class CliTests(unittest.TestCase):
 
     def test_llama_router_renders_qwen_managed_template_policy(self):
         catalog = load_catalog()
-        identifier = "qwen3.6-27b-mtp-q8-0"
+        identifier = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
         preset = catalog.llama_preset(identifier)
         artifact = catalog.artifact(preset.artifact)
         with tempfile.TemporaryDirectory() as directory:
@@ -2808,6 +2851,8 @@ class CliTests(unittest.TestCase):
             "qwen3.6.jinja",
             contents,
         )
+        self.assertIn("spec-type = draft-mtp", contents)
+        self.assertIn("spec-draft-n-max = 3", contents)
 
     def test_llama_router_renders_qwen27_strix_cache_policy(self):
         catalog = load_catalog()
@@ -4282,7 +4327,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(command_content(arguments, load_catalog()), 0)
         text = output.getvalue()
         self.assertIn("family qwen   8  bundles", text)
-        self.assertIn("all  49  bundles", text)
+        self.assertIn("all  51  bundles", text)
         self.assertNotIn("Exact bundles:", text)
 
     def test_content_list_application_filter_requires_filterable_view(self):
@@ -4964,7 +5009,7 @@ class CliTests(unittest.TestCase):
         self.assertIn("exact-bundles", text)
         self.assertIn("Browse exact bundles:", text)
         self.assertIn("ComfyUI — image models (9 bundles)", text)
-        self.assertIn("llama.cpp (11 bundles)", text)
+        self.assertIn("llama.cpp (13 bundles)", text)
         self.assertIn("Qwen3 0.6B", text)
 
     @patch("builtins.input", side_effect=("8", "1"))
@@ -4995,7 +5040,7 @@ class CliTests(unittest.TestCase):
                 "comfyui-images": 9,
                 "comfyui-videos": 20,
                 "comfyui-addons": 7,
-                "llama-cpp": 11,
+                "llama-cpp": 13,
                 "dwarfstar": 2,
             },
         )
@@ -5080,6 +5125,7 @@ class CliTests(unittest.TestCase):
             ("comfyui", "i2v"): ("wan-2.2-i2v-14b-fp8-lightning",),
             ("llama-cpp", "qwen3.6"): (
                 "llama-qwen3.6-27b-mtp-q8-0",
+                "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
             ),
             ("llama-cpp", "qwen3.8"): (
                 "llama-qwen3.8-27b-ud-q8-k-xl",
@@ -5187,8 +5233,8 @@ class CliTests(unittest.TestCase):
                     )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 64)
-        self.assertEqual(len({item.identifier for item in artifacts}), 64)
+        self.assertEqual(len(artifacts), 66)
+        self.assertEqual(len({item.identifier for item in artifacts}), 66)
         self.assertEqual(
             install_artifacts.call_args.args[2],
             "localhost/custom-content-tools",
@@ -5204,7 +5250,7 @@ class CliTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Content ready: 49 bundles and 28 workflows.",
+            "Content ready: 51 bundles and 28 workflows.",
             output.getvalue(),
         )
 
@@ -5232,10 +5278,10 @@ class CliTests(unittest.TestCase):
                 )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 13)
-        self.assertEqual(len({item.identifier for item in artifacts}), 13)
+        self.assertEqual(len(artifacts), 15)
+        self.assertEqual(len({item.identifier for item in artifacts}), 15)
         self.assertIn(
-            "Content ready: 11 bundles and 0 workflows.",
+            "Content ready: 13 bundles and 0 workflows.",
             output.getvalue(),
         )
 
@@ -5276,7 +5322,9 @@ class CliTests(unittest.TestCase):
             rendered,
         )
         self.assertNotIn("--preset qwen3-0.6b-q8-0", rendered)
-        self.assertNotIn("qwen3.6-35b", rendered)
+        self.assertIn(
+            "--preset qwen3.6-35b-a3b-mtp-ud-q8-k-xl", rendered
+        )
         self.assertLess(
             rendered.index("server --router"), rendered.index("opencode")
         )

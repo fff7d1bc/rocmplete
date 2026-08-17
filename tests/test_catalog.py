@@ -86,10 +86,10 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 49)
-        self.assertEqual(len(catalog.artifacts), 64)
+        self.assertEqual(len(catalog.bundles), 51)
+        self.assertEqual(len(catalog.artifacts), 66)
         self.assertEqual(len(catalog.benchmarks), 28)
-        self.assertEqual(len(catalog.llama_presets), 15)
+        self.assertEqual(len(catalog.llama_presets), 17)
         self.assertFalse(
             [
                 artifact.identifier
@@ -184,6 +184,40 @@ class CatalogTests(unittest.TestCase):
             assistant_mtp_artifact.sha256,
             "9408dcb356cc061a05c139e5647cbde0698ff980c"
             "6a69f7fc214e9989f86cfa8",
+        )
+        qwen35 = catalog.llama_preset("qwen3.6-35b-a3b-ud-q8-k-xl")
+        qwen35_artifact = catalog.artifact(qwen35.artifact)
+        self.assertEqual(qwen35.default_context, 262144)
+        self.assertEqual(qwen35.speculative_type, "")
+        self.assertEqual(qwen35.draft_tokens, 0)
+        self.assertTrue(qwen35.agent_tools)
+        self.assertEqual(
+            catalog.bundle_size(catalog.bundle(qwen35.bundle)),
+            38451182560,
+        )
+        self.assertEqual(
+            qwen35_artifact.sha256,
+            "b762215c5f507f4865df4ac3d1afa803828afa41"
+            "e05ecac3fac431a67bbd88e8",
+        )
+        qwen35_mtp = catalog.llama_preset(
+            "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
+        )
+        qwen35_mtp_artifact = catalog.artifact(qwen35_mtp.artifact)
+        self.assertEqual(qwen35_mtp.default_context, 262144)
+        self.assertEqual(qwen35_mtp.speculative_type, "draft-mtp")
+        self.assertEqual(qwen35_mtp.draft_tokens, 3)
+        self.assertTrue(qwen35_mtp.agent_tools)
+        self.assertEqual(qwen35_mtp.flash_attention, {})
+        self.assertEqual(qwen35_mtp.kv_cache, {})
+        self.assertEqual(
+            catalog.bundle_size(catalog.bundle(qwen35_mtp.bundle)),
+            39099447584,
+        )
+        self.assertEqual(
+            qwen35_mtp_artifact.sha256,
+            "6c6b816537abad90b250a0972b345466028d861dd"
+            "fe316d5f0de31ca6440f781",
         )
         coding_candidates = {
             "kat-coder-v2.5-dev-q8-0": (
@@ -373,6 +407,8 @@ class CatalogTests(unittest.TestCase):
         qwen_presets = (
             assistant,
             assistant_mtp,
+            qwen35,
+            qwen35_mtp,
         )
         self.assertTrue(all(not preset.jinja for preset in qwen_presets))
         self.assertTrue(

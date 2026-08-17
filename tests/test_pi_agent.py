@@ -80,9 +80,11 @@ class PiLauncherTests(unittest.TestCase):
             },
         )
         models = {model["id"]: model for model in provider["models"]}
-        self.assertEqual(len(models), 11)
+        self.assertEqual(len(models), 13)
         self.assertNotIn("qwen3-0.6b-q8-0", models)
         self.assertNotIn("translategemma-27b-it-q8-0", models)
+        self.assertIn("qwen3.6-35b-a3b-ud-q8-k-xl", models)
+        self.assertIn("qwen3.6-35b-a3b-mtp-ud-q8-k-xl", models)
         self.assertIn("qwen3.8-27b-mtp-ud-q8-k-xl", models)
         self.assertIn("qwen3.8-27b-mtp-ud-q4-k-xl", models)
         self.assertEqual(

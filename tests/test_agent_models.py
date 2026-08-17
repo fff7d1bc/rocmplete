@@ -36,6 +36,22 @@ class AgentModelPolicyTests(unittest.TestCase):
                 0.0,
                 1.0,
             ),
+            "qwen3.6-35b-a3b-ud-q8-k-xl": (
+                0.6,
+                0.95,
+                20,
+                0.0,
+                0.0,
+                1.0,
+            ),
+            "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": (
+                0.6,
+                0.95,
+                20,
+                0.0,
+                0.0,
+                1.0,
+            ),
             "qwen3.8-27b-ud-q8-k-xl": (
                 1.0,
                 0.95,
@@ -138,6 +154,16 @@ class AgentModelPolicyTests(unittest.TestCase):
         self.assertEqual(reasoning_client_levels(qwen36), ("off", "high"))
         self.assertEqual(reasoning_client_default(qwen36), "high")
         self.assertEqual(reasoning_native_value(qwen36, "high"), "on")
+        qwen36_sparse = self.catalog.llama_preset(
+            "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
+        )
+        self.assertEqual(
+            reasoning_client_levels(qwen36_sparse), ("off", "high")
+        )
+        self.assertEqual(reasoning_client_default(qwen36_sparse), "high")
+        self.assertEqual(
+            reasoning_native_value(qwen36_sparse, "high"), "on"
+        )
 
         muse = self.catalog.llama_preset(
             "muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k"

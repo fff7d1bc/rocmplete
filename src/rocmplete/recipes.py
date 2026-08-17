@@ -77,9 +77,13 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             identifier="qwen3.6",
             application="llama-cpp",
             description=(
-                "Qwen3.6 dense 27B MTP Q8_0"
+                "Qwen3.6 dense 27B MTP Q8_0 and sparse 35B-A3B MTP "
+                "Dynamic Q8_K_XL"
             ),
-            bundles=("llama-qwen3.6-27b-mtp-q8-0",),
+            bundles=(
+                "llama-qwen3.6-27b-mtp-q8-0",
+                "llama-qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
+            ),
             launch=RecipeLaunch(
                 "llama-cpp",
                 mode="server",

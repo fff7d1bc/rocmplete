@@ -166,17 +166,21 @@ no model-specific backend override. Dedicated 32 GB RDNA 4 capacity still
 needs acceptance on that hardware.
 
 Qwen3.6 and Muse Glimmer remain separate comparison families. Their recipes
-install dense Qwen3.6 MTP Q8_0 and Muse's Dynamic target/DFlash pair:
+install the dense and sparse Qwen3.6 MTP choices and Muse's Dynamic
+target/DFlash pair:
 
 ```bash
 ./rocmplete content install llama-cpp qwen3.6
 ./rocmplete content install llama-cpp muse-glimmer
 ```
 
-Qwen3.6 MTP and non-MTP are distinct GGUFs and therefore appear on separate
-`content list --models` rows. Each Qwen3.8 quantization shares one GGUF between
-its base and MTP presets, so the list prints each pair of preset aliases on one
-comma-separated row. Muse's three presets similarly share one artifact pair.
+The Qwen3.6 recipe prints dense 27B MTP as its next step; sparse 35B-A3B MTP
+is an optional installed comparison and does not change the Qwen3.8
+managed-client default. Qwen3.6 MTP and non-MTP variants use distinct GGUFs
+and therefore appear on separate `content list --models` rows. Each Qwen3.8
+quantization shares one GGUF between its base and MTP presets, so the list
+prints each pair of preset aliases on one comma-separated row. Muse's three
+presets similarly share one artifact pair.
 
 For an API serving several installed presets, use the managed router:
 

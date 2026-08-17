@@ -112,7 +112,11 @@ class ApplicationGuideTests(unittest.TestCase):
         )
         self.assertIn("Use an OpenAI-compatible client for automation", text)
         self.assertNotIn("./rocmplete client", text)
-        self.assertIn("qwen3.6 recipe installs only dense 27B MTP Q8_0", text)
+        self.assertIn(
+            "qwen3.6 recipe installs dense 27B MTP Q8_0 and sparse "
+            "35B-A3B MTP Dynamic Q8_K_XL together",
+            normalized,
+        )
         self.assertIn(
             "separate qwen3.8 recipe installs dense 27B Dynamic",
             text,

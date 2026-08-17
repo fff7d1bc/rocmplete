@@ -57,10 +57,10 @@ revisions recorded in `catalog/catalog.json`.
   includes Qwen's Apache-2.0 chat template from base-model revision
   `7e4ae267688d671ddfca3122e4528ee980cf3234` so the older unchanged GGUF
   receives the later content-type and tool-response hardening.
-- Managed Qwen3.6 27B GGUF conversions are downloaded from one full pinned
-  Unsloth revision. The pinned model card explicitly declares Apache-2.0 and
-  links its corresponding Qwen source-model license. Its two embedded
-  templates are byte-identical.
+- Managed Qwen3.6 27B and Qwen3.6 35B-A3B GGUF conversions are downloaded
+  from full pinned Unsloth revisions. Each pinned model card explicitly
+  declares Apache-2.0 and links its corresponding Qwen source-model license.
+  Their four embedded templates are byte-identical.
   The llama.cpp image includes an Apache-2.0 adaptation of that template which
   retains later system and developer messages and omits empty historical
   reasoning blocks. ROCmplete records every GGUF shard's exact size and

@@ -226,8 +226,8 @@ to the keep-id process, `/tmp/comfy` must be writable, and persistent files
 must retain the private host mask.
 
 The llama.cpp router check requires `content install llama-cpp qwen3.6`,
-but does not load the model. Confirm `qwen3.6-27b-mtp-q8-0` is present and
-unloaded.
+but does not load a model. Confirm `qwen3.6-27b-mtp-q8-0` and
+`qwen3.6-35b-a3b-mtp-ud-q8-k-xl` are present and unloaded.
 The pinned upstream router may also advertise its reserved empty `default`
 preset; that is not managed content and should not be selected during the
 smoke test.
