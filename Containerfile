@@ -1,7 +1,7 @@
-# docker.io/library/ubuntu:resolute-20260707 (26.04), resolved 2026-07-23.
-ARG ROCM_RUNTIME_IMAGE=localhost/rocmplete:runtime-ubuntu26.04-rocm7.14-r1
-ARG ROCM_BASE_IMAGE=localhost/rocmplete:base-ubuntu26.04-rocm7.14-torch2.11-r4
-ARG UBUNTU_IMAGE=docker.io/library/ubuntu@sha256:3131b4cc82a783df6c9df078f86e01819a13594b865c2cad47bd1bca2b7063bb
+# docker.io/library/ubuntu:resolute-20260724.1 (26.04), resolved 2026-08-17.
+ARG ROCM_RUNTIME_IMAGE=localhost/rocmplete:runtime-ubuntu26.04-rocm7.14-r2
+ARG ROCM_BASE_IMAGE=localhost/rocmplete:base-ubuntu26.04-rocm7.14-torch2.11-r5
+ARG UBUNTU_IMAGE=docker.io/library/ubuntu@sha256:678c6550cc43645e08669028bc177f50be4e7c5b8cca677067b1914d4afc7a03
 ARG ROCM_VERSION=7.14.0
 ARG TORCH_VERSION=2.11.0
 ARG TORCHVISION_VERSION=0.26.0

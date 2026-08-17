@@ -78,7 +78,7 @@ Build through one application so the normal prerequisite path is exercised:
 ```bash
 ./rocmplete build comfyui --no-cache
 podman run --rm --entrypoint /opt/venv/bin/python \
-  localhost/rocmplete:content-ubuntu26.04-huggingface1.24 \
+  localhost/rocmplete:content-ubuntu26.04-huggingface1.24-r1 \
   -m pip check
 ```
 
@@ -98,7 +98,7 @@ ARG UBUNTU_IMAGE=docker.io/library/ubuntu@sha256:...
 Choose the intended Ubuntu release explicitly, resolve its current manifest
 digest, record the corresponding dated Ubuntu snapshot tag in the comment
 above it, and review whether package names in the `apt-get` layer changed. The
-official Ubuntu image publishes dated tags such as `resolute-20260707` as well
+official Ubuntu image publishes dated tags such as `resolute-20260724.1` as well
 as the moving `26.04` release tag. The dated tag keeps the selected snapshot
 visible upstream; the digest proves its exact identity. Do not replace that
 pair with a floating tag.

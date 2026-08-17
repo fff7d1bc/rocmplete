@@ -869,7 +869,7 @@ class RuntimeCommandTests(unittest.TestCase):
     def test_ubuntu_base_records_snapshot_tag_and_immutable_digest(self):
         root = Path(__file__).resolve().parents[1]
         lines = (root / "Containerfile").read_text().splitlines()
-        self.assertIn("resolute-20260707 (26.04)", lines[0])
+        self.assertIn("resolute-20260724.1 (26.04)", lines[0])
         argument = next(
             line for line in lines if line.startswith("ARG UBUNTU_IMAGE=")
         )

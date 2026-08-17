@@ -226,13 +226,13 @@ does not authenticate the case outcomes and is not a signed attestation.
 `Containerfile` defines a small `content-tools` target containing pinned
 Hugging Face download dependencies and the resumable direct-HTTPS helper.
 Every application build ensures and tags this prerequisite as
-`localhost/rocmplete:content-ubuntu26.04-huggingface1.24`; `content install`
+`localhost/rocmplete:content-ubuntu26.04-huggingface1.24-r1`; `content install`
 uses it without building anything itself. This keeps downloads independent of
 ComfyUI and makes a llama.cpp-only initial setup complete.
 
 `Containerfile` defines a minimal `rocm-runtime` target, which the launcher
 builds and tags as the managed local prerequisite
-`localhost/rocmplete:runtime-ubuntu26.04-rocm7.14-r1`. It owns the pinned
+`localhost/rocmplete:runtime-ubuntu26.04-rocm7.14-r2`. It owns the pinned
 Ubuntu runtime, Python environment, and AMD's modular ROCm core, libraries,
 and exact `gfx1150`, `gfx1151`, `gfx1200`, and `gfx1201` device wheels. It
 does not contain PyTorch or a compiler toolchain.
@@ -240,7 +240,7 @@ does not contain PyTorch or a compiler toolchain.
 The `rocm-base` target starts from `ROCM_RUNTIME_IMAGE`, adds PyTorch,
 torchvision, torchaudio, and the common Python-application build tools, and is
 tagged as
-`localhost/rocmplete:base-ubuntu26.04-rocm7.14-torch2.11-r4`. Each final
+`localhost/rocmplete:base-ubuntu26.04-rocm7.14-torch2.11-r5`. Each final
 PyTorch application target starts from the `ROCM_BASE_IMAGE` build argument:
 
 - `comfyui`

@@ -32,15 +32,15 @@ class ApplicationSpec:
 
 
 ROCM_RUNTIME_IMAGE = (
-    "localhost/rocmplete:runtime-ubuntu26.04-rocm7.14-r1"
+    "localhost/rocmplete:runtime-ubuntu26.04-rocm7.14-r2"
 )
 ROCM_RUNTIME_BUILD_TARGET = "rocm-runtime"
 ROCM_BASE_IMAGE = (
-    "localhost/rocmplete:base-ubuntu26.04-rocm7.14-torch2.11-r4"
+    "localhost/rocmplete:base-ubuntu26.04-rocm7.14-torch2.11-r5"
 )
 ROCM_BASE_BUILD_TARGET = "rocm-base"
 CONTENT_TOOLS_IMAGE = (
-    "localhost/rocmplete:content-ubuntu26.04-huggingface1.24"
+    "localhost/rocmplete:content-ubuntu26.04-huggingface1.24-r1"
 )
 CONTENT_TOOLS_BUILD_TARGET = "content-tools"
 LLAMA_BACKENDS = ("rocm", "vulkan")
@@ -64,7 +64,7 @@ TRANSIENT_CONTAINER_APPLICATIONS = {
 APPLICATIONS = {
     "comfyui": ApplicationSpec(
         identifier="comfyui",
-        image="localhost/rocmplete:comfyui-ubuntu26.04-rocm7.14-0.28.0-r10",
+        image="localhost/rocmplete:comfyui-ubuntu26.04-rocm7.14-0.28.0-r11",
         container_name="rocmplete-comfyui",
         build_target="comfyui",
         port=8188,
@@ -77,7 +77,7 @@ APPLICATIONS = {
         identifier="llama-cpp",
         image=(
             "localhost/rocmplete:"
-            "llama-cpp-ubuntu26.04-rocm7.14-4c1a0af-r23"
+            "llama-cpp-ubuntu26.04-rocm7.14-4c1a0af-r24"
         ),
         container_name="rocmplete-llama-cpp",
         build_target="llama-cpp",
@@ -95,7 +95,7 @@ APPLICATIONS = {
         identifier="dwarfstar",
         image=(
             "localhost/rocmplete:"
-            "dwarfstar-ubuntu26.04-rocm7.14-d250a7c-r4"
+            "dwarfstar-ubuntu26.04-rocm7.14-d250a7c-r5"
         ),
         container_name="rocmplete-dwarfstar",
         build_target="dwarfstar",
