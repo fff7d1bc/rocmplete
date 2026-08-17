@@ -8,7 +8,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-from rocmplete.agent_models import agent_sampling_parameters
+from rocmplete.agent_models import agent_client_sampling_parameters
 from rocmplete.bundles import artifact_path
 from rocmplete.catalog import load_catalog
 from rocmplete.cli import command_pi, main
@@ -150,10 +150,11 @@ class PiLauncherTests(unittest.TestCase):
         )
         self.assertFalse(models["kat-coder-v2.5-dev-q8-0"]["reasoning"])
         for identifier, model in models.items():
-            self.assertEqual(
-                model["samplingParams"],
-                agent_sampling_parameters(identifier),
-            )
+            expected_sampling = agent_client_sampling_parameters(identifier)
+            if expected_sampling:
+                self.assertEqual(model["samplingParams"], expected_sampling)
+            else:
+                self.assertNotIn("samplingParams", model)
 
         dwarfstar = config["providers"]["dwarfstar"]
         self.assertEqual(

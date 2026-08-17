@@ -1390,7 +1390,9 @@ def _model_identity(
             "native_value": native_reasoning,
         },
         "backend": options.backend,
-        "sampling": dict(agent_sampling_parameters(preset.identifier)),
+        "sampling": dict(
+            agent_sampling_parameters(preset.identifier, options.thinking)
+        ),
         "speculative_type": preset.speculative_type,
         "draft_tokens": preset.draft_tokens_for_backend(options.backend),
         "draft_tokens_by_backend": dict(preset.draft_tokens_by_backend),

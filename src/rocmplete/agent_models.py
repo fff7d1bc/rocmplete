@@ -15,9 +15,10 @@ PROVIDER_ID = "rocmplete"
 DWARFSTAR_PROVIDER_ID = "dwarfstar"
 DWARFSTAR_MODEL = "deepseek-v4-flash-0731-q2-imatrix"
 RECOMMENDED_MODEL = "qwen3.8-27b-mtp-ud-q8-k-xl"
-# Agent sampling is caller policy, not model runtime policy, so it stays out of
-# the catalog presets. Values use llama.cpp's Chat Completions field names;
-# notably, upstream repetition_penalty maps to repeat_penalty here.
+# Values use llama.cpp's Chat Completions field names; notably, upstream
+# repetition_penalty maps to repeat_penalty here. Qwen3.8 is mode-dependent
+# and is applied by the managed server; the remaining profiles are emitted by
+# clients that can carry reviewed per-model sampling.
 _QWEN36_PRECISE_CODING = {
     "temperature": 0.6,
     "top_p": 0.95,
@@ -32,6 +33,14 @@ _QWEN38_THINKING = {
     "top_k": 20,
     "min_p": 0.0,
     "presence_penalty": 0.0,
+    "repeat_penalty": 1.0,
+}
+_QWEN38_NON_THINKING = {
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "top_k": 20,
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
     "repeat_penalty": 1.0,
 }
 _MUSE_GLIMMER_CODING = {
@@ -73,6 +82,14 @@ _AGENT_SAMPLING_PARAMETERS = {
         _MUSE_GLIMMER_CODING
     ),
 }
+_SERVER_MANAGED_SAMPLING_MODELS = frozenset(
+    (
+        "qwen3.8-27b-ud-q8-k-xl",
+        "qwen3.8-27b-mtp-ud-q8-k-xl",
+        "qwen3.8-27b-ud-q4-k-xl",
+        "qwen3.8-27b-mtp-ud-q4-k-xl",
+    )
+)
 
 
 def agent_output_limit(context: int) -> int:
@@ -92,17 +109,36 @@ def is_agent_capable(preset: LlamaPreset) -> bool:
     return preset.agent_tools
 
 
-def agent_sampling_parameters(identifier: str) -> Mapping[str, object]:
-    """Return reviewed llama.cpp request defaults for a coding-agent model."""
+def agent_sampling_parameters(
+    identifier: str, thinking: str = ""
+) -> Mapping[str, object]:
+    """Return the effective reviewed sampling policy for an evaluation."""
 
     try:
-        return dict(_AGENT_SAMPLING_PARAMETERS[identifier])
+        parameters = _AGENT_SAMPLING_PARAMETERS[identifier]
     except KeyError as error:
         raise LauncherError(
             "llama.cpp agent preset {} has no reviewed sampling policy".format(
                 identifier
             )
         ) from error
+    if identifier in _SERVER_MANAGED_SAMPLING_MODELS and thinking == "off":
+        parameters = _QWEN38_NON_THINKING
+    return dict(parameters)
+
+
+def agent_client_sampling_parameters(
+    identifier: str,
+) -> Mapping[str, object]:
+    """Return static fields a managed harness should attach to requests."""
+
+    parameters = agent_sampling_parameters(identifier)
+    if identifier in _SERVER_MANAGED_SAMPLING_MODELS:
+        # The server selects Qwen3.8's thinking or non-thinking profile after
+        # resolving each request's reasoning control. Static client fields
+        # would mask those defaults and make off mode use the wrong policy.
+        return {}
+    return parameters
 
 
 def reasoning_client_levels(preset: LlamaPreset) -> Tuple[str, ...]:

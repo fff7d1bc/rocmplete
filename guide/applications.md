@@ -258,9 +258,13 @@ high level. Upstream `xhigh` adds a short system steering instruction asking
 for careful validation and alternatives, while `medium` adds no reasoning
 instruction. The prompt addition itself is small; the practical risk is the
 much longer reasoning it can trigger.
-`reasoning_effort: none` disables thinking. The managed clients use the
-official thinking-mode sampling policy: temperature 1.0, top-p 0.95, top-k 20,
-min-p 0, presence penalty 0, and repeat penalty 1.
+`reasoning_effort: none` disables thinking. The managed server resolves that
+mode before applying sampling defaults. Low, medium, and xhigh use the official
+thinking policy: temperature 1.0, top-p 0.95, top-k 20, min-p 0, presence
+penalty 0, and repeat penalty 1. Off uses Qwen's non-thinking policy:
+temperature 0.7, top-p 0.8, top-k 20, min-p 0, presence penalty 1.5, and repeat
+penalty 1. Explicit request sampling fields override the corresponding server
+defaults.
 
 The pinned
 [official Qwen3.8 model card](https://huggingface.co/Qwen/Qwen3.8-27B/blob/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/README.md)
@@ -339,10 +343,12 @@ preset:
 ./rocmplete content list --models --details
 ```
 
-ROCmplete presets currently do not store a general system prompt, persona, or
-sampling policy. Those belong in the caller because they can change between
-tasks without changing the model's safe runtime setup. Send a `system` message
-and sampling fields in the OpenAI-compatible request, and send the complete
+ROCmplete presets do not store a general system prompt or persona. Ordinary
+task sampling belongs in the caller because it can change without changing the
+model's safe runtime setup. Qwen3.8 is a deliberate model-policy exception:
+its server preset selects the official thinking or non-thinking defaults after
+resolving each Chat Completions request. Send a `system` message and any
+sampling overrides in the OpenAI-compatible request, and send the complete
 message history when the conversation should continue:
 
 ```json
@@ -501,23 +507,20 @@ Neutral values make parameters omitted by an upstream configuration explicit
 and disable llama.cpp's otherwise nonzero min-p default. The upstream name
 `repetition_penalty` is sent to llama.cpp as `repeat_penalty`.
 
-These are client defaults, not locks. OpenCode model options or an agent's
-provider options, Pi per-request sampling parameters, and explicit OMP request
-configuration can override them. OMP receives the exact policy as per-model
-`extraBody`, after its global sampling settings. OpenCode's managed Investigate
-agents still force temperature zero. The tested Maki 0.4.8 dynamic-provider
-schema cannot express per-model sampling fields, so managed Maki sessions
-currently inherit llama.cpp's sampler defaults; ROCmplete does not emit fields
-that Maki would silently ignore.
+These are defaults, not locks. OpenCode model options or an agent's provider
+options, Pi per-request sampling parameters, explicit OMP request
+configuration, and raw API fields can override them. OMP receives static
+policies as per-model `extraBody`, after its global sampling settings.
+OpenCode's managed Investigate agents still force temperature zero.
 
-Qwen3.8's managed sampling is specifically its official thinking-mode policy.
-Selecting `off` disables reasoning in the chat template but does not replace
-the client model's static sampling defaults with Qwen's separate non-thinking
-recommendation. Treat `off` as an explicitly labelled within-family
-experiment, not a normalized comparison condition. Maki is likewise outside
-normalized sampling comparisons because it cannot carry the reviewed policy;
-use Pi with each model's reviewed default reasoning choice for the maintained
-comparison suite.
+Qwen3.8 is mode-dependent rather than static. OpenCode, Pi, and OMP omit its
+sampling tuple; the managed llama.cpp server supplies the official thinking
+policy for low, medium, and xhigh, or the official non-thinking policy for
+off. Maki cannot express per-model sampling fields, but now receives the same
+Qwen3.8 defaults because its numeric thinking selector is normalized before
+the server selects the profile. Explicit sampling remains higher precedence.
+This makes Qwen3.8 off a valid recorded within-family condition rather than an
+accidental mixture of a non-thinking prompt and thinking-mode sampling.
 
 `bin/opencode` delegates to `./rocmplete agent opencode`, injects the
 generated main configuration directly into the child process, and points it

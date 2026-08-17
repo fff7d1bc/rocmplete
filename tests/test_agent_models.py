@@ -2,6 +2,7 @@ import unittest
 
 from rocmplete.agent_models import (
     RECOMMENDED_MODEL,
+    agent_client_sampling_parameters,
     agent_sampling_parameters,
     is_agent_capable,
     recommended_agent_model,
@@ -135,6 +136,36 @@ class AgentModelPolicyTests(unittest.TestCase):
     def test_missing_agent_sampling_policy_fails_closed(self):
         with self.assertRaisesRegex(LauncherError, "no reviewed sampling policy"):
             agent_sampling_parameters("unreviewed-agent")
+
+    def test_qwen38_sampling_is_server_managed_and_mode_dependent(self):
+        identifier = "qwen3.8-27b-mtp-ud-q8-k-xl"
+        self.assertEqual(agent_client_sampling_parameters(identifier), {})
+        self.assertEqual(
+            agent_sampling_parameters(identifier, "medium"),
+            {
+                "temperature": 1.0,
+                "top_p": 0.95,
+                "top_k": 20,
+                "min_p": 0.0,
+                "presence_penalty": 0.0,
+                "repeat_penalty": 1.0,
+            },
+        )
+        self.assertEqual(
+            agent_sampling_parameters(identifier, "off"),
+            {
+                "temperature": 0.7,
+                "top_p": 0.8,
+                "top_k": 20,
+                "min_p": 0.0,
+                "presence_penalty": 1.5,
+                "repeat_penalty": 1.0,
+            },
+        )
+        self.assertEqual(
+            agent_client_sampling_parameters("qwen3.6-27b-mtp-q8-0"),
+            agent_sampling_parameters("qwen3.6-27b-mtp-q8-0"),
+        )
 
     def test_reasoning_controls_are_model_native(self):
         recommended = self.catalog.llama_preset(RECOMMENDED_MODEL)

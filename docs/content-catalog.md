@@ -317,13 +317,15 @@ when the model's multi-turn template should retain parsed reasoning; it does
 not imply that the model accepts a client-selectable reasoning control.
 Keep this distinction visible in agent metadata and user documentation.
 
-Agent sampling remains caller policy rather than a catalog preset field.
+Agent sampling is normally caller policy rather than a catalog preset field.
 `src/rocmplete/agent_models.py` owns the reviewed coding defaults used by
-generated clients. Adding `agent_tools` therefore also requires an
-authoritative upstream sampling audit and an explicit policy entry. Keep
-client-specific serialization in `opencode.py`, `pi_agent.py`, `omp_agent.py`,
-or another client integration; do not move the tuple into server startup or
-encode it in a bundle variant.
+generated clients and evaluation metadata. A model whose authoritative
+sampling changes with a server-resolved control may instead use a narrowly
+reviewed server profile, as Qwen3.8 does; generated clients must then omit the
+fields that would mask it. Adding `agent_tools` still requires an authoritative
+upstream sampling audit and an explicit policy entry. Keep client-specific
+serialization in its integration and do not encode sampling as a bundle
+variant.
 
 For a split GGUF, put every shard in the same bundle and reference the first
 `00001-of-N` shard from the preset. Preset inspection validates the complete

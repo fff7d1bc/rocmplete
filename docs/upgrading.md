@@ -315,6 +315,12 @@ managed default. Qwen3.8 supports native low, medium, and xhigh effort plus a
 separate off toggle; it does not support high. On an upgrade, compare both the
 base-model and selected GGUF templates, render all three levels plus off, and
 complete a multi-turn tool exchange before changing the override or default.
+The patched server also consumes the private `qwen3.8` sampling-profile marker:
+thinking requests default to temperature 1.0, top-p 0.95, top-k 20, min-p 0,
+presence penalty 0, and repeat penalty 1; off defaults to temperature 0.7,
+top-p 0.8, top-k 20, min-p 0, presence penalty 1.5, and repeat penalty 1.
+Recheck both official tuples and explicit-request override precedence whenever
+the model card, template, or server request parser changes.
 
 The 2026-08-14 community-template candidate at
 `froggeric/Qwen-Fixed-Chat-Templates` revision

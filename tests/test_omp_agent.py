@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from rocmplete.agent_models import (
     RECOMMENDED_MODEL,
-    agent_sampling_parameters,
+    agent_client_sampling_parameters,
 )
 from rocmplete.bundles import artifact_path
 from rocmplete.catalog import load_catalog
@@ -128,10 +128,13 @@ class OmpLauncherTests(unittest.TestCase):
         self.assertEqual(muse["compat"]["thinkingFormat"], "openai")
         self.assertTrue(muse["compat"]["supportsReasoningEffort"])
         for identifier, model in models.items():
-            self.assertEqual(
-                model["compat"]["extraBody"],
-                agent_sampling_parameters(identifier),
-            )
+            expected_sampling = agent_client_sampling_parameters(identifier)
+            if expected_sampling:
+                self.assertEqual(
+                    model["compat"]["extraBody"], expected_sampling
+                )
+            else:
+                self.assertNotIn("extraBody", model["compat"])
             self.assertFalse(model["compat"]["supportsDeveloperRole"])
 
         dwarfstar = config["providers"]["rocmplete-dwarfstar"]

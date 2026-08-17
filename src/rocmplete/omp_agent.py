@@ -15,7 +15,7 @@ from .agent_models import (
     DWARFSTAR_PROVIDER_ID,
     PROVIDER_ID,
     agent_output_limit,
-    agent_sampling_parameters,
+    agent_client_sampling_parameters,
     default_agent_model,
     is_agent_capable,
     recommended_agent_model,
@@ -124,12 +124,15 @@ class OmpLaunchPlan:
 
 
 def _compat(identifier: str) -> Mapping[str, object]:
-    return {
+    compat: dict[str, object] = {
         "supportsDeveloperRole": False,
+    }
+    sampling = agent_client_sampling_parameters(identifier)
+    if sampling:
         # OMP's ordinary sampling configuration is global. extraBody is
         # applied last and preserves the exact reviewed policy per model.
-        "extraBody": dict(agent_sampling_parameters(identifier)),
-    }
+        compat["extraBody"] = dict(sampling)
+    return compat
 
 
 def _provider_id(provider: str) -> str:

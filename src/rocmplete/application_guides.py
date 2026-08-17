@@ -217,14 +217,18 @@ def _llama_guide() -> ApplicationGuide:
                     "selects that model and adds its reviewed starting "
                     "context plus any required chat template, Jinja, Flash "
                     "Attention, or MTP policy.",
-                    "Presets do not store a general system prompt, sampling "
-                    "settings, GPU backend, or hardware profile. Put task "
-                    "instructions and temperature in each API request or in "
-                    "the client that owns the conversation.",
+                    "Presets do not store a general system prompt, GPU "
+                    "backend, or hardware profile. Put task instructions "
+                    "and ordinary sampling overrides in the client that "
+                    "owns the conversation. Qwen3.8 server presets are the "
+                    "exception: they select its official thinking or "
+                    "non-thinking sampler after resolving each request's "
+                    "reasoning mode.",
                     "ROCmplete's managed OpenCode, Pi, and OMP configurations "
-                    "are coding clients, so they apply reviewed per-model "
-                    "sampling defaults. Direct API requests, terminal mode, "
-                    "and Maki keep their own request behavior.",
+                    "apply reviewed per-model sampling where the server "
+                    "cannot. Qwen3.8 sampling is intentionally omitted from "
+                    "those clients so direct API requests and Maki receive "
+                    "the same mode-aware server defaults.",
                     "The qwen3.6 recipe installs dense 27B MTP Q8_0 and "
                     "sparse 35B-A3B MTP Dynamic Q8_K_XL together. Its "
                     "printed next step still starts dense 27B, and both "
@@ -357,7 +361,7 @@ def _llama_guide() -> ApplicationGuide:
                     "load in later sandboxed Pi sessions; review them as "
                     "trusted executable inputs.",
                     "OMP is a separate Pi fork with its own private state. "
-                    "Its managed local roles, reviewed per-model sampling, "
+                    "Its managed local roles, reviewed sampling policy, "
                     "and yolo approval default can be overridden by normal "
                     "OMP session arguments. Named OMP profiles bypass that "
                     "state boundary and are rejected by the wrapper.",

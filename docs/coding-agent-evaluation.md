@@ -94,7 +94,8 @@ For every task and repetition the runner:
    dependency environment or package installer preparation.
 6. Runs Pi noninteractively with no saved session, extensions, skills, or
    prompt templates. The normal ROCmplete model catalog still owns endpoint,
-   context metadata, output allowance, and sampling policy.
+   context metadata, output allowance, and sampling policy; Qwen3.8's selected
+   mode is resolved by the server and recorded in the result metadata.
 7. Preserves the complete worktree diff and structured Pi transcript.
 8. Copies the worktree into a grading directory, restores pinned dependency
    and fixture-instruction files, runs ordinary tests, adds the hash-verified
@@ -141,13 +142,14 @@ because replacing those would test a synthetic configuration. Start with one
 attempt per task, then run three fresh repetitions for finalists. Do not tune
 the prompt or hidden grader after seeing a new model's answer.
 
-Qwen3.8's reviewed sampling policy is the official thinking-mode condition and
-is attached statically to Pi's model entry. `--thinking off` disables template
-reasoning but does not switch that entry to Qwen's separate non-thinking
-sampling recommendation. Such a run is useful only as an explicitly labelled
-within-family experiment and is not a normalized cross-model result. Maki is
-also outside the fixed comparison because its current dynamic-provider schema
-cannot carry the reviewed per-model sampling policy.
+Qwen3.8's reviewed sampling policy follows the selected mode. Pi omits static
+sampling for this family: the managed server supplies the official thinking
+tuple for low, medium, and xhigh or the official non-thinking tuple for off,
+while the evaluation result records the effective values. Off remains an
+explicitly labelled within-family condition rather than a semantically matched
+cross-model level. Maki remains outside the fixed comparison because it is a
+different harness, even though it now receives the same server-side Qwen3.8
+sampling defaults.
 
 Use a 45-minute wall-clock ceiling for each future model-evaluation attempt.
 Apply it at the operator boundary so ordinary benchmark execution remains

@@ -9,7 +9,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from rocmplete.agent_models import (
-    agent_sampling_parameters,
+    agent_client_sampling_parameters,
     reasoning_client_default,
 )
 from rocmplete.bundles import artifact_path
@@ -185,7 +185,9 @@ class OpenCodeLauncherTests(unittest.TestCase):
         )
         for identifier, model in provider["models"].items():
             preset = self.catalog.llama_preset(identifier)
-            expected_options = dict(agent_sampling_parameters(identifier))
+            expected_options = dict(
+                agent_client_sampling_parameters(identifier)
+            )
             if preset.reasoning_control:
                 self.assertTrue(model["reasoning"])
                 expected_options["reasoningEffort"] = (

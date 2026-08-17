@@ -683,18 +683,17 @@ thinking level as
 command-line defaults before forwarded Pi session arguments, so an explicit
 later `--provider`, `--model`, or `--thinking` remains authoritative.
 
-`src/rocmplete/agent_models.py` also owns reviewed coding-task sampling policy
-for every maintained llama.cpp agent preset. OpenCode receives those values as
-per-model request options, Pi receives them as `samplingParams`, and OMP
-receives them as per-model `compat.extraBody`; explicit client request settings
-remain higher-precedence caller policy. Catalog presets and server startup
-remain free of task sampling so ordinary API and terminal workloads do not
-inherit coding defaults.
-Qwen3.8's maintained values are explicitly its official thinking-mode policy.
-OpenCode, Pi, and OMP attach that policy statically to the model entry, so a
-later reasoning-off selection does not substitute Qwen's distinct non-thinking
-sampler. Evaluation guidance therefore treats Qwen3.8 off as a labelled
-within-family experiment rather than a normalized comparison.
+`src/rocmplete/agent_models.py` owns reviewed coding-task sampling metadata for
+every maintained llama.cpp agent preset. OpenCode receives static values as
+per-model request options, Pi as `samplingParams`, and OMP as per-model
+`compat.extraBody`; explicit client request settings remain higher-precedence
+caller policy. Qwen3.8 is deliberately different because its official sampler
+depends on reasoning mode. Its presets pass a private profile marker to the
+patched server, which removes the marker before Jinja, resolves thinking, and
+fills only omitted sampling fields with either the thinking or non-thinking
+tuple. OpenCode, Pi, OMP, Maki, and direct Chat Completions therefore share one
+mode-aware policy without separate model processes or duplicated client
+configuration. Evaluation metadata still records the resolved tuple.
 
 Pi recognizes package and configuration commands only when the command is its
 first argument. The launcher classifies `install`, `remove`, `uninstall`,
@@ -754,11 +753,12 @@ requiring an installed model.
 The tested Maki 0.4.8 dynamic-provider model schema cannot express per-model
 request sampling parameters, and its llama.cpp adapter does not provide a
 request-body hook. The generated provider therefore does not publish fields
-Maki would ignore; Maki requests retain llama.cpp's defaults until upstream
-exposes a clean model or request setting. The same adapter sends only numeric
-`thinking_budget_tokens`. The managed llama.cpp bridge recognizes Maki
-0.4.8's standard values, derives the corresponding native label, and forwards
-it while retaining Maki's sampler ceiling. Maki still exposes generic choices
+Maki would ignore. The adapter sends numeric `thinking_budget_tokens`; the
+managed llama.cpp bridge recognizes Maki 0.4.8's standard values, derives the
+corresponding native label, and forwards it while retaining Maki's sampler
+ceiling. For Qwen3.8 that resolved mode also selects the server-side official
+sampler; other families retain their normal server defaults unless their
+client can carry a reviewed static policy. Maki still exposes generic choices
 that some models do not support, so reasoning-sensitive quality comparisons
 use Pi and an explicit model-native condition.
 

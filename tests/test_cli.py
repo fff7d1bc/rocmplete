@@ -2913,6 +2913,13 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(contents.count("jinja = true"), 2)
         self.assertEqual(contents.count("reasoning-preserve = true"), 2)
+        self.assertEqual(
+            contents.count(
+                'chat-template-kwargs = '
+                '{"rocmplete_sampling_profile":"qwen3.8"}'
+            ),
+            2,
+        )
         mtp_section = contents.split(
             "[qwen3.8-27b-mtp-ud-q8-k-xl]", 1
         )[1].split("[gemma4-31b-it-q8-0-mtp]", 1)[0]
@@ -2949,6 +2956,13 @@ class CliTests(unittest.TestCase):
         )
         self.assertEqual(contents.count("jinja = true"), 2)
         self.assertEqual(contents.count("reasoning-preserve = true"), 2)
+        self.assertEqual(
+            contents.count(
+                'chat-template-kwargs = '
+                '{"rocmplete_sampling_profile":"qwen3.8"}'
+            ),
+            2,
+        )
         mtp_section = contents.split(
             "[qwen3.8-27b-mtp-ud-q4-k-xl]", 1
         )[1]

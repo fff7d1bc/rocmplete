@@ -16,7 +16,7 @@ from .agent_models import (
     PROVIDER_ID,
     RECOMMENDED_MODEL,
     agent_output_limit,
-    agent_sampling_parameters,
+    agent_client_sampling_parameters,
     default_agent_model,
     is_agent_capable,
 )
@@ -125,8 +125,10 @@ def render_config(
             "contextWindow": preset.default_context,
             "maxTokens": agent_output_limit(preset.default_context),
             "cost": _COST,
-            "samplingParams": agent_sampling_parameters(identifier),
         }
+        sampling = agent_client_sampling_parameters(identifier)
+        if sampling:
+            model["samplingParams"] = sampling
         if preset.reasoning_control:
             exposed = (
                 {"high"}

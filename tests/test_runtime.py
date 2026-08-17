@@ -216,6 +216,23 @@ class RuntimeCommandTests(unittest.TestCase):
         )
         self.assertIn("thinking_budget == 0", reasoning_patch)
         self.assertIn("!inputs.enable_thinking", reasoning_patch)
+        self.assertIn(
+            "rocmplete_apply_qwen38_sampling_defaults", reasoning_patch
+        )
+        self.assertIn(
+            'inputs.chat_template_kwargs.erase('
+            '"rocmplete_sampling_profile")',
+            reasoning_patch,
+        )
+        self.assertIn(
+            'set_default("temperature",      enable_thinking ? 1.0  : 0.7)',
+            reasoning_patch,
+        )
+        self.assertIn(
+            'set_default("presence_penalty", enable_thinking ? 0.0  : 1.5)',
+            reasoning_patch,
+        )
+        self.assertIn("it->is_null()", reasoning_patch)
         for budget, level in (
             (1638, "low"),
             (3276, "low"),
@@ -817,6 +834,10 @@ class RuntimeCommandTests(unittest.TestCase):
         ).read_text()
         self.assertIn(
             '[[ -f "$chat_template_path" && -r "$chat_template_path" ]]',
+            entrypoint,
+        )
+        self.assertIn(
+            "'{\"rocmplete_sampling_profile\":\"qwen3.8\"}'",
             entrypoint,
         )
         self.assertIn(

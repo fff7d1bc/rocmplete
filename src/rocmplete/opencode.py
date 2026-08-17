@@ -25,7 +25,7 @@ from .agent_models import (
     PROVIDER_ID,
     RECOMMENDED_MODEL,
     agent_output_limit,
-    agent_sampling_parameters,
+    agent_client_sampling_parameters,
     default_agent_model,
     is_agent_capable,
     reasoning_client_default,
@@ -212,7 +212,7 @@ def render_config(
                 "output": agent_output_limit(preset.default_context),
             },
         }
-        options = dict(agent_sampling_parameters(identifier))
+        options = dict(agent_client_sampling_parameters(identifier))
         if preset.reasoning_control:
             model["reasoning"] = True
             # OpenCode merges an explicitly selected variant over these model

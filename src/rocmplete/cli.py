@@ -5975,7 +5975,7 @@ def _command_llama_speculative_benchmark(
             cache_type_v=arguments.cache_type_v,
             batch_size=arguments.batch_size,
             ubatch_size=arguments.ubatch_size,
-            sampling=agent_sampling_parameters(preset.identifier),
+            sampling=agent_sampling_parameters(preset.identifier, thinking),
             model=model_metadata,
             commands=commands,
             output=output,
@@ -6236,6 +6236,14 @@ def _render_llama_router_preset(
                     "{}.jinja".format(preset.chat_template),
                 ]
             )
+            if preset.chat_template == "qwen3.8":
+                # The patched server consumes and removes this namespaced
+                # marker before applying Jinja. It selects official sampling
+                # defaults from the request's resolved thinking mode.
+                section.append(
+                    "chat-template-kwargs = "
+                    '{"rocmplete_sampling_profile":"qwen3.8"}'
+                )
         # Auto profile resolution happens inside the container. These private
         # keys are replaced in the entrypoint's tmpfs copy before llama.cpp
         # sees the generated preset.

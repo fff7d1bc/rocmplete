@@ -146,6 +146,12 @@ if [[ "$router" == 0 && -n "$chat_template" ]]; then
     [[ -f "$chat_template_path" && -r "$chat_template_path" ]] ||
         die "managed llama.cpp chat template is not a readable regular file: $chat_template_path"
     model_policy_args+=(--jinja --chat-template-file "$chat_template_path")
+    if [[ "$chat_template" == qwen3.8 ]]; then
+        model_policy_args+=(
+            --chat-template-kwargs
+            '{"rocmplete_sampling_profile":"qwen3.8"}'
+        )
+    fi
 fi
 if [[ "$router" == 0 && -n "$speculative_type" ]]; then
     speculative_args+=(
