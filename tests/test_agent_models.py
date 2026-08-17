@@ -122,7 +122,7 @@ class AgentModelPolicyTests(unittest.TestCase):
         for identifier, preset in self.catalog.llama_presets.items():
             if not is_agent_capable(preset):
                 continue
-            params = agent_sampling_parameters(identifier)
+            params = agent_sampling_parameters(self.catalog, identifier)
             actual[identifier] = (
                 params["temperature"],
                 params["top_p"],
@@ -135,13 +135,17 @@ class AgentModelPolicyTests(unittest.TestCase):
 
     def test_missing_agent_sampling_policy_fails_closed(self):
         with self.assertRaisesRegex(LauncherError, "no reviewed sampling policy"):
-            agent_sampling_parameters("unreviewed-agent")
+            agent_sampling_parameters(
+                self.catalog, "qwen3-0.6b-q8-0"
+            )
 
     def test_qwen_sampling_is_server_managed_and_mode_dependent(self):
         identifier = "qwen3.8-27b-mtp-ud-q8-k-xl"
-        self.assertEqual(agent_client_sampling_parameters(identifier), {})
         self.assertEqual(
-            agent_sampling_parameters(identifier, "medium"),
+            agent_client_sampling_parameters(self.catalog, identifier), {}
+        )
+        self.assertEqual(
+            agent_sampling_parameters(self.catalog, identifier, "medium"),
             {
                 "temperature": 1.0,
                 "top_p": 0.95,
@@ -152,7 +156,7 @@ class AgentModelPolicyTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            agent_sampling_parameters(identifier, "off"),
+            agent_sampling_parameters(self.catalog, identifier, "off"),
             {
                 "temperature": 0.7,
                 "top_p": 0.8,
@@ -164,10 +168,14 @@ class AgentModelPolicyTests(unittest.TestCase):
         )
         dense = "qwen3.6-27b-mtp-q8-0"
         sparse = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
-        self.assertEqual(agent_client_sampling_parameters(dense), {})
-        self.assertEqual(agent_client_sampling_parameters(sparse), {})
         self.assertEqual(
-            agent_sampling_parameters(dense, "high"),
+            agent_client_sampling_parameters(self.catalog, dense), {}
+        )
+        self.assertEqual(
+            agent_client_sampling_parameters(self.catalog, sparse), {}
+        )
+        self.assertEqual(
+            agent_sampling_parameters(self.catalog, dense, "high"),
             {
                 "temperature": 1.0,
                 "top_p": 0.95,
@@ -178,7 +186,7 @@ class AgentModelPolicyTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            agent_sampling_parameters(sparse, "high"),
+            agent_sampling_parameters(self.catalog, sparse, "high"),
             {
                 "temperature": 1.0,
                 "top_p": 0.95,
@@ -189,8 +197,8 @@ class AgentModelPolicyTests(unittest.TestCase):
             },
         )
         self.assertEqual(
-            agent_sampling_parameters(dense, "off"),
-            agent_sampling_parameters(sparse, "off"),
+            agent_sampling_parameters(self.catalog, dense, "off"),
+            agent_sampling_parameters(self.catalog, sparse, "off"),
         )
 
     def test_reasoning_controls_are_model_native(self):

@@ -3458,6 +3458,14 @@ def _llama_reasoning_policy(preset: LlamaPreset) -> str:
     )
 
 
+def _llama_sampling_policy(preset: LlamaPreset) -> str:
+    if not preset.sampling_policy:
+        return "request or llama.cpp default"
+    return "catalog {} (thinking/non-thinking)".format(
+        preset.sampling_policy
+    )
+
+
 def _print_llama_model_details(
     catalog: Catalog, models: Sequence[LlamaModel], root: Path
 ) -> None:
@@ -3494,6 +3502,7 @@ def _print_llama_model_details(
                         _llama_speculation_policy(preset),
                     ),
                     ("Reasoning", _llama_reasoning_policy(preset)),
+                    ("Sampling", _llama_sampling_policy(preset)),
                     (
                         "Flash Attention",
                         _llama_flash_attention_policy(preset),
@@ -5834,7 +5843,9 @@ def _command_llama_speculative_benchmark(
                 jinja=preset.jinja,
                 reasoning_preserve=preset.reasoning_preserve,
                 chat_template=preset.chat_template,
-                sampling_profile=preset.sampling_profile,
+                sampling_defaults=_llama_sampling_defaults_json(
+                    catalog, preset
+                ),
                 profile_flash_attention=profile_flash_attention,
                 profile_kv_cache=profile_kv_cache,
                 render_nodes=render_nodes,
@@ -5976,7 +5987,9 @@ def _command_llama_speculative_benchmark(
             cache_type_v=arguments.cache_type_v,
             batch_size=arguments.batch_size,
             ubatch_size=arguments.ubatch_size,
-            sampling=agent_sampling_parameters(preset.identifier, thinking),
+            sampling=agent_sampling_parameters(
+                catalog, preset.identifier, thinking
+            ),
             model=model_metadata,
             commands=commands,
             output=output,
@@ -6166,6 +6179,20 @@ def _llama_preset_status(
     return artifact.destination, artifact_path(data_dir, artifact)
 
 
+def _llama_sampling_defaults_json(
+    catalog: Catalog, preset: LlamaPreset
+) -> str:
+    if not preset.sampling_policy:
+        return ""
+    policy = catalog.llama_sampling_policy(preset.sampling_policy)
+    return json.dumps(
+        policy.modes(),
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    )
+
+
 def _render_llama_router_preset(
     catalog: Catalog, data_dir: Path, backend: str = "rocm"
 ) -> Tuple[str, Tuple[str, ...]]:
@@ -6237,16 +6264,16 @@ def _render_llama_router_preset(
                     "{}.jinja".format(preset.chat_template),
                 ]
             )
-            if preset.sampling_profile:
-                # The patched server consumes and removes this namespaced
-                # marker before applying Jinja. It selects model-specific
-                # sampling defaults from the resolved thinking mode.
-                section.append(
-                    "chat-template-kwargs = "
-                    '{{"rocmplete_sampling_profile":"{}"}}'.format(
-                        preset.sampling_profile
-                    )
+        sampling_defaults = _llama_sampling_defaults_json(catalog, preset)
+        if sampling_defaults:
+            # This dedicated server policy remains separate from the Jinja
+            # context. The patched server selects one mode after resolving
+            # the request's reasoning control.
+            section.append(
+                "sampling-defaults-by-reasoning = {}".format(
+                    sampling_defaults
                 )
+            )
         # Auto profile resolution happens inside the container. These private
         # keys are replaced in the entrypoint's tmpfs copy before llama.cpp
         # sees the generated preset.
@@ -6371,7 +6398,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
     jinja = False
     reasoning_preserve = False
     chat_template = ""
-    sampling_profile = ""
+    sampling_defaults = ""
     profile_flash_attention = {}
     profile_kv_cache = {}
     display_model = str(model) if model is not None else ""
@@ -6396,7 +6423,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         jinja = preset.jinja
         reasoning_preserve = preset.reasoning_preserve
         chat_template = preset.chat_template
-        sampling_profile = preset.sampling_profile
+        sampling_defaults = _llama_sampling_defaults_json(catalog, preset)
         profile_flash_attention = preset.flash_attention
         profile_kv_cache = preset.kv_cache
         if context is None:
@@ -6455,7 +6482,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         jinja=jinja,
         reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
-        sampling_profile=sampling_profile,
+        sampling_defaults=sampling_defaults,
         profile_flash_attention=profile_flash_attention,
         profile_kv_cache=profile_kv_cache,
         router_preset=router_preset,

@@ -216,24 +216,27 @@ class RuntimeCommandTests(unittest.TestCase):
         )
         self.assertIn("thinking_budget == 0", reasoning_patch)
         self.assertIn("!inputs.enable_thinking", reasoning_patch)
+        self.assertIn("common/arg.cpp", reasoning_patch)
+        self.assertIn("common/common.h", reasoning_patch)
+        self.assertIn("tools/server/server-common.h", reasoning_patch)
+        self.assertIn("tools/server/server-context.cpp", reasoning_patch)
         self.assertIn(
-            "rocmplete_apply_qwen_sampling_defaults", reasoning_patch
+            "--sampling-defaults-by-reasoning", reasoning_patch
         )
         self.assertIn(
-            'inputs.chat_template_kwargs.erase('
-            '"rocmplete_sampling_profile")',
+            "parse_sampling_defaults_by_reasoning", reasoning_patch
+        )
+        self.assertIn(
+            "rocmplete_apply_sampling_defaults", reasoning_patch
+        )
+        self.assertIn('body.find(item.key())', reasoning_patch)
+        self.assertIn(
+            'enable_thinking ? "thinking" : "non_thinking"',
             reasoning_patch,
         )
-        self.assertIn(
-            'set_default("temperature",      non_thinking ? 0.7 : 1.0)',
-            reasoning_patch,
-        )
-        self.assertIn(
-            'profile == "qwen3.6-35b-a3b"',
-            reasoning_patch,
-        )
-        self.assertIn('"qwen3.6-27b"', reasoning_patch)
-        self.assertIn('"qwen3.8-27b"', reasoning_patch)
+        self.assertNotIn("rocmplete_sampling_profile", reasoning_patch)
+        self.assertNotIn('"qwen3.6-27b"', reasoning_patch)
+        self.assertNotIn('"qwen3.8-27b"', reasoning_patch)
         self.assertIn("it->is_null()", reasoning_patch)
         for budget, level in (
             (1638, "low"),
@@ -839,11 +842,11 @@ class RuntimeCommandTests(unittest.TestCase):
             entrypoint,
         )
         self.assertIn(
-            "ROCMLETE_LLAMA_SAMPLING_PROFILE",
+            "ROCMLETE_LLAMA_SAMPLING_DEFAULTS",
             entrypoint,
         )
-        self.assertIn("qwen3.6-27b|qwen3.6-35b-a3b|qwen3.8-27b", entrypoint)
-        self.assertIn('${sampling_profile}', entrypoint)
+        self.assertIn("--sampling-defaults-by-reasoning", entrypoint)
+        self.assertIn('"$sampling_defaults"', entrypoint)
         self.assertIn(
             '""|kat-coder-v2.5|muse-glimmer-atem|qwen3-0.6b|qwen3.6|qwen3.8|'
             'translategemma-manual',

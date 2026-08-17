@@ -123,11 +123,13 @@ class OmpLaunchPlan:
     mode: str
 
 
-def _compat(identifier: str) -> Mapping[str, object]:
+def _compat(
+    catalog: Catalog, identifier: str
+) -> Mapping[str, object]:
     compat: dict[str, object] = {
         "supportsDeveloperRole": False,
     }
-    sampling = agent_client_sampling_parameters(identifier)
+    sampling = agent_client_sampling_parameters(catalog, identifier)
     if sampling:
         # OMP's ordinary sampling configuration is global. extraBody is
         # applied last and preserves the exact reviewed policy per model.
@@ -163,7 +165,7 @@ def render_models(
             "cost": _COST,
             "contextWindow": preset.default_context,
             "maxTokens": agent_output_limit(preset.default_context),
-            "compat": _compat(identifier),
+            "compat": _compat(catalog, identifier),
         }
         if preset.reasoning_control:
             efforts = (

@@ -150,7 +150,9 @@ class PiLauncherTests(unittest.TestCase):
         )
         self.assertFalse(models["kat-coder-v2.5-dev-q8-0"]["reasoning"])
         for identifier, model in models.items():
-            expected_sampling = agent_client_sampling_parameters(identifier)
+            expected_sampling = agent_client_sampling_parameters(
+                self.catalog, identifier
+            )
             if expected_sampling:
                 self.assertEqual(model["samplingParams"], expected_sampling)
             else:

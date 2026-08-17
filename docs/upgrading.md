@@ -232,7 +232,7 @@ protected behavior is fixed.
 | Patch | Protected behavior and scope | Removal gate |
 | --- | --- | --- |
 | `hip-apu-host-buffer.patch` | Prevents unsafe direct computation on `ROCm_Host` buffers on HIP integrated GPUs while retaining pinned allocation. Relevant to `gfx1150` and `gfx1151`. | The selected upstream pin contains an equivalent to [PR 25863](https://github.com/ggml-org/llama.cpp/pull/25863), and long-input server, CLI, tool-call, and concurrent-slot checks remain correct on both APU architectures. |
-| `reasoning-controls.patch` | Recovers native labels from Maki 0.4.8's deterministic numeric budgets while retaining its sampler ceiling, and clamps a generic Muse off request to native low. Upstream owns direct OpenAI-compatible effort parsing and aliases the native Qwen `reasoning_effort` and Muse `reasoning_strength` names. | Both endpoints carry the exact model-native controls without the patch, including Maki's numeric transport and clients that cannot hide Muse off. Related upstream request parsing is tracked in [PR 20479](https://github.com/ggml-org/llama.cpp/pull/20479). |
+| `reasoning-controls.patch` | Recovers native labels from Maki 0.4.8's deterministic numeric budgets while retaining its sampler ceiling, clamps a generic Muse off request to native low, and adds validated model-preset sampling defaults selected after thinking mode is resolved. Upstream owns direct OpenAI-compatible effort parsing and aliases the native Qwen `reasoning_effort` and Muse `reasoning_strength` names. | Both endpoints carry the exact model-native controls without the patch, including Maki's numeric transport and clients that cannot hide Muse off, and expose an equivalent data-driven per-mode sampling-default mechanism with explicit-request precedence. Related upstream request parsing is tracked in [PR 20479](https://github.com/ggml-org/llama.cpp/pull/20479). |
 | `quantized-kv-flash-attention.patch` | Provides reviewed Vulkan q8_0 and HIP q8_0/q4_0 dequantize-on-load paths. It combines commits `4edaca09`, `4355d03e`, and `2a24abc6` from the `strix-halo-fa-fixes` branch. | Matching upstream code passes the same f16 and q8_0 cache, backend, context-depth, performance, and output checks on every applicable hardware class. |
 | `vulkan-f16-kv-contiguize.patch` | Adds the environment-gated f16 KV contiguization path derived from commit `b1a10f981`. ROCmplete enables it only for Vulkan on `gfx1151`. | Equivalent upstream behavior retains the measured long-context improvement without shallow-context or output regressions. Do not broaden the profile gate without results from the additional architecture. |
 
@@ -303,14 +303,14 @@ compare Qwen's current base-model template independently, then render later
 developer messages and a complete multi-turn tool exchange before updating or
 removing the managed adaptation.
 
-The four Qwen3.6 presets also declare catalog-owned sampling profiles. Dense
+The four Qwen3.6 presets also reference catalog-owned sampling policies. Dense
 27B thinking defaults to temperature 1.0, top-p 0.95, top-k 20, min-p 0,
 presence penalty 0, and repeat penalty 1. Sparse 35B-A3B uses the same tuple
 with presence penalty 1.5. Thinking off for either family defaults to
 temperature 0.7, top-p 0.8, top-k 20, min-p 0, presence penalty 1.5, and
 repeat penalty 1. Qwen's separate temperature-0.6 precise-coding tuple is not
 the general server default. Recheck both model cards, both reasoning modes,
-and explicit-request precedence whenever the template, catalog profiles, or
+and explicit-request precedence whenever the template, catalog policies, or
 server request parser changes.
 
 The bundled `qwen3.8.jinja` is an Apache-2.0 adaptation of Qwen's official
@@ -325,12 +325,12 @@ managed default. Qwen3.8 supports native low, medium, and xhigh effort plus a
 separate off toggle; it does not support high. On an upgrade, compare both the
 base-model and selected GGUF templates, render all three levels plus off, and
 complete a multi-turn tool exchange before changing the override or default.
-The patched server also consumes the private `qwen3.8-27b` sampling profile:
+The Qwen3.8 presets reference the catalog's `qwen3.8-27b` sampling policy:
 thinking requests default to temperature 1.0, top-p 0.95, top-k 20, min-p 0,
 presence penalty 0, and repeat penalty 1; off defaults to temperature 0.7,
 top-p 0.8, top-k 20, min-p 0, presence penalty 1.5, and repeat penalty 1.
 Recheck both official tuples and explicit-request override precedence whenever
-the model card, template, or server request parser changes.
+the model card, template, catalog policy, or server request parser changes.
 
 The 2026-08-14 community-template candidate at
 `froggeric/Qwen-Fixed-Chat-Templates` revision

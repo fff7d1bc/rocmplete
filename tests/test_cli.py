@@ -23,6 +23,7 @@ from rocmplete.cli import (
     _llama_flash_attention_policy,
     _llama_kv_cache_policy,
     _llama_reasoning_policy,
+    _llama_sampling_policy,
     _llama_speculation_policy,
     _llama_template_policy,
     _parse_gpu_diagnostic_output,
@@ -91,6 +92,31 @@ def _record_managed_file(data_dir, path, artifact):
     store = VerificationStore.load(data_dir)
     store.record(path, artifact.size, artifact.sha256)
     store.save()
+
+
+def _qwen_sampling_defaults(thinking_presence=0.0):
+    return json.dumps(
+        {
+            "thinking": {
+                "temperature": 1.0,
+                "top_p": 0.95,
+                "top_k": 20,
+                "min_p": 0.0,
+                "presence_penalty": thinking_presence,
+                "repeat_penalty": 1.0,
+            },
+            "non_thinking": {
+                "temperature": 0.7,
+                "top_p": 0.8,
+                "top_k": 20,
+                "min_p": 0.0,
+                "presence_penalty": 1.5,
+                "repeat_penalty": 1.0,
+            },
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
 
 class CliTests(unittest.TestCase):
@@ -2664,7 +2690,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("ROCMLETE_LLAMA_JINJA=0", command)
         self.assertIn("ROCMLETE_LLAMA_CHAT_TEMPLATE=qwen3.6", command)
         self.assertIn(
-            "ROCMLETE_LLAMA_SAMPLING_PROFILE=qwen3.6-35b-a3b",
+            "ROCMLETE_LLAMA_SAMPLING_DEFAULTS="
+            + _qwen_sampling_defaults(1.5),
             command,
         )
 
@@ -2858,8 +2885,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("spec-type = draft-mtp", contents)
         self.assertIn("spec-draft-n-max = 3", contents)
         self.assertIn(
-            'chat-template-kwargs = '
-            '{"rocmplete_sampling_profile":"qwen3.6-35b-a3b"}',
+            "sampling-defaults-by-reasoning = "
+            + _qwen_sampling_defaults(1.5),
             contents,
         )
 
@@ -2887,8 +2914,8 @@ class CliTests(unittest.TestCase):
         self.assertEqual(installed, (identifier,))
         self.assertIn("spec-draft-n-max = 3", contents)
         self.assertIn(
-            'chat-template-kwargs = '
-            '{"rocmplete_sampling_profile":"qwen3.6-27b"}',
+            "sampling-defaults-by-reasoning = "
+            + _qwen_sampling_defaults(),
             contents,
         )
         self.assertIn(
@@ -2929,8 +2956,8 @@ class CliTests(unittest.TestCase):
         self.assertEqual(contents.count("reasoning-preserve = true"), 2)
         self.assertEqual(
             contents.count(
-                'chat-template-kwargs = '
-                '{"rocmplete_sampling_profile":"qwen3.8-27b"}'
+                "sampling-defaults-by-reasoning = "
+                + _qwen_sampling_defaults()
             ),
             2,
         )
@@ -2972,8 +2999,8 @@ class CliTests(unittest.TestCase):
         self.assertEqual(contents.count("reasoning-preserve = true"), 2)
         self.assertEqual(
             contents.count(
-                'chat-template-kwargs = '
-                '{"rocmplete_sampling_profile":"qwen3.8-27b"}'
+                "sampling-defaults-by-reasoning = "
+                + _qwen_sampling_defaults()
             ),
             2,
         )
@@ -4643,6 +4670,14 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             _llama_reasoning_policy(qwen27),
             "toggle; off, on; default on",
+        )
+        self.assertEqual(
+            _llama_sampling_policy(qwen27),
+            "catalog qwen3.6-27b (thinking/non-thinking)",
+        )
+        self.assertEqual(
+            _llama_sampling_policy(dflash_256k),
+            "request or llama.cpp default",
         )
         self.assertEqual(
             _llama_reasoning_policy(dflash_256k),

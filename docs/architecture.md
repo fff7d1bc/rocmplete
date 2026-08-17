@@ -689,13 +689,14 @@ per-model request options, Pi as `samplingParams`, and OMP as per-model
 `compat.extraBody`; explicit client request settings remain higher-precedence
 caller policy. Qwen3.6 and Qwen3.8 are deliberately different because their
 official samplers depend on reasoning mode, and sparse Qwen3.6 has a distinct
-thinking profile. The catalog assigns an exact sampling profile to each
-preset. Direct startup and router rendering pass that private marker to the
-patched server, which removes it before Jinja, resolves thinking, and fills
-only omitted sampling fields. OpenCode, Pi, OMP, Maki, and direct Chat
-Completions therefore share one mode-aware policy without separate model
-processes or duplicated client configuration. Evaluation metadata still
-records the resolved tuple.
+thinking policy. The catalog owns validated, reusable thinking and
+non-thinking policies and each applicable preset references one. Direct
+startup and router rendering pass the resolved data through a dedicated
+llama.cpp option that remains separate from Jinja. The patched server resolves
+thinking and fills only omitted or null sampling fields. OpenCode, Pi, OMP,
+Maki, and direct Chat Completions therefore share one mode-aware policy without
+separate model processes or duplicated client configuration. Evaluation
+metadata reads the same catalog policy when recording the resolved tuple.
 
 Pi recognizes package and configuration commands only when the command is its
 first argument. The launcher classifies `install`, `remove`, `uninstall`,

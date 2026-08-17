@@ -40,7 +40,7 @@ class LlamaOptions:
     jinja: bool = False
     reasoning_preserve: bool = False
     chat_template: str = ""
-    sampling_profile: str = ""
+    sampling_defaults: str = ""
     profile_flash_attention: Mapping[str, str] = field(default_factory=dict)
     profile_kv_cache: Mapping[str, str] = field(default_factory=dict)
     router_preset: Optional[Path] = None
@@ -149,8 +149,8 @@ def llama_command(options: LlamaOptions, volume_suffix: str) -> List[str]:
         "--env", "ROCMLETE_LLAMA_CHAT_TEMPLATE={}".format(
             options.chat_template
         ),
-        "--env", "ROCMLETE_LLAMA_SAMPLING_PROFILE={}".format(
-            options.sampling_profile
+        "--env", "ROCMLETE_LLAMA_SAMPLING_DEFAULTS={}".format(
+            options.sampling_defaults
         ),
         "--env", "ROCMLETE_LISTEN={}".format(
             container_listen_address(options.listen)

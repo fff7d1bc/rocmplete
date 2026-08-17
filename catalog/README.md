@@ -24,6 +24,10 @@ media. Use `./rocmplete content list --bundles` for the current exact inventory.
   rendered workflow by the matching ComfyUI frontend. Closely related
   variants may additionally pin an allowlisted deterministic renderer and its
   rendered hash.
+- `llama_sampling_policies` owns validated thinking and non-thinking sampler
+  defaults that the managed server selects after resolving a request's native
+  reasoning mode. Presets reference these policies instead of duplicating
+  numeric tuples or encoding them in Jinja.
 - `llama_presets` connects one llama.cpp bundle and target GGUF artifact to a
   stable router model ID and a conservative `default_context`. A preset may
   additionally own constrained `draft-mtp` or `draft-dflash` speculative
@@ -37,6 +41,8 @@ media. Use `./rocmplete content list --bundles` for the current exact inventory.
   `reasoning_control` records a reviewed native toggle, effort, or strength
   contract; companion level, default, and off-mode fields define the exact
   client surface without inventing cross-model reasoning levels.
+  `sampling_policy` optionally references one catalog policy when the model's
+  authoritative sampling differs between thinking and non-thinking requests.
 
 The loader rejects unsafe paths, malformed revisions and hashes, missing
 references, repeated bundle content, unknown groups, and destination

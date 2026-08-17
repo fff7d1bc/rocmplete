@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import urllib.parse
 from dataclasses import dataclass, field
@@ -118,6 +119,19 @@ class BenchmarkWorkflow:
 
 
 @dataclass(frozen=True)
+class LlamaSamplingPolicy:
+    identifier: str
+    thinking: Mapping[str, object]
+    non_thinking: Mapping[str, object]
+
+    def modes(self) -> Mapping[str, Mapping[str, object]]:
+        return {
+            "thinking": self.thinking,
+            "non_thinking": self.non_thinking,
+        }
+
+
+@dataclass(frozen=True)
 class LlamaPreset:
     identifier: str
     bundle: str
@@ -138,7 +152,7 @@ class LlamaPreset:
     reasoning_off: bool = False
     reasoning_preserve: bool = False
     chat_template: str = ""
-    sampling_profile: str = ""
+    sampling_policy: str = ""
     flash_attention: Mapping[str, str] = field(default_factory=dict)
     kv_cache: Mapping[str, str] = field(default_factory=dict)
 
@@ -154,6 +168,9 @@ class Catalog:
     workflow_packs: Mapping[str, WorkflowPack]
     benchmarks: Mapping[str, BenchmarkWorkflow]
     llama_presets: Mapping[str, LlamaPreset] = field(default_factory=dict)
+    llama_sampling_policies: Mapping[str, LlamaSamplingPolicy] = field(
+        default_factory=dict
+    )
 
     def artifact(self, identifier: str) -> Artifact:
         try:
@@ -199,6 +216,14 @@ class Catalog:
                 "unknown llama.cpp preset {!r}; "
                 "use 'content install llama-cpp muse-glimmer "
                 "--dry-run'".format(identifier)
+            )
+
+    def llama_sampling_policy(self, identifier: str) -> LlamaSamplingPolicy:
+        try:
+            return self.llama_sampling_policies[identifier]
+        except KeyError:
+            raise LauncherError(
+                "unknown llama.cpp sampling policy {!r}".format(identifier)
             )
 
     def bundle_artifacts(self, bundle: Bundle) -> Tuple[Artifact, ...]:
@@ -751,6 +776,88 @@ def _load_benchmark(
     )
 
 
+_LLAMA_SAMPLING_FIELDS = frozenset(
+    (
+        "temperature",
+        "top_p",
+        "top_k",
+        "min_p",
+        "presence_penalty",
+        "repeat_penalty",
+    )
+)
+
+
+def _load_llama_sampling_mode(
+    identifier: str, mode: str, data: object
+) -> Mapping[str, object]:
+    if not isinstance(data, dict) or not data:
+        raise LauncherError(
+            "llama.cpp sampling policy {} {} must be a non-empty object".format(
+                identifier, mode
+            )
+        )
+    unsupported = sorted(set(data) - _LLAMA_SAMPLING_FIELDS)
+    if unsupported:
+        raise LauncherError(
+            "llama.cpp sampling policy {} {} has unsupported fields: {}".format(
+                identifier, mode, ", ".join(unsupported)
+            )
+        )
+    result: Dict[str, object] = {}
+    for field_name, value in data.items():
+        if field_name == "top_k":
+            valid = (
+                isinstance(value, int)
+                and not isinstance(value, bool)
+                and 0 <= value <= 2_147_483_647
+            )
+        else:
+            valid = isinstance(value, (int, float)) and not isinstance(
+                value, bool
+            )
+            if valid:
+                try:
+                    valid = math.isfinite(value)
+                except OverflowError:
+                    valid = False
+            if valid and field_name == "temperature":
+                valid = value >= 0
+            elif valid and field_name in ("top_p", "min_p"):
+                valid = 0 <= value <= 1
+            elif valid and field_name == "repeat_penalty":
+                valid = value > 0
+        if not valid:
+            raise LauncherError(
+                "llama.cpp sampling policy {} {} has invalid {}".format(
+                    identifier, mode, field_name
+                )
+            )
+        result[field_name] = value
+    return result
+
+
+def _load_llama_sampling_policy(
+    identifier: str, data: Mapping[str, object]
+) -> LlamaSamplingPolicy:
+    unsupported = sorted(set(data) - {"thinking", "non_thinking"})
+    if unsupported:
+        raise LauncherError(
+            "llama.cpp sampling policy {} has unsupported fields: {}".format(
+                identifier, ", ".join(unsupported)
+            )
+        )
+    return LlamaSamplingPolicy(
+        identifier=identifier,
+        thinking=_load_llama_sampling_mode(
+            identifier, "thinking", data.get("thinking")
+        ),
+        non_thinking=_load_llama_sampling_mode(
+            identifier, "non_thinking", data.get("non_thinking")
+        ),
+    )
+
+
 def _load_llama_preset(
     identifier: str, data: Mapping[str, object]
 ) -> LlamaPreset:
@@ -771,7 +878,7 @@ def _load_llama_preset(
         "reasoning_off",
         "reasoning_preserve",
         "chat_template",
-        "sampling_profile",
+        "sampling_policy",
         "flash_attention",
         "kv_cache",
     }
@@ -939,36 +1046,16 @@ def _load_llama_preset(
             "llama.cpp preset {} custom chat_template already enables "
             "Jinja".format(identifier)
         )
-    sampling_profile = data.get("sampling_profile", "")
-    if not isinstance(sampling_profile, str) or sampling_profile not in (
-        "",
-        "qwen3.6-27b",
-        "qwen3.6-35b-a3b",
-        "qwen3.8-27b",
-    ):
+    sampling_policy = data.get("sampling_policy", "")
+    if sampling_policy:
+        sampling_policy = _identifier(
+            sampling_policy, "{}.sampling_policy".format(identifier)
+        )
+    elif not isinstance(sampling_policy, str):
         raise LauncherError(
-            "llama.cpp preset {} sampling_profile must be empty, "
-            "qwen3.6-27b, qwen3.6-35b-a3b, or qwen3.8-27b".format(
+            "llama.cpp preset {} sampling_policy must be a string".format(
                 identifier
             )
-        )
-    if sampling_profile and not chat_template:
-        raise LauncherError(
-            "llama.cpp preset {} sampling_profile requires a managed "
-            "chat_template".format(identifier)
-        )
-    if (
-        sampling_profile.startswith("qwen3.6-")
-        and chat_template != "qwen3.6"
-    ):
-        raise LauncherError(
-            "llama.cpp preset {} Qwen3.6 sampling_profile requires the "
-            "qwen3.6 chat_template".format(identifier)
-        )
-    if sampling_profile == "qwen3.8-27b" and chat_template != "qwen3.8":
-        raise LauncherError(
-            "llama.cpp preset {} Qwen3.8 sampling_profile requires the "
-            "qwen3.8 chat_template".format(identifier)
         )
     agent_tools = data.get("agent_tools", False)
     if not isinstance(agent_tools, bool):
@@ -995,9 +1082,9 @@ def _load_llama_preset(
             "llama.cpp preset {} reasoning_control must be empty, toggle, "
             "effort, or strength".format(identifier)
         )
-    if sampling_profile and not reasoning_control:
+    if sampling_policy and not reasoning_control:
         raise LauncherError(
-            "llama.cpp preset {} sampling_profile requires "
+            "llama.cpp preset {} sampling_policy requires "
             "reasoning_control".format(identifier)
         )
     if reasoning_control and not agent_tools:
@@ -1190,7 +1277,7 @@ def _load_llama_preset(
         reasoning_off=reasoning_off,
         reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
-        sampling_profile=sampling_profile,
+        sampling_policy=sampling_policy,
         flash_attention=flash_attention,
         kv_cache=kv_cache,
     )
@@ -1322,6 +1409,14 @@ def _validate_catalog(catalog: Catalog) -> None:
             )
         )
     for identifier, preset in catalog.llama_presets.items():
+        if (
+            preset.sampling_policy
+            and preset.sampling_policy not in catalog.llama_sampling_policies
+        ):
+            raise LauncherError(
+                "llama.cpp preset {} references unknown sampling policy "
+                "{}".format(identifier, preset.sampling_policy)
+            )
         bundle = catalog.bundles.get(preset.bundle)
         if bundle is None:
             raise LauncherError(
@@ -1380,7 +1475,7 @@ def _validate_catalog(catalog: Catalog) -> None:
 
 def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
     raw = _read_json_object(path, "catalog")
-    if not isinstance(raw, dict) or raw.get("schema_version") != 23:
+    if not isinstance(raw, dict) or raw.get("schema_version") != 24:
         raise LauncherError("unsupported or invalid catalog schema")
     allowed = {
         "schema_version",
@@ -1390,6 +1485,7 @@ def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
         "bundles",
         "workflows",
         "benchmarks",
+        "llama_sampling_policies",
         "llama_presets",
     }
     unknown = sorted(set(raw) - allowed)
@@ -1406,6 +1502,7 @@ def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
         raw.get("bundles"),
         raw.get("workflows"),
         raw.get("benchmarks"),
+        raw.get("llama_sampling_policies"),
         raw.get("llama_presets"),
     )
     if not all(isinstance(item, dict) for item in collections):
@@ -1417,6 +1514,7 @@ def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
         raw_bundles,
         raw_workflows,
         raw_benchmarks,
+        raw_llama_sampling_policies,
         raw_llama_presets,
     ) = collections
     raw_artifacts = _expand_archive_collections(
@@ -1430,6 +1528,7 @@ def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
     )
     workflows: Dict[str, WorkflowPack] = {}
     benchmarks: Dict[str, BenchmarkWorkflow] = {}
+    llama_sampling_policies: Dict[str, LlamaSamplingPolicy] = {}
     llama_presets: Dict[str, LlamaPreset] = {}
     for raw_identifier, data in raw_workflows.items():
         identifier = _identifier(raw_identifier, "workflow identifier")
@@ -1441,6 +1540,15 @@ def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
         if not isinstance(data, dict):
             raise LauncherError("invalid benchmark entry")
         benchmarks[identifier] = _load_benchmark(identifier, data)
+    for raw_identifier, data in raw_llama_sampling_policies.items():
+        identifier = _identifier(
+            raw_identifier, "llama.cpp sampling policy identifier"
+        )
+        if not isinstance(data, dict):
+            raise LauncherError("invalid llama.cpp sampling policy entry")
+        llama_sampling_policies[identifier] = _load_llama_sampling_policy(
+            identifier, data
+        )
     for raw_identifier, data in raw_llama_presets.items():
         identifier = _identifier(raw_identifier, "llama.cpp preset identifier")
         if not isinstance(data, dict):
@@ -1453,6 +1561,7 @@ def load_catalog(path: Path = DEFAULT_CATALOG_PATH) -> Catalog:
         workflow_packs=workflows,
         benchmarks=benchmarks,
         llama_presets=llama_presets,
+        llama_sampling_policies=llama_sampling_policies,
     )
     _validate_catalog(catalog)
     return catalog
@@ -1503,6 +1612,7 @@ def _load_content_pack(path: Path) -> Catalog:
         workflow_packs={},
         benchmarks={},
         llama_presets={},
+        llama_sampling_policies={},
     )
 
 
@@ -1549,6 +1659,7 @@ def load_content_packs(
         workflow_packs=catalog.workflow_packs,
         benchmarks=catalog.benchmarks,
         llama_presets=catalog.llama_presets,
+        llama_sampling_policies=catalog.llama_sampling_policies,
     )
     _validate_catalog(merged)
     return merged, tuple(selected)

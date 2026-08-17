@@ -186,7 +186,7 @@ class OpenCodeLauncherTests(unittest.TestCase):
         for identifier, model in provider["models"].items():
             preset = self.catalog.llama_preset(identifier)
             expected_options = dict(
-                agent_client_sampling_parameters(identifier)
+                agent_client_sampling_parameters(self.catalog, identifier)
             )
             if preset.reasoning_control:
                 self.assertTrue(model["reasoning"])

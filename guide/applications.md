@@ -378,8 +378,10 @@ add a hardware profile for task tuning either. In ROCmplete, profiles describe
 GPUs such as Strix Halo or RDNA 4.
 
 The managed OpenCode, Pi, and OMP launchers are coding-task callers, so their
-generated model entries apply reviewed model-family sampling defaults. That
-does not change direct API requests, terminal mode, or the server defaults.
+generated model entries apply caller-owned static defaults. For Qwen3.6 and
+Qwen3.8, direct and router servers instead select the catalog's thinking or
+non-thinking policy, so raw API clients receive the same defaults without
+duplicating them. Explicit request fields remain authoritative.
 
 For a quick human check without an API client, run the model directly in a
 terminal:

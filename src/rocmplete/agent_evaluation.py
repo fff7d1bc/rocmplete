@@ -1391,7 +1391,9 @@ def _model_identity(
         },
         "backend": options.backend,
         "sampling": dict(
-            agent_sampling_parameters(preset.identifier, options.thinking)
+            agent_sampling_parameters(
+                catalog, preset.identifier, options.thinking
+            )
         ),
         "speculative_type": preset.speculative_type,
         "draft_tokens": preset.draft_tokens_for_backend(options.backend),

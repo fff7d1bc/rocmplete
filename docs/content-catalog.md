@@ -320,13 +320,16 @@ Keep this distinction visible in agent metadata and user documentation.
 Agent sampling is normally caller policy. `src/rocmplete/agent_models.py` owns
 the reviewed coding defaults used by generated clients and evaluation
 metadata. A model whose authoritative sampling changes with a server-resolved
-control instead declares one closed-set `sampling_profile` in its catalog
-preset. Direct startup and router rendering pass that profile to the managed
-server, and generated clients omit fields that would mask it. Qwen3.6 uses
-separate dense and sparse profiles while its MTP and non-MTP variants share
-their family policy; Qwen3.8 uses one 27B profile. Adding `agent_tools` still
+control instead references one entry from the catalog's closed
+`llama_sampling_policies` collection through `sampling_policy`. Direct startup
+and router rendering serialize the selected policy into llama.cpp's dedicated
+`--sampling-defaults-by-reasoning` option, and generated clients omit fields
+that would mask it. The server selects `thinking` or `non_thinking` after
+resolving the request and fills only omitted or null fields. Qwen3.6 uses
+separate dense and sparse policies while its MTP and non-MTP variants share
+their family policy; Qwen3.8 uses one 27B policy. Adding `agent_tools` still
 requires an authoritative upstream sampling audit and an explicit policy
-entry. Do not encode sampling as a bundle variant.
+entry. Do not encode sampling as a bundle variant or Jinja side effect.
 
 For a split GGUF, put every shard in the same bundle and reference the first
 `00001-of-N` shard from the preset. Preset inspection validates the complete

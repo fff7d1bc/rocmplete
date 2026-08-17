@@ -90,6 +90,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(len(catalog.artifacts), 66)
         self.assertEqual(len(catalog.benchmarks), 28)
         self.assertEqual(len(catalog.llama_presets), 17)
+        self.assertEqual(len(catalog.llama_sampling_policies), 3)
         self.assertFalse(
             [
                 artifact.identifier
@@ -414,10 +415,17 @@ class CatalogTests(unittest.TestCase):
         self.assertTrue(
             all(preset.chat_template == "qwen3.6" for preset in qwen_presets)
         )
-        self.assertEqual(assistant.sampling_profile, "qwen3.6-27b")
-        self.assertEqual(assistant_mtp.sampling_profile, "qwen3.6-27b")
-        self.assertEqual(qwen35.sampling_profile, "qwen3.6-35b-a3b")
-        self.assertEqual(qwen35_mtp.sampling_profile, "qwen3.6-35b-a3b")
+        self.assertEqual(assistant.sampling_policy, "qwen3.6-27b")
+        self.assertEqual(assistant_mtp.sampling_policy, "qwen3.6-27b")
+        self.assertEqual(qwen35.sampling_policy, "qwen3.6-35b-a3b")
+        self.assertEqual(qwen35_mtp.sampling_policy, "qwen3.6-35b-a3b")
+        dense_sampling = catalog.llama_sampling_policy("qwen3.6-27b")
+        sparse_sampling = catalog.llama_sampling_policy(
+            "qwen3.6-35b-a3b"
+        )
+        self.assertEqual(dense_sampling.thinking["presence_penalty"], 0.0)
+        self.assertEqual(sparse_sampling.thinking["presence_penalty"], 1.5)
+        self.assertEqual(dense_sampling.non_thinking["temperature"], 0.7)
         self.assertTrue(
             all(preset.reasoning_control == "toggle" for preset in qwen_presets)
         )
@@ -435,7 +443,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(qwen38.default_context, 262144)
         self.assertFalse(qwen38.jinja)
         self.assertEqual(qwen38.chat_template, "qwen3.8")
-        self.assertEqual(qwen38.sampling_profile, "qwen3.8-27b")
+        self.assertEqual(qwen38.sampling_policy, "qwen3.8-27b")
         self.assertTrue(qwen38.agent_tools)
         self.assertEqual(qwen38.reasoning_control, "effort")
         self.assertEqual(
@@ -469,7 +477,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(qwen38_q4.artifact, qwen38_q4_mtp.artifact)
         self.assertEqual(qwen38_q4.default_context, 65536)
         self.assertEqual(qwen38_q4.chat_template, "qwen3.8")
-        self.assertEqual(qwen38_q4.sampling_profile, "qwen3.8-27b")
+        self.assertEqual(qwen38_q4.sampling_policy, "qwen3.8-27b")
         self.assertTrue(qwen38_q4.agent_tools)
         self.assertEqual(qwen38_q4.reasoning_control, "effort")
         self.assertEqual(
@@ -954,24 +962,14 @@ class CatalogTests(unittest.TestCase):
             ):
                 load_catalog(path)
 
-    def test_llama_sampling_profile_fails_closed(self):
+    def test_llama_sampling_policy_fails_closed(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
         preset = raw["llama_presets"]["qwen3.6-27b-q8-0"]
-        preset["sampling_profile"] = "qwen3.8"
+        preset["sampling_policy"] = "missing-policy"
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
-                LauncherError, "sampling_profile must be"
-            ):
-                load_catalog(path)
-
-        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
-        preset = raw["llama_presets"]["qwen3.6-27b-q8-0"]
-        preset["chat_template"] = "qwen3.8"
-        with tempfile.TemporaryDirectory() as directory:
-            path = self._catalog_copy(directory, raw)
-            with self.assertRaisesRegex(
-                LauncherError, "Qwen3.6 sampling_profile requires"
+                LauncherError, "references unknown sampling policy"
             ):
                 load_catalog(path)
 
@@ -983,9 +981,48 @@ class CatalogTests(unittest.TestCase):
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
                 LauncherError,
-                "sampling_profile requires reasoning_control",
+                "sampling_policy requires reasoning_control",
             ):
                 load_catalog(path)
+
+    def test_llama_sampling_policy_values_fail_closed(self):
+        cases = (
+            (
+                lambda policy: policy.__setitem__("unexpected", {}),
+                "unsupported fields: unexpected",
+            ),
+            (
+                lambda policy: policy.__setitem__("thinking", []),
+                "thinking must be a non-empty object",
+            ),
+            (
+                lambda policy: policy["thinking"].__setitem__("mirostat", 1),
+                "unsupported fields: mirostat",
+            ),
+            (
+                lambda policy: policy["thinking"].__setitem__("top_p", 2.0),
+                "invalid top_p",
+            ),
+            (
+                lambda policy: policy["thinking"].__setitem__("top_k", True),
+                "invalid top_k",
+            ),
+            (
+                lambda policy: policy["thinking"].__setitem__(
+                    "temperature", float("nan")
+                ),
+                "invalid temperature",
+            ),
+        )
+        for mutate, message in cases:
+            with self.subTest(message=message):
+                raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+                policy = raw["llama_sampling_policies"]["qwen3.8-27b"]
+                mutate(policy)
+                with tempfile.TemporaryDirectory() as directory:
+                    path = self._catalog_copy(directory, raw)
+                    with self.assertRaisesRegex(LauncherError, message):
+                        load_catalog(path)
 
     def test_llama_mtp_draft_must_belong_to_preset_bundle(self):
         raw = json.loads(DEFAULT_CATALOG_PATH.read_text())

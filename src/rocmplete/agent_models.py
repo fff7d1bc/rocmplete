@@ -16,33 +16,9 @@ DWARFSTAR_PROVIDER_ID = "dwarfstar"
 DWARFSTAR_MODEL = "deepseek-v4-flash-0731-q2-imatrix"
 RECOMMENDED_MODEL = "qwen3.8-27b-mtp-ud-q8-k-xl"
 # Values use llama.cpp's Chat Completions field names; notably, upstream
-# repetition_penalty maps to repeat_penalty here. Qwen3.6 and Qwen3.8 are
-# mode-dependent and are applied by the managed server; the remaining profiles
-# are emitted by clients that can carry reviewed per-model sampling.
-_QWEN_THINKING_NO_PRESENCE = {
-    "temperature": 1.0,
-    "top_p": 0.95,
-    "top_k": 20,
-    "min_p": 0.0,
-    "presence_penalty": 0.0,
-    "repeat_penalty": 1.0,
-}
-_QWEN36_35B_GENERAL_THINKING = {
-    "temperature": 1.0,
-    "top_p": 0.95,
-    "top_k": 20,
-    "min_p": 0.0,
-    "presence_penalty": 1.5,
-    "repeat_penalty": 1.0,
-}
-_QWEN_NON_THINKING = {
-    "temperature": 0.7,
-    "top_p": 0.8,
-    "top_k": 20,
-    "min_p": 0.0,
-    "presence_penalty": 1.5,
-    "repeat_penalty": 1.0,
-}
+# repetition_penalty maps to repeat_penalty here. Mode-dependent policies live
+# in the catalog and are applied by the managed server. This table retains only
+# caller-owned static policies for clients that can carry them directly.
 _MUSE_GLIMMER_CODING = {
     "temperature": 1.0,
     "top_p": 0.95,
@@ -60,14 +36,6 @@ _AGENT_SAMPLING_PARAMETERS = {
         "presence_penalty": 1.5,
         "repeat_penalty": 1.0,
     },
-    "qwen3.6-27b-q8-0": _QWEN_THINKING_NO_PRESENCE,
-    "qwen3.6-27b-mtp-q8-0": _QWEN_THINKING_NO_PRESENCE,
-    "qwen3.6-35b-a3b-ud-q8-k-xl": _QWEN36_35B_GENERAL_THINKING,
-    "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": _QWEN36_35B_GENERAL_THINKING,
-    "qwen3.8-27b-ud-q8-k-xl": _QWEN_THINKING_NO_PRESENCE,
-    "qwen3.8-27b-mtp-ud-q8-k-xl": _QWEN_THINKING_NO_PRESENCE,
-    "qwen3.8-27b-ud-q4-k-xl": _QWEN_THINKING_NO_PRESENCE,
-    "qwen3.8-27b-mtp-ud-q4-k-xl": _QWEN_THINKING_NO_PRESENCE,
     "gemma4-31b-it-q8-0-mtp": {
         "temperature": 1.0,
         "top_p": 0.95,
@@ -82,18 +50,6 @@ _AGENT_SAMPLING_PARAMETERS = {
         _MUSE_GLIMMER_CODING
     ),
 }
-_SERVER_MANAGED_SAMPLING_MODELS = frozenset(
-    (
-        "qwen3.6-27b-q8-0",
-        "qwen3.6-27b-mtp-q8-0",
-        "qwen3.6-35b-a3b-ud-q8-k-xl",
-        "qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
-        "qwen3.8-27b-ud-q8-k-xl",
-        "qwen3.8-27b-mtp-ud-q8-k-xl",
-        "qwen3.8-27b-ud-q4-k-xl",
-        "qwen3.8-27b-mtp-ud-q4-k-xl",
-    )
-)
 
 
 def agent_output_limit(context: int) -> int:
@@ -114,10 +70,17 @@ def is_agent_capable(preset: LlamaPreset) -> bool:
 
 
 def agent_sampling_parameters(
-    identifier: str, thinking: str = ""
+    catalog: Catalog, identifier: str, thinking: str = ""
 ) -> Mapping[str, object]:
     """Return the effective reviewed sampling policy for an evaluation."""
 
+    preset = catalog.llama_preset(identifier)
+    if preset.sampling_policy:
+        policy = catalog.llama_sampling_policy(preset.sampling_policy)
+        parameters = (
+            policy.non_thinking if thinking == "off" else policy.thinking
+        )
+        return dict(parameters)
     try:
         parameters = _AGENT_SAMPLING_PARAMETERS[identifier]
     except KeyError as error:
@@ -126,23 +89,21 @@ def agent_sampling_parameters(
                 identifier
             )
         ) from error
-    if identifier in _SERVER_MANAGED_SAMPLING_MODELS and thinking == "off":
-        parameters = _QWEN_NON_THINKING
     return dict(parameters)
 
 
 def agent_client_sampling_parameters(
-    identifier: str,
+    catalog: Catalog, identifier: str,
 ) -> Mapping[str, object]:
     """Return static fields a managed harness should attach to requests."""
 
-    parameters = agent_sampling_parameters(identifier)
-    if identifier in _SERVER_MANAGED_SAMPLING_MODELS:
-        # The server selects Qwen's thinking or non-thinking profile after
+    preset = catalog.llama_preset(identifier)
+    if preset.sampling_policy:
+        # The server selects the thinking or non-thinking policy after
         # resolving each request's reasoning control. Static client fields
-        # would mask those defaults and make off mode use the wrong policy.
+        # would mask those defaults and make off mode use the wrong values.
         return {}
-    return parameters
+    return agent_sampling_parameters(catalog, identifier)
 
 
 def reasoning_client_levels(preset: LlamaPreset) -> Tuple[str, ...]:

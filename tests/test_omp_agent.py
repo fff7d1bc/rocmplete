@@ -128,7 +128,9 @@ class OmpLauncherTests(unittest.TestCase):
         self.assertEqual(muse["compat"]["thinkingFormat"], "openai")
         self.assertTrue(muse["compat"]["supportsReasoningEffort"])
         for identifier, model in models.items():
-            expected_sampling = agent_client_sampling_parameters(identifier)
+            expected_sampling = agent_client_sampling_parameters(
+                self.catalog, identifier
+            )
             if expected_sampling:
                 self.assertEqual(
                     model["compat"]["extraBody"], expected_sampling

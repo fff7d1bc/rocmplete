@@ -126,7 +126,7 @@ def render_config(
             "maxTokens": agent_output_limit(preset.default_context),
             "cost": _COST,
         }
-        sampling = agent_client_sampling_parameters(identifier)
+        sampling = agent_client_sampling_parameters(catalog, identifier)
         if sampling:
             model["samplingParams"] = sampling
         if preset.reasoning_control:
