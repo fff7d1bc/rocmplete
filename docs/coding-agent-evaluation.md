@@ -30,11 +30,11 @@ source tree. A curated result summary may be added to an appropriate research
 or hardware-acceptance record when it states the exact suite fingerprint,
 model artifact, runtime, harness, context, repetitions, and hardware.
 Result schema v2 records the reasoning control, client-facing selection, and
-native model value instead of the synthetic token budget used by v1.
-The [quality-oriented model grouping](coding-agent-model-quality.md) interprets
-the current evidence. Exact same-host measurements and the full-suite
-reference are recorded in the
-[Fedora 44 Strix Halo coding-agent comparison](hardware-acceptance.md#coding-agent-comparison-2026-08-11).
+native model value instead of the synthetic token budget used by v1. There is
+no current comparative quality baseline: the earlier result set was retired
+on 2026-08-17 after model templates, reasoning defaults, sampling ownership,
+and harness integrations changed. New comparisons must start from fresh
+results under the current policy.
 
 ## Frozen version 5 task set
 
@@ -142,13 +142,15 @@ because replacing those would test a synthetic configuration. Start with one
 attempt per task, then run three fresh repetitions for finalists. Do not tune
 the prompt or hidden grader after seeing a new model's answer.
 
-Qwen3.8's reviewed sampling policy follows the selected mode. Pi omits static
-sampling for this family: the managed server supplies the official thinking
-tuple for low, medium, and xhigh or the official non-thinking tuple for off,
-while the evaluation result records the effective values. Off remains an
-explicitly labelled within-family condition rather than a semantically matched
-cross-model level. Maki remains outside the fixed comparison because it is a
-different harness, even though it now receives the same server-side Qwen3.8
+Qwen3.6 and Qwen3.8 sampling follows the selected mode. Pi omits static
+sampling for both families: the managed server supplies Qwen3.6's dense or
+sparse thinking tuple, Qwen3.8's thinking tuple for low, medium, and xhigh, or
+the shared non-thinking tuple for off. The evaluation result records the
+effective values. Qwen3.6's temperature-0.6 precise-coding recommendation is
+an explicit experimental override, not the managed default. Off remains an
+explicitly labelled within-family condition rather than a semantically
+matched cross-model level. Maki remains outside the fixed comparison because
+it is a different harness, even though it receives the same server-side Qwen
 sampling defaults.
 
 Use a 45-minute wall-clock ceiling for each future model-evaluation attempt.

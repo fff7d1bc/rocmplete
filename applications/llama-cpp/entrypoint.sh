@@ -17,6 +17,7 @@ context_override="${ROCMLETE_LLAMA_CONTEXT_OVERRIDE:-}"
 jinja="${ROCMLETE_LLAMA_JINJA:-0}"
 reasoning_preserve="${ROCMLETE_LLAMA_REASONING_PRESERVE:-0}"
 chat_template="${ROCMLETE_LLAMA_CHAT_TEMPLATE:-}"
+sampling_profile="${ROCMLETE_LLAMA_SAMPLING_PROFILE:-}"
 flash_attn_rdna4="${ROCMLETE_LLAMA_FLASH_ATTN_RDNA4:-}"
 flash_attn_strix_halo="${ROCMLETE_LLAMA_FLASH_ATTN_STRIX_HALO:-}"
 flash_attn_strix_point="${ROCMLETE_LLAMA_FLASH_ATTN_STRIX_POINT:-}"
@@ -57,6 +58,19 @@ case "$chat_template" in
     ""|kat-coder-v2.5|muse-glimmer-atem|qwen3-0.6b|qwen3.6|qwen3.8|translategemma-manual) ;;
     *) die "unknown managed llama.cpp chat template '$chat_template'" ;;
 esac
+case "$sampling_profile" in
+    ""|qwen3.6-27b|qwen3.6-35b-a3b|qwen3.8-27b) ;;
+    *) die "unknown managed llama.cpp sampling profile '$sampling_profile'" ;;
+esac
+if [[ -n "$sampling_profile" && -z "$chat_template" ]]; then
+    die "a managed llama.cpp sampling profile requires a chat template"
+fi
+if [[ "$sampling_profile" == qwen3.6-* && "$chat_template" != qwen3.6 ]]; then
+    die "a Qwen3.6 sampling profile requires the qwen3.6 chat template"
+fi
+if [[ "$sampling_profile" == qwen3.8-27b && "$chat_template" != qwen3.8 ]]; then
+    die "the Qwen3.8 sampling profile requires the qwen3.8 chat template"
+fi
 case "$speculative_type" in
     ""|draft-mtp|draft-dflash) ;;
     *) die "unknown llama.cpp speculative type '$speculative_type'" ;;
@@ -146,10 +160,10 @@ if [[ "$router" == 0 && -n "$chat_template" ]]; then
     [[ -f "$chat_template_path" && -r "$chat_template_path" ]] ||
         die "managed llama.cpp chat template is not a readable regular file: $chat_template_path"
     model_policy_args+=(--jinja --chat-template-file "$chat_template_path")
-    if [[ "$chat_template" == qwen3.8 ]]; then
+    if [[ -n "$sampling_profile" ]]; then
         model_policy_args+=(
             --chat-template-kwargs
-            '{"rocmplete_sampling_profile":"qwen3.8"}'
+            "{\"rocmplete_sampling_profile\":\"${sampling_profile}\"}"
         )
     fi
 fi

@@ -2496,6 +2496,7 @@
       "artifact": "qwen3.6-27b-q8-0-gguf",
       "default_context": 262144,
       "chat_template": "qwen3.6",
+      "sampling_profile": "qwen3.6-27b",
       "agent_tools": true,
       "reasoning_control": "toggle",
       "reasoning_default": "on",
@@ -2508,6 +2509,7 @@
       "speculative_type": "draft-mtp",
       "draft_tokens": 3,
       "chat_template": "qwen3.6",
+      "sampling_profile": "qwen3.6-27b",
       "agent_tools": true,
       "reasoning_control": "toggle",
       "reasoning_default": "on",
@@ -2524,6 +2526,7 @@
       "artifact": "qwen3.6-35b-a3b-ud-q8-k-xl-gguf",
       "default_context": 262144,
       "chat_template": "qwen3.6",
+      "sampling_profile": "qwen3.6-35b-a3b",
       "agent_tools": true,
       "reasoning_control": "toggle",
       "reasoning_default": "on",
@@ -2536,6 +2539,7 @@
       "speculative_type": "draft-mtp",
       "draft_tokens": 3,
       "chat_template": "qwen3.6",
+      "sampling_profile": "qwen3.6-35b-a3b",
       "agent_tools": true,
       "reasoning_control": "toggle",
       "reasoning_default": "on",
@@ -2546,6 +2550,7 @@
       "artifact": "qwen3.8-27b-ud-q8-k-xl-gguf",
       "default_context": 262144,
       "chat_template": "qwen3.8",
+      "sampling_profile": "qwen3.8-27b",
       "agent_tools": true,
       "reasoning_control": "effort",
       "reasoning_levels": [
@@ -2564,6 +2569,7 @@
       "speculative_type": "draft-mtp",
       "draft_tokens": 3,
       "chat_template": "qwen3.8",
+      "sampling_profile": "qwen3.8-27b",
       "agent_tools": true,
       "reasoning_control": "effort",
       "reasoning_levels": [
@@ -2580,6 +2586,7 @@
       "artifact": "qwen3.8-27b-ud-q4-k-xl-gguf",
       "default_context": 65536,
       "chat_template": "qwen3.8",
+      "sampling_profile": "qwen3.8-27b",
       "agent_tools": true,
       "reasoning_control": "effort",
       "reasoning_levels": [
@@ -2598,6 +2605,7 @@
       "speculative_type": "draft-mtp",
       "draft_tokens": 3,
       "chat_template": "qwen3.8",
+      "sampling_profile": "qwen3.8-27b",
       "agent_tools": true,
       "reasoning_control": "effort",
       "reasoning_levels": [

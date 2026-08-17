@@ -138,6 +138,7 @@ class LlamaPreset:
     reasoning_off: bool = False
     reasoning_preserve: bool = False
     chat_template: str = ""
+    sampling_profile: str = ""
     flash_attention: Mapping[str, str] = field(default_factory=dict)
     kv_cache: Mapping[str, str] = field(default_factory=dict)
 
@@ -770,6 +771,7 @@ def _load_llama_preset(
         "reasoning_off",
         "reasoning_preserve",
         "chat_template",
+        "sampling_profile",
         "flash_attention",
         "kv_cache",
     }
@@ -937,6 +939,37 @@ def _load_llama_preset(
             "llama.cpp preset {} custom chat_template already enables "
             "Jinja".format(identifier)
         )
+    sampling_profile = data.get("sampling_profile", "")
+    if not isinstance(sampling_profile, str) or sampling_profile not in (
+        "",
+        "qwen3.6-27b",
+        "qwen3.6-35b-a3b",
+        "qwen3.8-27b",
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} sampling_profile must be empty, "
+            "qwen3.6-27b, qwen3.6-35b-a3b, or qwen3.8-27b".format(
+                identifier
+            )
+        )
+    if sampling_profile and not chat_template:
+        raise LauncherError(
+            "llama.cpp preset {} sampling_profile requires a managed "
+            "chat_template".format(identifier)
+        )
+    if (
+        sampling_profile.startswith("qwen3.6-")
+        and chat_template != "qwen3.6"
+    ):
+        raise LauncherError(
+            "llama.cpp preset {} Qwen3.6 sampling_profile requires the "
+            "qwen3.6 chat_template".format(identifier)
+        )
+    if sampling_profile == "qwen3.8-27b" and chat_template != "qwen3.8":
+        raise LauncherError(
+            "llama.cpp preset {} Qwen3.8 sampling_profile requires the "
+            "qwen3.8 chat_template".format(identifier)
+        )
     agent_tools = data.get("agent_tools", False)
     if not isinstance(agent_tools, bool):
         raise LauncherError(
@@ -961,6 +994,11 @@ def _load_llama_preset(
         raise LauncherError(
             "llama.cpp preset {} reasoning_control must be empty, toggle, "
             "effort, or strength".format(identifier)
+        )
+    if sampling_profile and not reasoning_control:
+        raise LauncherError(
+            "llama.cpp preset {} sampling_profile requires "
+            "reasoning_control".format(identifier)
         )
     if reasoning_control and not agent_tools:
         raise LauncherError(
@@ -1152,6 +1190,7 @@ def _load_llama_preset(
         reasoning_off=reasoning_off,
         reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
+        sampling_profile=sampling_profile,
         flash_attention=flash_attention,
         kv_cache=kv_cache,
     )

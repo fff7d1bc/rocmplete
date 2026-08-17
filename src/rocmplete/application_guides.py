@@ -220,15 +220,16 @@ def _llama_guide() -> ApplicationGuide:
                     "Presets do not store a general system prompt, GPU "
                     "backend, or hardware profile. Put task instructions "
                     "and ordinary sampling overrides in the client that "
-                    "owns the conversation. Qwen3.8 server presets are the "
-                    "exception: they select its official thinking or "
-                    "non-thinking sampler after resolving each request's "
-                    "reasoning mode.",
+                    "owns the conversation. Qwen3.6 and Qwen3.8 server "
+                    "presets are the exception: they select official "
+                    "family- and mode-specific sampling after resolving "
+                    "each request's reasoning control.",
                     "ROCmplete's managed OpenCode, Pi, and OMP configurations "
                     "apply reviewed per-model sampling where the server "
-                    "cannot. Qwen3.8 sampling is intentionally omitted from "
-                    "those clients so direct API requests and Maki receive "
-                    "the same mode-aware server defaults.",
+                    "cannot. Qwen3.6 and Qwen3.8 sampling tuples are "
+                    "intentionally omitted from those clients so direct "
+                    "API requests and Maki receive the same mode-aware "
+                    "server defaults.",
                     "The qwen3.6 recipe installs dense 27B MTP Q8_0 and "
                     "sparse 35B-A3B MTP Dynamic Q8_K_XL together. Its "
                     "printed next step still starts dense 27B, and both "

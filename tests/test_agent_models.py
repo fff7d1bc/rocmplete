@@ -28,9 +28,9 @@ class AgentModelPolicyTests(unittest.TestCase):
                 1.5,
                 1.0,
             ),
-            "qwen3.6-27b-q8-0": (0.6, 0.95, 20, 0.0, 0.0, 1.0),
+            "qwen3.6-27b-q8-0": (1.0, 0.95, 20, 0.0, 0.0, 1.0),
             "qwen3.6-27b-mtp-q8-0": (
-                0.6,
+                1.0,
                 0.95,
                 20,
                 0.0,
@@ -38,19 +38,19 @@ class AgentModelPolicyTests(unittest.TestCase):
                 1.0,
             ),
             "qwen3.6-35b-a3b-ud-q8-k-xl": (
-                0.6,
+                1.0,
                 0.95,
                 20,
                 0.0,
-                0.0,
+                1.5,
                 1.0,
             ),
             "qwen3.6-35b-a3b-mtp-ud-q8-k-xl": (
-                0.6,
+                1.0,
                 0.95,
                 20,
                 0.0,
-                0.0,
+                1.5,
                 1.0,
             ),
             "qwen3.8-27b-ud-q8-k-xl": (
@@ -137,7 +137,7 @@ class AgentModelPolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(LauncherError, "no reviewed sampling policy"):
             agent_sampling_parameters("unreviewed-agent")
 
-    def test_qwen38_sampling_is_server_managed_and_mode_dependent(self):
+    def test_qwen_sampling_is_server_managed_and_mode_dependent(self):
         identifier = "qwen3.8-27b-mtp-ud-q8-k-xl"
         self.assertEqual(agent_client_sampling_parameters(identifier), {})
         self.assertEqual(
@@ -162,9 +162,35 @@ class AgentModelPolicyTests(unittest.TestCase):
                 "repeat_penalty": 1.0,
             },
         )
+        dense = "qwen3.6-27b-mtp-q8-0"
+        sparse = "qwen3.6-35b-a3b-mtp-ud-q8-k-xl"
+        self.assertEqual(agent_client_sampling_parameters(dense), {})
+        self.assertEqual(agent_client_sampling_parameters(sparse), {})
         self.assertEqual(
-            agent_client_sampling_parameters("qwen3.6-27b-mtp-q8-0"),
-            agent_sampling_parameters("qwen3.6-27b-mtp-q8-0"),
+            agent_sampling_parameters(dense, "high"),
+            {
+                "temperature": 1.0,
+                "top_p": 0.95,
+                "top_k": 20,
+                "min_p": 0.0,
+                "presence_penalty": 0.0,
+                "repeat_penalty": 1.0,
+            },
+        )
+        self.assertEqual(
+            agent_sampling_parameters(sparse, "high"),
+            {
+                "temperature": 1.0,
+                "top_p": 0.95,
+                "top_k": 20,
+                "min_p": 0.0,
+                "presence_penalty": 1.5,
+                "repeat_penalty": 1.0,
+            },
+        )
+        self.assertEqual(
+            agent_sampling_parameters(dense, "off"),
+            agent_sampling_parameters(sparse, "off"),
         )
 
     def test_reasoning_controls_are_model_native(self):

@@ -1,8 +1,8 @@
 diff --git a/tools/server/server-common.cpp b/tools/server/server-common.cpp
-index 7ed486528..c33bec27c 100644
+index 7ed4865..9108bb9 100644
 --- a/tools/server/server-common.cpp
 +++ b/tools/server/server-common.cpp
-@@ -16,6 +16,49 @@
+@@ -16,6 +16,54 @@
  #include <cstring>
  #include <type_traits>
  
@@ -26,13 +26,14 @@ index 7ed486528..c33bec27c 100644
 +    return "";
 +}
 +
-+// Qwen3.8 was trained with distinct sampling policies for thinking and
-+// non-thinking requests. Apply those policies as server defaults so every
-+// OpenAI-compatible client gets the same mode-correct behavior without
-+// duplicating the tuple in its own configuration.
-+static void rocmplete_apply_qwen38_sampling_defaults(
++// Qwen3.6 and Qwen3.8 were trained with distinct sampling policies for
++// thinking and non-thinking requests. Apply the selected model family's
++// policy as server defaults so every OpenAI-compatible client gets the same
++// mode-correct behavior without duplicating the tuple in its configuration.
++static void rocmplete_apply_qwen_sampling_defaults(
 +        json & llama_params,
 +        const json & body,
++        const std::string & profile,
 +        bool enable_thinking) {
 +    const auto set_default = [&llama_params, &body](const char * name, const json & value) {
 +        const auto it = body.find(name);
@@ -41,26 +42,37 @@ index 7ed486528..c33bec27c 100644
 +        }
 +    };
 +
-+    set_default("temperature",      enable_thinking ? 1.0  : 0.7);
-+    set_default("top_p",            enable_thinking ? 0.95 : 0.8);
++    const bool non_thinking = !enable_thinking;
++    const bool sparse_qwen36 = profile == "qwen3.6-35b-a3b";
++
++    set_default("temperature",      non_thinking ? 0.7 : 1.0);
++    set_default("top_p",            non_thinking ? 0.8 : 0.95);
 +    set_default("top_k",            20);
 +    set_default("min_p",            0.0);
-+    set_default("presence_penalty", enable_thinking ? 0.0  : 1.5);
++    set_default(
++        "presence_penalty", non_thinking || sparse_qwen36 ? 1.5 : 0.0);
 +    set_default("repeat_penalty",   1.0);
 +}
 +
  json format_error_response(const std::string & message, const enum error_type type) {
      std::string type_str;
      int code = 500;
-@@ -1278,9 +1321,17 @@ json oaicompat_chat_params_parse(
+@@ -1278,9 +1326,24 @@ json oaicompat_chat_params_parse(
      // merge the template args provided from command line with the args provided in the user request
      auto chat_template_kwargs_object = json_value(body, "chat_template_kwargs", json::object());
      inputs.chat_template_kwargs = opt.chat_template_kwargs;
-+    const auto rocmplete_sampling_profile = opt.chat_template_kwargs.find(
++    const auto rocmplete_sampling_marker = opt.chat_template_kwargs.find(
 +        "rocmplete_sampling_profile");
-+    const bool rocmplete_qwen38_sampling =
-+        rocmplete_sampling_profile != opt.chat_template_kwargs.end() &&
-+        rocmplete_sampling_profile->second == json("qwen3.8").dump();
++    std::string rocmplete_sampling_profile;
++    if (rocmplete_sampling_marker != opt.chat_template_kwargs.end()) {
++        for (const char * profile : {
++                "qwen3.6-27b", "qwen3.6-35b-a3b", "qwen3.8-27b"}) {
++            if (rocmplete_sampling_marker->second == json(profile).dump()) {
++                rocmplete_sampling_profile = profile;
++                break;
++            }
++        }
++    }
      for (const auto & item : chat_template_kwargs_object.items()) {
          inputs.chat_template_kwargs[item.key()] = item.value().dump();
      }
@@ -70,7 +82,7 @@ index 7ed486528..c33bec27c 100644
  
      // parse the "enable_thinking" kwarg to override the default value
      auto enable_thinking_kwarg = json_value(inputs.chat_template_kwargs, "enable_thinking", std::string(""));
-@@ -1303,6 +1354,35 @@ json oaicompat_chat_params_parse(
+@@ -1303,6 +1366,35 @@ json oaicompat_chat_params_parse(
          }
      }
  
@@ -106,13 +118,14 @@ index 7ed486528..c33bec27c 100644
      inputs.force_pure_content = opt.force_pure_content;
  
      // Apply chat template to the list of messages
-@@ -1370,6 +1450,11 @@ json oaicompat_chat_params_parse(
+@@ -1370,6 +1462,12 @@ json oaicompat_chat_params_parse(
          }
      }
  
-+    if (rocmplete_qwen38_sampling) {
-+        rocmplete_apply_qwen38_sampling_defaults(
-+            llama_params, body, inputs.enable_thinking);
++    if (!rocmplete_sampling_profile.empty()) {
++        rocmplete_apply_qwen_sampling_defaults(
++            llama_params, body, rocmplete_sampling_profile,
++            inputs.enable_thinking);
 +    }
 +
      return llama_params;

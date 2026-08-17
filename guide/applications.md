@@ -345,11 +345,11 @@ preset:
 
 ROCmplete presets do not store a general system prompt or persona. Ordinary
 task sampling belongs in the caller because it can change without changing the
-model's safe runtime setup. Qwen3.8 is a deliberate model-policy exception:
-its server preset selects the official thinking or non-thinking defaults after
-resolving each Chat Completions request. Send a `system` message and any
-sampling overrides in the OpenAI-compatible request, and send the complete
-message history when the conversation should continue:
+model's safe runtime setup. Qwen3.6 and Qwen3.8 are deliberate model-policy
+exceptions: their server presets select official model- and mode-specific
+defaults after resolving each Chat Completions request. Send a `system`
+message and any sampling overrides in the OpenAI-compatible request, and send
+the complete message history when the conversation should continue:
 
 ```json
 {
@@ -481,17 +481,21 @@ available when the provider would otherwise be ambiguous. OMP accepts
 `--model rocmplete-llama-cpp/PRESET`. Maki accepts `-m rocmplete/PRESET` and
 exposes the same entries through `/model`.
 
-OpenCode, Pi, and OMP use these llama.cpp request defaults for coding turns:
+Managed Qwen servers and the remaining generated clients use these llama.cpp
+request defaults:
 
 | Model family / condition | Temperature | Top-p | Top-k | Min-p | Presence penalty | Repeat penalty |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Qwen3.6 27B and 35B-A3B | 0.6 | 0.95 | 20 | 0 | 0 | 1 |
+| Qwen3.6 27B, thinking | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
+| Qwen3.6 35B-A3B, thinking | 1.0 | 0.95 | 20 | 0 | 1.5 | 1 |
+| Qwen3.6, off | 0.7 | 0.8 | 20 | 0 | 1.5 | 1 |
 | Qwen3.8 27B, thinking | 1.0 | 0.95 | 20 | 0 | 0 | 1 |
+| Qwen3.8 27B, off | 0.7 | 0.8 | 20 | 0 | 1.5 | 1 |
 | KAT-Coder V2.5 Dev | 1.0 | 0.95 | 20 | 0 | 1.5 | 1 |
 | Gemma 4 31B IT | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 | Muse Glimmer 30B | 1.0 | 0.95 | 64 | 0 | 0 | 1 |
 
-The sources are Qwen's precise-coding recommendation for
+The sources are Qwen's general-thinking and non-thinking recommendations for
 [Qwen3.6 27B](https://huggingface.co/Qwen/Qwen3.6-27B/blob/6a9e13bd6fc8f0983b9b99948120bc37f49c13e9/README.md)
 and
 [Qwen3.6 35B-A3B](https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/995ad96eacd98c81ed38be0c5b274b04031597b0/README.md),
@@ -513,14 +517,16 @@ configuration, and raw API fields can override them. OMP receives static
 policies as per-model `extraBody`, after its global sampling settings.
 OpenCode's managed Investigate agents still force temperature zero.
 
-Qwen3.8 is mode-dependent rather than static. OpenCode, Pi, and OMP omit its
-sampling tuple; the managed llama.cpp server supplies the official thinking
-policy for low, medium, and xhigh, or the official non-thinking policy for
-off. Maki cannot express per-model sampling fields, but now receives the same
-Qwen3.8 defaults because its numeric thinking selector is normalized before
-the server selects the profile. Explicit sampling remains higher precedence.
-This makes Qwen3.8 off a valid recorded within-family condition rather than an
-accidental mixture of a non-thinking prompt and thinking-mode sampling.
+Qwen3.6 and Qwen3.8 are mode-dependent rather than static. OpenCode, Pi, and
+OMP omit their sampling tuples; the managed llama.cpp server supplies the
+official family policy after resolving thinking. Dense Qwen3.6 and Qwen3.8
+thinking use zero presence penalty, sparse Qwen3.6 thinking uses 1.5, and all
+three use the shared non-thinking tuple when off. Qwen3.6's separate
+temperature-0.6 precise-coding recommendation remains an explicit task
+override rather than a default inferred from the client name. Maki cannot
+express per-model sampling fields, but receives the same defaults because its
+numeric thinking selector is normalized before the server selects the
+profile. Explicit sampling remains higher precedence field by field.
 
 `bin/opencode` delegates to `./rocmplete agent opencode`, injects the
 generated main configuration directly into the child process, and points it

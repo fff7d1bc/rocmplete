@@ -84,6 +84,31 @@ class AgentEvaluationTests(unittest.TestCase):
                 "native_value": "on",
             },
         )
+        self.assertEqual(
+            identity["sampling"],
+            {
+                "temperature": 1.0,
+                "top_p": 0.95,
+                "top_k": 20,
+                "min_p": 0.0,
+                "presence_penalty": 0.0,
+                "repeat_penalty": 1.0,
+            },
+        )
+
+        qwen36_off = _model_identity(
+            load_catalog(),
+            AgentEvaluationOptions(
+                data_dir=Path("/unused"),
+                preset="qwen3.6-35b-a3b-mtp-ud-q8-k-xl",
+                thinking="off",
+            ),
+        )
+        self.assertEqual(qwen36_off["sampling"]["temperature"], 0.7)
+        self.assertEqual(qwen36_off["sampling"]["top_p"], 0.8)
+        self.assertEqual(
+            qwen36_off["sampling"]["presence_penalty"], 1.5
+        )
 
         qwen38_off = _model_identity(
             load_catalog(),

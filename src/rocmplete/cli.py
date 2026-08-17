@@ -5834,6 +5834,7 @@ def _command_llama_speculative_benchmark(
                 jinja=preset.jinja,
                 reasoning_preserve=preset.reasoning_preserve,
                 chat_template=preset.chat_template,
+                sampling_profile=preset.sampling_profile,
                 profile_flash_attention=profile_flash_attention,
                 profile_kv_cache=profile_kv_cache,
                 render_nodes=render_nodes,
@@ -6236,13 +6237,15 @@ def _render_llama_router_preset(
                     "{}.jinja".format(preset.chat_template),
                 ]
             )
-            if preset.chat_template == "qwen3.8":
+            if preset.sampling_profile:
                 # The patched server consumes and removes this namespaced
-                # marker before applying Jinja. It selects official sampling
-                # defaults from the request's resolved thinking mode.
+                # marker before applying Jinja. It selects model-specific
+                # sampling defaults from the resolved thinking mode.
                 section.append(
                     "chat-template-kwargs = "
-                    '{"rocmplete_sampling_profile":"qwen3.8"}'
+                    '{{"rocmplete_sampling_profile":"{}"}}'.format(
+                        preset.sampling_profile
+                    )
                 )
         # Auto profile resolution happens inside the container. These private
         # keys are replaced in the entrypoint's tmpfs copy before llama.cpp
@@ -6368,6 +6371,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
     jinja = False
     reasoning_preserve = False
     chat_template = ""
+    sampling_profile = ""
     profile_flash_attention = {}
     profile_kv_cache = {}
     display_model = str(model) if model is not None else ""
@@ -6392,6 +6396,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         jinja = preset.jinja
         reasoning_preserve = preset.reasoning_preserve
         chat_template = preset.chat_template
+        sampling_profile = preset.sampling_profile
         profile_flash_attention = preset.flash_attention
         profile_kv_cache = preset.kv_cache
         if context is None:
@@ -6450,6 +6455,7 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
         jinja=jinja,
         reasoning_preserve=reasoning_preserve,
         chat_template=chat_template,
+        sampling_profile=sampling_profile,
         profile_flash_attention=profile_flash_attention,
         profile_kv_cache=profile_kv_cache,
         router_preset=router_preset,

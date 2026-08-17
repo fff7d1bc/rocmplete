@@ -303,6 +303,16 @@ compare Qwen's current base-model template independently, then render later
 developer messages and a complete multi-turn tool exchange before updating or
 removing the managed adaptation.
 
+The four Qwen3.6 presets also declare catalog-owned sampling profiles. Dense
+27B thinking defaults to temperature 1.0, top-p 0.95, top-k 20, min-p 0,
+presence penalty 0, and repeat penalty 1. Sparse 35B-A3B uses the same tuple
+with presence penalty 1.5. Thinking off for either family defaults to
+temperature 0.7, top-p 0.8, top-k 20, min-p 0, presence penalty 1.5, and
+repeat penalty 1. Qwen's separate temperature-0.6 precise-coding tuple is not
+the general server default. Recheck both model cards, both reasoning modes,
+and explicit-request precedence whenever the template, catalog profiles, or
+server request parser changes.
+
 The bundled `qwen3.8.jinja` is an Apache-2.0 adaptation of Qwen's official
 template at base-model revision
 `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0`. The source template has SHA-256
@@ -315,7 +325,7 @@ managed default. Qwen3.8 supports native low, medium, and xhigh effort plus a
 separate off toggle; it does not support high. On an upgrade, compare both the
 base-model and selected GGUF templates, render all three levels plus off, and
 complete a multi-turn tool exchange before changing the override or default.
-The patched server also consumes the private `qwen3.8` sampling-profile marker:
+The patched server also consumes the private `qwen3.8-27b` sampling profile:
 thinking requests default to temperature 1.0, top-p 0.95, top-k 20, min-p 0,
 presence penalty 0, and repeat penalty 1; off defaults to temperature 0.7,
 top-p 0.8, top-k 20, min-p 0, presence penalty 1.5, and repeat penalty 1.

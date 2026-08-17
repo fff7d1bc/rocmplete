@@ -414,6 +414,10 @@ class CatalogTests(unittest.TestCase):
         self.assertTrue(
             all(preset.chat_template == "qwen3.6" for preset in qwen_presets)
         )
+        self.assertEqual(assistant.sampling_profile, "qwen3.6-27b")
+        self.assertEqual(assistant_mtp.sampling_profile, "qwen3.6-27b")
+        self.assertEqual(qwen35.sampling_profile, "qwen3.6-35b-a3b")
+        self.assertEqual(qwen35_mtp.sampling_profile, "qwen3.6-35b-a3b")
         self.assertTrue(
             all(preset.reasoning_control == "toggle" for preset in qwen_presets)
         )
@@ -431,6 +435,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(qwen38.default_context, 262144)
         self.assertFalse(qwen38.jinja)
         self.assertEqual(qwen38.chat_template, "qwen3.8")
+        self.assertEqual(qwen38.sampling_profile, "qwen3.8-27b")
         self.assertTrue(qwen38.agent_tools)
         self.assertEqual(qwen38.reasoning_control, "effort")
         self.assertEqual(
@@ -464,6 +469,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(qwen38_q4.artifact, qwen38_q4_mtp.artifact)
         self.assertEqual(qwen38_q4.default_context, 65536)
         self.assertEqual(qwen38_q4.chat_template, "qwen3.8")
+        self.assertEqual(qwen38_q4.sampling_profile, "qwen3.8-27b")
         self.assertTrue(qwen38_q4.agent_tools)
         self.assertEqual(qwen38_q4.reasoning_control, "effort")
         self.assertEqual(
@@ -945,6 +951,39 @@ class CatalogTests(unittest.TestCase):
             with self.assertRaisesRegex(
                 LauncherError,
                 "reasoning_preserve requires agent_tools",
+            ):
+                load_catalog(path)
+
+    def test_llama_sampling_profile_fails_closed(self):
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"]["qwen3.6-27b-q8-0"]
+        preset["sampling_profile"] = "qwen3.8"
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "sampling_profile must be"
+            ):
+                load_catalog(path)
+
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"]["qwen3.6-27b-q8-0"]
+        preset["chat_template"] = "qwen3.8"
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "Qwen3.6 sampling_profile requires"
+            ):
+                load_catalog(path)
+
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        preset = raw["llama_presets"]["qwen3.6-27b-q8-0"]
+        del preset["reasoning_control"]
+        del preset["reasoning_off"]
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError,
+                "sampling_profile requires reasoning_control",
             ):
                 load_catalog(path)
 

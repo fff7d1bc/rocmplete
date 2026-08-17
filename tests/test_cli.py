@@ -2663,6 +2663,10 @@ class CliTests(unittest.TestCase):
         self.assertIn("ROCMLETE_LLAMA_DRAFT_TOKENS=3", command)
         self.assertIn("ROCMLETE_LLAMA_JINJA=0", command)
         self.assertIn("ROCMLETE_LLAMA_CHAT_TEMPLATE=qwen3.6", command)
+        self.assertIn(
+            "ROCMLETE_LLAMA_SAMPLING_PROFILE=qwen3.6-35b-a3b",
+            command,
+        )
 
     def test_llama_router_dry_run_does_not_write_generated_preset(self):
         catalog = load_catalog()
@@ -2853,6 +2857,11 @@ class CliTests(unittest.TestCase):
         )
         self.assertIn("spec-type = draft-mtp", contents)
         self.assertIn("spec-draft-n-max = 3", contents)
+        self.assertIn(
+            'chat-template-kwargs = '
+            '{"rocmplete_sampling_profile":"qwen3.6-35b-a3b"}',
+            contents,
+        )
 
     def test_llama_router_renders_qwen27_strix_cache_policy(self):
         catalog = load_catalog()
@@ -2877,6 +2886,11 @@ class CliTests(unittest.TestCase):
             )
         self.assertEqual(installed, (identifier,))
         self.assertIn("spec-draft-n-max = 3", contents)
+        self.assertIn(
+            'chat-template-kwargs = '
+            '{"rocmplete_sampling_profile":"qwen3.6-27b"}',
+            contents,
+        )
         self.assertIn(
             "rocmplete-flash-attn-strix-halo = on", contents
         )
@@ -2916,7 +2930,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             contents.count(
                 'chat-template-kwargs = '
-                '{"rocmplete_sampling_profile":"qwen3.8"}'
+                '{"rocmplete_sampling_profile":"qwen3.8-27b"}'
             ),
             2,
         )
@@ -2959,7 +2973,7 @@ class CliTests(unittest.TestCase):
         self.assertEqual(
             contents.count(
                 'chat-template-kwargs = '
-                '{"rocmplete_sampling_profile":"qwen3.8"}'
+                '{"rocmplete_sampling_profile":"qwen3.8-27b"}'
             ),
             2,
         )

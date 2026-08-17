@@ -687,13 +687,15 @@ later `--provider`, `--model`, or `--thinking` remains authoritative.
 every maintained llama.cpp agent preset. OpenCode receives static values as
 per-model request options, Pi as `samplingParams`, and OMP as per-model
 `compat.extraBody`; explicit client request settings remain higher-precedence
-caller policy. Qwen3.8 is deliberately different because its official sampler
-depends on reasoning mode. Its presets pass a private profile marker to the
-patched server, which removes the marker before Jinja, resolves thinking, and
-fills only omitted sampling fields with either the thinking or non-thinking
-tuple. OpenCode, Pi, OMP, Maki, and direct Chat Completions therefore share one
-mode-aware policy without separate model processes or duplicated client
-configuration. Evaluation metadata still records the resolved tuple.
+caller policy. Qwen3.6 and Qwen3.8 are deliberately different because their
+official samplers depend on reasoning mode, and sparse Qwen3.6 has a distinct
+thinking profile. The catalog assigns an exact sampling profile to each
+preset. Direct startup and router rendering pass that private marker to the
+patched server, which removes it before Jinja, resolves thinking, and fills
+only omitted sampling fields. OpenCode, Pi, OMP, Maki, and direct Chat
+Completions therefore share one mode-aware policy without separate model
+processes or duplicated client configuration. Evaluation metadata still
+records the resolved tuple.
 
 Pi recognizes package and configuration commands only when the command is its
 first argument. The launcher classifies `install`, `remove`, `uninstall`,
@@ -756,9 +758,10 @@ request-body hook. The generated provider therefore does not publish fields
 Maki would ignore. The adapter sends numeric `thinking_budget_tokens`; the
 managed llama.cpp bridge recognizes Maki 0.4.8's standard values, derives the
 corresponding native label, and forwards it while retaining Maki's sampler
-ceiling. For Qwen3.8 that resolved mode also selects the server-side official
-sampler; other families retain their normal server defaults unless their
-client can carry a reviewed static policy. Maki still exposes generic choices
+ceiling. For Qwen3.6 and Qwen3.8 that resolved mode also selects the
+server-side official sampler; other families retain their normal server
+defaults unless their client can carry a reviewed static policy. Maki still
+exposes generic choices
 that some models do not support, so reasoning-sensitive quality comparisons
 use Pi and an explicit model-native condition.
 

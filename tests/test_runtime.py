@@ -217,7 +217,7 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn("thinking_budget == 0", reasoning_patch)
         self.assertIn("!inputs.enable_thinking", reasoning_patch)
         self.assertIn(
-            "rocmplete_apply_qwen38_sampling_defaults", reasoning_patch
+            "rocmplete_apply_qwen_sampling_defaults", reasoning_patch
         )
         self.assertIn(
             'inputs.chat_template_kwargs.erase('
@@ -225,13 +225,15 @@ class RuntimeCommandTests(unittest.TestCase):
             reasoning_patch,
         )
         self.assertIn(
-            'set_default("temperature",      enable_thinking ? 1.0  : 0.7)',
+            'set_default("temperature",      non_thinking ? 0.7 : 1.0)',
             reasoning_patch,
         )
         self.assertIn(
-            'set_default("presence_penalty", enable_thinking ? 0.0  : 1.5)',
+            'profile == "qwen3.6-35b-a3b"',
             reasoning_patch,
         )
+        self.assertIn('"qwen3.6-27b"', reasoning_patch)
+        self.assertIn('"qwen3.8-27b"', reasoning_patch)
         self.assertIn("it->is_null()", reasoning_patch)
         for budget, level in (
             (1638, "low"),
@@ -837,9 +839,11 @@ class RuntimeCommandTests(unittest.TestCase):
             entrypoint,
         )
         self.assertIn(
-            "'{\"rocmplete_sampling_profile\":\"qwen3.8\"}'",
+            "ROCMLETE_LLAMA_SAMPLING_PROFILE",
             entrypoint,
         )
+        self.assertIn("qwen3.6-27b|qwen3.6-35b-a3b|qwen3.8-27b", entrypoint)
+        self.assertIn('${sampling_profile}', entrypoint)
         self.assertIn(
             '""|kat-coder-v2.5|muse-glimmer-atem|qwen3-0.6b|qwen3.6|qwen3.8|'
             'translategemma-manual',
