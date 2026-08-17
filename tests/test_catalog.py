@@ -86,8 +86,8 @@ class CatalogTests(unittest.TestCase):
 
     def test_default_catalog_contains_all_application_bundles(self):
         catalog = load_catalog()
-        self.assertEqual(len(catalog.bundles), 48)
-        self.assertEqual(len(catalog.artifacts), 63)
+        self.assertEqual(len(catalog.bundles), 49)
+        self.assertEqual(len(catalog.artifacts), 64)
         self.assertEqual(len(catalog.benchmarks), 28)
         self.assertEqual(len(catalog.llama_presets), 15)
         self.assertFalse(
@@ -129,6 +129,24 @@ class CatalogTests(unittest.TestCase):
         )
         self.assertEqual(dwarfstar_artifact.license.spdx, "MIT")
         self.assertEqual(dwarfstar_artifact.license.status, "verified")
+        dspark = catalog.bundle(
+            "dwarfstar-deepseek-v4-flash-0731-q2-imatrix-dspark"
+        )
+        self.assertEqual(
+            dspark.artifacts,
+            (
+                "deepseek-v4-flash-0731-iq2xxs-gguf",
+                "deepseek-v4-flash-0731-dspark-support-gguf",
+            ),
+        )
+        support = catalog.artifact(dspark.artifacts[1])
+        self.assertEqual(support.size, 5989114272)
+        self.assertEqual(
+            support.sha256,
+            "7e319924541db3f7a163ed7e11d7532a70d48228ab59d36cb81e"
+            "1d4511885360",
+        )
+        self.assertEqual(support.license.spdx, "MIT")
         assistant = catalog.llama_preset("qwen3.6-27b-q8-0")
         assistant_artifact = catalog.artifact(assistant.artifact)
         self.assertEqual(
@@ -1141,7 +1159,20 @@ class CatalogTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = self._catalog_copy(directory, raw)
             with self.assertRaisesRegex(
-                LauncherError, "must reference one dwarfstar-models"
+                LauncherError, "must reference only dwarfstar-models"
+            ):
+                load_catalog(path)
+
+    def test_dwarfstar_bundle_rejects_more_than_one_support_artifact(self):
+        raw = json.loads(DEFAULT_CATALOG_PATH.read_text())
+        bundle = raw["bundles"][
+            "dwarfstar-deepseek-v4-flash-0731-q2-imatrix-dspark"
+        ]
+        bundle["artifacts"].append("qwen3-0.6b-q8-gguf")
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog_copy(directory, raw)
+            with self.assertRaisesRegex(
+                LauncherError, "at most one support artifact"
             ):
                 load_catalog(path)
 

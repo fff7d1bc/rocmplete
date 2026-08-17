@@ -1219,6 +1219,23 @@
         "status": "verified",
         "url": "https://huggingface.co/antirez/deepseek-v4-gguf/tree/1cd7b564460821938add0475a60b942c409295e0"
       }
+    },
+    "deepseek-v4-flash-0731-dspark-support-gguf": {
+      "description": "DeepSeek V4 Flash 0731 DSpark speculative-decoding support GGUF",
+      "source": {
+        "repository": "antirez/deepseek-v4-gguf",
+        "revision": "86bb38ce2ba7a98ab0e550359fec5f48859dc723",
+        "path": "DeepSeek-V4-Flash-DSpark-support-0731.gguf"
+      },
+      "destination": "deepseek-v4-flash-0731/DeepSeek-V4-Flash-DSpark-support-0731.gguf",
+      "target": "dwarfstar-models",
+      "size": 5989114272,
+      "sha256": "7e319924541db3f7a163ed7e11d7532a70d48228ab59d36cb81e1d4511885360",
+      "license": {
+        "spdx": "MIT",
+        "status": "verified",
+        "url": "https://huggingface.co/antirez/deepseek-v4-gguf/tree/86bb38ce2ba7a98ab0e550359fec5f48859dc723"
+      }
     }
   },
   "archive_collections": {},
@@ -1901,6 +1918,18 @@
       "application": "dwarfstar",
       "artifacts": [
         "deepseek-v4-flash-0731-iq2xxs-gguf"
+      ],
+      "groups": [
+        "all",
+        "dwarfstar"
+      ]
+    },
+    "dwarfstar-deepseek-v4-flash-0731-q2-imatrix-dspark": {
+      "description": "DeepSeek V4 Flash 0731 chat-v2 imatrix with the exact 0731 DSpark support GGUF",
+      "application": "dwarfstar",
+      "artifacts": [
+        "deepseek-v4-flash-0731-iq2xxs-gguf",
+        "deepseek-v4-flash-0731-dspark-support-gguf"
       ],
       "groups": [
         "all",

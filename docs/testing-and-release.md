@@ -185,6 +185,15 @@ Then run `acceptance --application dwarfstar` on each memory-capable hardware
 class. Starting a source-built binary on the build host is not inference
 acceptance.
 
+For the optional DSpark path, first dry-run `run dwarfstar server --dspark`
+and confirm that it selects the exact managed target/support pair in one
+read-only mount. On target hardware, compare fixed temperature-zero prompts
+with DSpark off and on, verify the output rather than throughput alone, and
+exercise a 128K server request carrying `"temperature": 0`. Inspect kernel
+logs for mapping faults, GPU resets, and process crashes. DSpark CLI mode
+forces temperature zero; nonzero server sampling is outside the supported
+contract.
+
 Inspect image metadata and history when pins or licenses changed:
 
 ```bash

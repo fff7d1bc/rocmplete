@@ -22,6 +22,9 @@ class ContentRecipeTests(unittest.TestCase):
         gemma = content_recipe("llama-cpp", "translation-gemma")
         shisa = content_recipe("llama-cpp", "shisa-v2.1")
         dwarfstar = content_recipe("dwarfstar", "flash-0731-q2-imatrix")
+        dspark = content_recipe(
+            "dwarfstar", "flash-0731-q2-imatrix-dspark"
+        )
 
         self.assertEqual(comfy.next_command, "./rocmplete run comfyui")
         self.assertEqual(
@@ -82,6 +85,10 @@ class ContentRecipeTests(unittest.TestCase):
         self.assertEqual(
             dwarfstar.next_command,
             "./rocmplete run dwarfstar server",
+        )
+        self.assertEqual(
+            dspark.next_command,
+            "./rocmplete run dwarfstar server --dspark",
         )
 
     def test_every_recipe_resolves_only_its_application_bundles(self):

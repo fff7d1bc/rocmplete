@@ -1247,20 +1247,25 @@ def _validate_catalog(catalog: Catalog) -> None:
                 "bundle {} references unknown workflow".format(identifier)
             )
         if bundle.application == "dwarfstar":
-            if bundle.workflow or len(bundle.artifacts) != 1:
-                raise LauncherError(
-                    "DwarfStar bundle {} must contain exactly one direct "
-                    "model artifact".format(identifier)
-                )
-            artifact = catalog.artifacts[bundle.artifacts[0]]
             if (
-                artifact.target != "dwarfstar-models"
-                or not artifact.destination.lower().endswith(".gguf")
+                bundle.workflow
+                or not bundle.artifacts
+                or len(bundle.artifacts) > 2
             ):
                 raise LauncherError(
-                    "DwarfStar bundle {} must reference one dwarfstar-models "
-                    ".gguf artifact".format(identifier)
+                    "DwarfStar bundle {} must contain one target and at "
+                    "most one support artifact".format(identifier)
                 )
+            for artifact_identifier in bundle.artifacts:
+                artifact = catalog.artifacts[artifact_identifier]
+                if (
+                    artifact.target != "dwarfstar-models"
+                    or not artifact.destination.lower().endswith(".gguf")
+                ):
+                    raise LauncherError(
+                        "DwarfStar bundle {} must reference only "
+                        "dwarfstar-models .gguf artifacts".format(identifier)
+                    )
     for identifier in catalog.benchmarks:
         if identifier not in catalog.bundles:
             raise LauncherError(

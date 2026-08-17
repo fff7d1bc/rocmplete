@@ -12,6 +12,7 @@ from ..config import (
     DWARFSTAR_DEFAULT_CONTEXT,
     DWARFSTAR_DEFAULT_OUTPUT_TOKENS,
 )
+from ..errors import LauncherError
 from ..layout import StorageLayout
 from .common import (
     container_listen_address,
@@ -28,6 +29,8 @@ class DwarfStarOptions:
     mode: str
     data_dir: Path
     model: Path
+    support_model: Optional[Path] = None
+    dspark: bool = False
     render_nodes: Sequence[str] = field(default_factory=tuple)
     profile: str = "auto"
     listen: str = "127.0.0.1"
@@ -48,6 +51,20 @@ def dwarfstar_command(
     read_only_suffix = read_only_shared_suffix(volume_suffix)
     model_root = options.model.parent
     container_model = "/content/models/{}".format(options.model.name)
+    container_support_model = ""
+    if options.dspark:
+        if options.support_model is None:
+            raise LauncherError("DSpark requires one support GGUF")
+        if options.support_model.parent != model_root:
+            raise LauncherError(
+                "DwarfStar target and DSpark support GGUFs must share "
+                "one directory"
+            )
+        container_support_model = "/content/models/{}".format(
+            options.support_model.name
+        )
+    elif options.support_model is not None:
+        raise LauncherError("DSpark support GGUF requires DSpark mode")
     application = APPLICATIONS["dwarfstar"]
     command = [
         "podman",
@@ -88,6 +105,10 @@ def dwarfstar_command(
         "--env",
         "ROCMLETE_DWARFSTAR_MODEL={}".format(container_model),
         "--env",
+        "ROCMLETE_DWARFSTAR_DSPARK={}".format(
+            "1" if options.dspark else "0"
+        ),
+        "--env",
         "ROCMLETE_DWARFSTAR_CONTEXT={}".format(options.context),
         "--env",
         "ROCMLETE_DWARFSTAR_OUTPUT_TOKENS={}".format(
@@ -106,6 +127,15 @@ def dwarfstar_command(
         "--env",
         "ROCMLETE_PORT={}".format(options.port),
     ]
+    if options.dspark:
+        command.extend(
+            [
+                "--env",
+                "ROCMLETE_DWARFSTAR_DSPARK_MODEL={}".format(
+                    container_support_model
+                ),
+            ]
+        )
     if options.prompt is not None:
         command.extend(
             ["--env", "ROCMLETE_DWARFSTAR_PROMPT={}".format(options.prompt)]

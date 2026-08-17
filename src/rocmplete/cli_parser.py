@@ -369,6 +369,9 @@ Try one of these:
   Start DeepSeek V4 Flash with DwarfStar:
     ./rocmplete run dwarfstar server
 
+  Start its exact managed DSpark pair:
+    ./rocmplete run dwarfstar server --dspark
+
 Web applications publish only their application port on 127.0.0.1 by default.
 Add --listen 0.0.0.0 to publish it on every host interface.
 """
@@ -419,6 +422,9 @@ Try one of these on a host with enough GPU-mapped memory:
   Start the OpenAI-compatible server with the managed default model:
     ./rocmplete run dwarfstar server
 
+  Start the exact managed target/support pair with DSpark:
+    ./rocmplete run dwarfstar server --dspark
+
   Start a compatible local GGUF instead:
     ./rocmplete run dwarfstar server --model /path/to/deepseek-v4.gguf
 
@@ -431,6 +437,8 @@ Try one of these on a host with enough GPU-mapped memory:
 The managed image is built from pinned source. The model is installed and
 verified separately with
 'content install dwarfstar flash-0731-q2-imatrix'.
+The optional DSpark pair is installed with
+'content install dwarfstar flash-0731-q2-imatrix-dspark'.
 """
 def _add_render_node_arguments(
     parser: argparse.ArgumentParser, multi_gpu: bool = False
@@ -598,6 +606,14 @@ def _add_dwarfstar_run_arguments(
         type=int,
         default=DWARFSTAR_DEFAULT_OUTPUT_TOKENS,
         help="default or CLI maximum output tokens (default: 16000)",
+    )
+    parser.add_argument(
+        "--dspark",
+        action="store_true",
+        help=(
+            "enable the exact managed 0731 DSpark support GGUF "
+            "(default: off)"
+        ),
     )
     parser.add_argument("--unconfined", action="store_true")
     parser.add_argument("--dry-run", action="store_true")

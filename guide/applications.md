@@ -1084,9 +1084,10 @@ code for `gfx1150`, `gfx1151`, `gfx1200`, and `gfx1201`, and the launcher
 allows every corresponding ROCmplete profile. The exact 80.76 GiB model is
 downloaded from a pinned Hugging Face revision, checked by size and SHA-256,
 and mounted read-only. All architectures remain experimental until they
-complete the hardware acceptance matrix. Multi-GPU execution, DSpark, MTP,
-distributed execution, SSD streaming, and the native coding agent remain
-outside this integration.
+complete the hardware acceptance matrix. The exact 0731 DSpark support GGUF
+is available as a separately installed, opt-in speculative-decoding path.
+Generic MTP files, multi-GPU execution, distributed execution, SSD streaming,
+and the native coding agent remain outside this integration.
 
 The regular `doctor` 112 GiB TTM/GTT result is the project's starting point
 for a nominal 128 GB Strix Halo. Strix Point also needs enough TTM/GTT mapping
@@ -1097,7 +1098,7 @@ Halo run, the managed 128K server and an OpenCode tool workflow passed at this
 setting. At 100 GiB, a 32K server could start but a roughly 6K-token tool
 prefill ran out of mapping space on a transient 320 MiB allocation. The bounded
 acceptance smoke still uses a 4K context so routine checks remain short. The
-[pinned upstream Strix Halo guide](https://github.com/antirez/ds4/blob/d250a7c07c6beb753e9b0a33951d8c00d6ef30ee/STRIXHALO.md)
+[pinned upstream Strix Halo guide](https://github.com/antirez/ds4/blob/84cc882352757baf628a1776badf7cc54d584e28/STRIXHALO.md)
 uses `amdgpu.gttsize=126976`, `ttm.pages_limit=32505856`, and
 `ttm.page_pool_size=32505856`, which is roughly a 124 GiB ceiling. It also uses
 `amd_iommu=off`. The 112 GiB manual 128K run also used that setting. It can
@@ -1132,7 +1133,23 @@ warns that mixed Q2/Q4 builds can put enough pressure on the ROCm path to
 trigger system OOM. ROCmplete therefore does not offer the larger mixed
 Q2/Q4, Q4, MXFP4, or PRO models as managed alternatives on this hardware
 class. DSpark is a separate experimental speculative-decoding aid, not a
-higher-quality model, and is not part of the managed bundle.
+higher-quality model. Its separate managed bundle adds the exact 5.58 GiB
+0731 support GGUF to the same directory as the 80.76 GiB target:
+
+```bash
+./rocmplete content install dwarfstar flash-0731-q2-imatrix-dspark
+./rocmplete run dwarfstar server --dspark
+```
+
+Normal launches remain DSpark-off and need only the original model. The
+DSpark launch accepts no arbitrary `--model`: the source revision, target,
+support GGUF, and engine flags are one reviewed compatibility unit. CLI mode
+forces temperature zero. Server clients must likewise send
+`"temperature": 0`; other sampling settings are not part of the accepted
+DSpark contract. The support model increases installed content to about
+86.34 GiB before context and working allocations. Treat any speed difference
+as hardware- and workload-specific, and check output quality rather than
+assuming speculative decoding is always faster.
 
 A different DwarfStar-compatible local GGUF can be selected explicitly; its
 containing directory is mounted read-only:
@@ -1165,6 +1182,10 @@ The API chooses thinking behavior per request. A `deepseek-chat` model alias,
 answer; DwarfStar otherwise defaults to its normal thinking mode. Keep the
 server on loopback unless an authenticated trusted proxy protects it. An
 explicit non-loopback publication has no built-in authentication.
+
+When the server was started with `--dspark`, include `"temperature": 0` in
+every Chat Completions request. This sampling requirement is independent of
+the request's thinking choice.
 
 All four agent launchers include DwarfStar as a separate provider. Start the
 server, then choose it explicitly in a client:

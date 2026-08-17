@@ -30,7 +30,7 @@ llama-cpp
   qwen3.6  qwen3.8  kat-coder  muse-glimmer
   shisa-v2.1  translation-gemma  translation-hy
 dwarfstar
-  flash-0731-q2-imatrix
+  flash-0731-q2-imatrix  flash-0731-q2-imatrix-dspark
 ```
 
 Install interactively, or select one recipe explicitly:
@@ -44,6 +44,7 @@ Install interactively, or select one recipe explicitly:
 ./rocmplete content install llama-cpp shisa-v2.1 --accept-license
 ./rocmplete content install llama-cpp translation-gemma --accept-license
 ./rocmplete content install dwarfstar flash-0731-q2-imatrix
+./rocmplete content install dwarfstar flash-0731-q2-imatrix-dspark
 ```
 
 The `qwen3.6` recipe installs dense 27B MTP Q8_0. Its matching non-MTP GGUF
@@ -219,18 +220,19 @@ DwarfStar choices alongside local llama.cpp GGUFs found on disk:
 Every managed model is shown even when it is not installed. Missing rows use
 the expected catalog size so the inventory is useful before a download. A
 llama.cpp managed row is named by its preset; a DwarfStar row is named by its
-installable bundle. Imported and manually copied GGUFs below the llama.cpp
-model root are shown as local files, and split GGUFs are grouped into one model
-instead of one row per shard. An incomplete split set or a catalog size
-mismatch is called out rather than presented as runnable.
+installable bundle. The DSpark row includes the target and exact support GGUF
+and reports their combined size. Imported and manually copied GGUFs below the
+llama.cpp model root are shown as local files, and split GGUFs are grouped into
+one model instead of one row per shard. An incomplete split set or a catalog
+size mismatch is called out rather than presented as runnable.
 
 Use `--details` when choosing between managed llama.cpp presets. It shows the
 exact bundle and preset IDs, catalog file count and total size, conservative
 starting context, chat-template policy, MTP setup, and profile-specific Flash
-Attention policy. DwarfStar details show its model path, bundle, size, and
-copyable install and run commands. These are properties ROCmplete needs to
-launch a model correctly, not task descriptions or claims about which model
-is best.
+Attention policy. DwarfStar details show its target model, optional support
+file, bundle, combined size, and copyable install and run commands. These are
+properties ROCmplete needs to launch a model correctly, not task descriptions
+or claims about which model is best.
 
 ROCmplete does not search the rest of the machine by default. Add known model
 locations explicitly; `--scan` is repeatable and accepts one GGUF or a

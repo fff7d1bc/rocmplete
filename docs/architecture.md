@@ -382,8 +382,11 @@ PyTorch.
 only server or CLI mode, verifies that exactly one supported architecture is
 visible, resolves or checks the matching hardware profile, and constructs the
 reviewed model, context, output-limit, thinking, and bind arguments. It does
-not expose upstream DSpark, MTP, distributed,
-SSD-streaming, multi-GPU, benchmark, evaluation, or agent surfaces.
+not expose upstream arguments generically. One explicit `--dspark` path
+selects the exact managed 0731 target and support GGUF pair and applies the
+reviewed DSpark/MTP engine flags; normal launches remain unchanged. Arbitrary
+MTP files, distributed execution, SSD streaming, multi-GPU, benchmark,
+evaluation, and agent surfaces remain unavailable.
 
 ## Runtime isolation
 

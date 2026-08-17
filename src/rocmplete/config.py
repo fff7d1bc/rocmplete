@@ -49,6 +49,9 @@ DWARFSTAR_DEFAULT_OUTPUT_TOKENS = 16000
 DWARFSTAR_DEFAULT_MODEL_BUNDLE = (
     "dwarfstar-deepseek-v4-flash-0731-q2-imatrix"
 )
+DWARFSTAR_DSPARK_MODEL_BUNDLE = (
+    "dwarfstar-deepseek-v4-flash-0731-q2-imatrix-dspark"
+)
 COMFY_BENCHMARK_CONTAINER_NAME = "rocmplete-benchmark"
 LLAMA_BENCHMARK_CONTAINER_NAME = "rocmplete-llama-benchmark"
 LLAMA_SPECULATIVE_BENCHMARK_CONTAINER_NAME = (
@@ -95,7 +98,7 @@ APPLICATIONS = {
         identifier="dwarfstar",
         image=(
             "localhost/rocmplete:"
-            "dwarfstar-ubuntu26.04-rocm7.14-84cc882-r6"
+            "dwarfstar-ubuntu26.04-rocm7.14-84cc882-r7"
         ),
         container_name="rocmplete-dwarfstar",
         build_target="dwarfstar",

@@ -45,9 +45,9 @@ collisions.
 ## Included content
 
 The catalog currently covers ComfyUI image, edit, and video stacks; managed
-llama.cpp GGUF presets; and the high-memory DwarfStar model. Do not maintain a
-second inventory in this file. Inspect the catalog through the same public
-commands users run:
+llama.cpp GGUF presets; and the high-memory DwarfStar model with its optional
+DSpark support artifact. Do not maintain a second inventory in this file.
+Inspect the catalog through the same public commands users run:
 
 ```bash
 ./rocmplete content list --bundles

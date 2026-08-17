@@ -14,6 +14,7 @@ class RecipeLaunch:
     application: str
     mode: Optional[str] = None
     preset: Optional[str] = None
+    dspark: bool = False
 
     @property
     def command(self) -> str:
@@ -22,6 +23,8 @@ class RecipeLaunch:
             parts.append(self.mode)
         if self.preset:
             parts.extend(("--preset", self.preset))
+        if self.dspark:
+            parts.append("--dspark")
         return " ".join(parts)
 
 
@@ -168,6 +171,18 @@ APPLICATION_RECIPES: Mapping[str, Tuple[ContentRecipe, ...]] = {
             ),
             bundles=("dwarfstar-deepseek-v4-flash-0731-q2-imatrix",),
             launch=RecipeLaunch("dwarfstar", mode="server"),
+        ),
+        ContentRecipe(
+            identifier="flash-0731-q2-imatrix-dspark",
+            application="dwarfstar",
+            description=(
+                "DeepSeek V4 Flash 0731 Q2 imatrix with opt-in DSpark "
+                "speculative decoding"
+            ),
+            bundles=(
+                "dwarfstar-deepseek-v4-flash-0731-q2-imatrix-dspark",
+            ),
+            launch=RecipeLaunch("dwarfstar", mode="server", dspark=True),
         ),
     ),
 }

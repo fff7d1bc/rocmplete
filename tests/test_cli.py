@@ -1036,7 +1036,8 @@ class CliTests(unittest.TestCase):
         self.assertIn("compiled locally from one source commit", text)
         self.assertIn("112 GiB shared-memory starting point", text)
         self.assertIn("run dwarfstar server --context 32768", text)
-        self.assertIn("DSpark and optional MTP support", text)
+        self.assertIn("DSpark is an optional, exact managed pair", text)
+        self.assertIn("run dwarfstar server --dspark", text)
         self.assertIn("guide/applications.md#dwarfstar", text)
 
     @patch("builtins.input", return_value="2")
@@ -2363,6 +2364,7 @@ class CliTests(unittest.TestCase):
             self.assertIn("ROCMLETE_DWARFSTAR_CONTEXT=131072", command)
             self.assertIn("ROCMLETE_DWARFSTAR_OUTPUT_TOKENS=16000", command)
             self.assertIn("ROCMLETE_PROFILE=strix-point", command)
+            self.assertIn("ROCMLETE_DWARFSTAR_DSPARK=0", command)
 
     def test_dwarfstar_server_accepts_one_explicit_local_gguf(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -2424,6 +2426,74 @@ class CliTests(unittest.TestCase):
             ), patch("rocmplete.cli.check_gpu_device_access"):
                 with self.assertRaisesRegex(
                     LauncherError, "--model must name a .gguf file"
+                ):
+                    command_run(arguments)
+
+    def test_dwarfstar_dspark_dry_run_uses_exact_managed_pair(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data_dir = root / "not-created"
+            model_root = root / "models"
+            model_root.mkdir()
+            model = model_root / "target.gguf"
+            support = model_root / "support.gguf"
+            model.write_bytes(b"target")
+            support.write_bytes(b"support")
+            _, arguments = parse_arguments(
+                [
+                    "run",
+                    "dwarfstar",
+                    "server",
+                    "--dspark",
+                    "--data-dir",
+                    str(data_dir),
+                    "--dry-run",
+                ]
+            )
+            with patch(
+                "rocmplete.cli.select_render_nodes",
+                return_value=("/dev/dri/renderD128",),
+            ), patch(
+                "rocmplete.cli.check_gpu_device_access"
+            ), patch(
+                "rocmplete.cli._managed_dwarfstar_dspark_models",
+                return_value=(model, support),
+            ), redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(command_run(arguments), 0)
+
+            text = output.getvalue()
+            self.assertFalse(data_dir.exists())
+            self.assertIn("ROCMLETE_DWARFSTAR_DSPARK=1", text)
+            self.assertIn(
+                "ROCMLETE_DWARFSTAR_DSPARK_MODEL=/content/models/support.gguf",
+                text,
+            )
+            self.assertIn("DSpark support:", text)
+            self.assertIn(
+                "{}:/content/models:ro".format(model_root), text
+            )
+
+    def test_dwarfstar_dspark_rejects_arbitrary_model_override(self):
+        with tempfile.TemporaryDirectory() as directory:
+            model = Path(directory) / "model.gguf"
+            model.write_bytes(b"fixture")
+            _, arguments = parse_arguments(
+                [
+                    "run",
+                    "dwarfstar",
+                    "server",
+                    "--dspark",
+                    "--model",
+                    str(model),
+                    "--dry-run",
+                ]
+            )
+            with patch(
+                "rocmplete.cli.select_render_nodes",
+                return_value=("/dev/dri/renderD128",),
+            ), patch("rocmplete.cli.check_gpu_device_access"):
+                with self.assertRaisesRegex(
+                    LauncherError, "cannot be combined with --model"
                 ):
                     command_run(arguments)
 
@@ -4212,7 +4282,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(command_content(arguments, load_catalog()), 0)
         text = output.getvalue()
         self.assertIn("family qwen   8  bundles", text)
-        self.assertIn("all  48  bundles", text)
+        self.assertIn("all  49  bundles", text)
         self.assertNotIn("Exact bundles:", text)
 
     def test_content_list_application_filter_requires_filterable_view(self):
@@ -4381,7 +4451,7 @@ class CliTests(unittest.TestCase):
             with redirect_stdout(io.StringIO()) as output:
                 self.assertEqual(command_content(arguments, catalog), 0)
         self.assertIn(
-            "ready   80.76 GiB  dwarfstar-deepseek-v4-flash-0731-q2-imatrix",
+            "ready    80.76 GiB  dwarfstar-deepseek-v4-flash-0731-q2-imatrix",
             output.getvalue(),
         )
 
@@ -4926,7 +4996,7 @@ class CliTests(unittest.TestCase):
                 "comfyui-videos": 20,
                 "comfyui-addons": 7,
                 "llama-cpp": 11,
-                "dwarfstar": 1,
+                "dwarfstar": 2,
             },
         )
         categorized = [
@@ -5117,8 +5187,8 @@ class CliTests(unittest.TestCase):
                     )
 
         artifacts = install_artifacts.call_args.args[0]
-        self.assertEqual(len(artifacts), 63)
-        self.assertEqual(len({item.identifier for item in artifacts}), 63)
+        self.assertEqual(len(artifacts), 64)
+        self.assertEqual(len({item.identifier for item in artifacts}), 64)
         self.assertEqual(
             install_artifacts.call_args.args[2],
             "localhost/custom-content-tools",
@@ -5134,7 +5204,7 @@ class CliTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Content ready: 48 bundles and 28 workflows.",
+            "Content ready: 49 bundles and 28 workflows.",
             output.getvalue(),
         )
 
@@ -5225,6 +5295,34 @@ class CliTests(unittest.TestCase):
         self.assertLess(
             rendered.index("./rocmplete agent maki"),
             rendered.index("run llama-cpp cli"),
+        )
+
+    @patch("rocmplete.cli.install_artifacts", return_value=0)
+    def test_dspark_recipe_install_suggests_dspark_launch(
+        self, install_artifacts
+    ):
+        with tempfile.TemporaryDirectory() as directory:
+            _, arguments = parse_arguments(
+                [
+                    "content",
+                    "install",
+                    "dwarfstar",
+                    "flash-0731-q2-imatrix-dspark",
+                    "--data-dir",
+                    directory,
+                ]
+            )
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(
+                    _command_content_install(arguments, load_catalog()), 0
+                )
+
+        rendered = output.getvalue()
+        self.assertIn(
+            "./rocmplete run dwarfstar server --dspark", rendered
+        )
+        self.assertNotIn(
+            "\n    ./rocmplete run dwarfstar server\n", rendered
         )
 
     @patch("rocmplete.cli.install_artifacts")

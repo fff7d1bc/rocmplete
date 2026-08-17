@@ -585,8 +585,11 @@ def _dwarfstar_guide() -> ApplicationGuide:
                     "Server clients select thinking behavior in each request. "
                     "CLI mode uses normal thinking by default; --no-thinking "
                     "is useful for deterministic direct-answer checks.",
-                    "DSpark and optional MTP support are intentionally not "
-                    "enabled while their ROCm paths remain unsettled.",
+                    "DSpark is an optional, exact managed pair: install its "
+                    "separate support GGUF and launch with --dspark. CLI mode "
+                    "then forces temperature zero; server requests must send "
+                    "temperature: 0. Normal launches remain DSpark-off. "
+                    "Arbitrary MTP files are not exposed.",
                 ),
                 (
                     _action(
@@ -602,6 +605,17 @@ def _dwarfstar_guide() -> ApplicationGuide:
                     _action(
                         "./rocmplete run dwarfstar server --context 32768",
                         "Use a smaller context and working set.",
+                    ),
+                    _action(
+                        "./rocmplete content install dwarfstar "
+                        "flash-0731-q2-imatrix-dspark",
+                        "Install the target plus exact 0731 DSpark support "
+                        "GGUF.",
+                    ),
+                    _action(
+                        "./rocmplete run dwarfstar server --dspark",
+                        "Start the opt-in speculative-decoding path; send "
+                        "temperature 0 in API requests.",
                     ),
                 ),
                 role="info",

@@ -62,6 +62,7 @@ from .config import (
     CONTENT_TOOLS_IMAGE,
     DEFAULT_LISTEN,
     DWARFSTAR_DEFAULT_MODEL_BUNDLE,
+    DWARFSTAR_DSPARK_MODEL_BUNDLE,
     GPU_PROFILES,
     TRANSIENT_CONTAINER_APPLICATIONS,
     ROCM_BASE_BUILD_TARGET,
@@ -3595,28 +3596,34 @@ def _print_dwarfstar_model_inventory(
     ]
     details = []
     for bundle in bundles:
-        artifact = catalog.artifact(bundle.artifacts[0])
-        status = inspect_bundle(catalog, bundle, data_dir)[0]
-        if not isinstance(status, ArtifactStatus):
-            raise LauncherError(
-                "DwarfStar bundle {} did not resolve to a direct model".format(
-                    bundle.identifier
-                )
-            )
-        state = (
-            "ready"
-            if content_status_ready(status)
-            else content_status_state(status)
+        artifacts = tuple(
+            catalog.artifact(identifier) for identifier in bundle.artifacts
         )
-        size = artifact.size if state == "missing" else status.actual_size
+        statuses = inspect_bundle(catalog, bundle, data_dir)
+        if not statuses or not all(
+            isinstance(status, ArtifactStatus) for status in statuses
+        ):
+            raise LauncherError(
+                "DwarfStar bundle {} did not resolve to direct GGUF "
+                "artifacts".format(bundle.identifier)
+            )
+        failure = next(
+            (
+                status
+                for status in statuses
+                if not content_status_ready(status)
+            ),
+            None,
+        )
+        state = "ready" if failure is None else content_status_state(failure)
         rows.append(
             (
                 format_state(state),
-                human_size(size),
+                human_size(catalog.bundle_size(bundle)),
                 style(bundle.identifier, "command"),
             )
         )
-        details.append((bundle, artifact))
+        details.append((bundle, artifacts))
     print_columns(
         rows,
         columns=(
@@ -3629,13 +3636,21 @@ def _print_dwarfstar_model_inventory(
     if arguments.details:
         print()
         print(style("Managed DwarfStar model details", "heading"))
-        for bundle, artifact in details:
+        for bundle, artifacts in details:
             print()
             print("  {}".format(style(bundle.identifier, "command")))
+            artifact_rows = [("Model", artifacts[0].destination)]
+            artifact_rows.extend(
+                ("Support", artifact.destination)
+                for artifact in artifacts[1:]
+            )
             print_columns(
-                (
-                    ("Model", artifact.destination),
-                    ("Catalog size", human_size(artifact.size)),
+                tuple(artifact_rows)
+                + (
+                    (
+                        "Catalog size",
+                        human_size(catalog.bundle_size(bundle)),
+                    ),
                     ("Files", len(bundle.artifacts)),
                     (
                         "Install",
@@ -3643,7 +3658,12 @@ def _print_dwarfstar_model_inventory(
                             bundle.identifier
                         ),
                     ),
-                    ("Run", "./rocmplete run dwarfstar server"),
+                    (
+                        "Run",
+                        "./rocmplete run dwarfstar server{}".format(
+                            " --dspark" if len(artifacts) > 1 else ""
+                        ),
+                    ),
                 ),
                 columns=(ColumnSpec(role="label"), ColumnSpec()),
                 indent="    ",
@@ -4371,6 +4391,15 @@ def _command_content_install(
         bundle.application for bundle in bundles
     ))
     selected_bundle_ids = {bundle.identifier for bundle in bundles}
+    selected_recipe = None
+    if (
+        not pack_paths
+        and arguments.target in CONTENT_APPLICATION_RECIPES
+        and arguments.selection not in (None, "all")
+    ):
+        selected_recipe = content_recipe(
+            arguments.target, arguments.selection
+        )
     actions = []
     for application in applications:
         if application == "llama-cpp":
@@ -4421,6 +4450,12 @@ def _command_content_install(
                 )
                 for preset in presets
             )
+            continue
+        if (
+            selected_recipe is not None
+            and selected_recipe.application == application
+        ):
+            actions.append((selected_recipe.next_command, ""))
             continue
         command = APPLICATIONS[application].after_content
         if command:
@@ -6492,8 +6527,13 @@ def command_llama(arguments: argparse.Namespace, catalog: Catalog) -> int:
     )
 
 
-def _managed_dwarfstar_model(catalog: Catalog, data_dir: Path) -> Path:
-    bundle = catalog.bundle(DWARFSTAR_DEFAULT_MODEL_BUNDLE)
+def _managed_dwarfstar_artifacts(
+    catalog: Catalog,
+    data_dir: Path,
+    bundle_identifier: str,
+    recipe_identifier: str,
+) -> Tuple[Path, ...]:
+    bundle = catalog.bundle(bundle_identifier)
     statuses = inspect_bundle(catalog, bundle, data_dir)
     failures = tuple(
         status for status in statuses if not content_status_ready(status)
@@ -6507,12 +6547,41 @@ def _managed_dwarfstar_model(catalog: Catalog, data_dir: Path) -> Path:
         raise LauncherError(
             "DwarfStar model is not installed: {}\n"
             "  Install content: ./rocmplete content install dwarfstar "
-            "flash-0731-q2-imatrix".format(
-                states or "managed content is incomplete"
+            "{}".format(
+                states or "managed content is incomplete",
+                recipe_identifier,
             )
         )
-    artifact = catalog.artifact(bundle.artifacts[0])
-    return artifact_path(data_dir, artifact)
+    return tuple(
+        artifact_path(data_dir, catalog.artifact(identifier))
+        for identifier in bundle.artifacts
+    )
+
+
+def _managed_dwarfstar_model(catalog: Catalog, data_dir: Path) -> Path:
+    return _managed_dwarfstar_artifacts(
+        catalog,
+        data_dir,
+        DWARFSTAR_DEFAULT_MODEL_BUNDLE,
+        "flash-0731-q2-imatrix",
+    )[0]
+
+
+def _managed_dwarfstar_dspark_models(
+    catalog: Catalog, data_dir: Path
+) -> Tuple[Path, Path]:
+    paths = _managed_dwarfstar_artifacts(
+        catalog,
+        data_dir,
+        DWARFSTAR_DSPARK_MODEL_BUNDLE,
+        "flash-0731-q2-imatrix-dspark",
+    )
+    if len(paths) != 2:
+        raise LauncherError(
+            "managed DwarfStar DSpark bundle must contain target and "
+            "support GGUFs"
+        )
+    return paths[0], paths[1]
 
 
 def command_dwarfstar(
@@ -6552,7 +6621,17 @@ def command_dwarfstar(
     )
     if not arguments.dry_run:
         StorageLayout(data_dir).prepare_runtime("dwarfstar")
-    if arguments.model:
+    support_model = None
+    if arguments.dspark and arguments.model:
+        raise LauncherError(
+            "--dspark uses the exact managed 0731 target and support "
+            "GGUFs and cannot be combined with --model"
+        )
+    if arguments.dspark:
+        model, support_model = _managed_dwarfstar_dspark_models(
+            catalog, data_dir
+        )
+    elif arguments.model:
         model = _resolved_regular_file(
             arguments.model, "DwarfStar GGUF model"
         )
@@ -6582,6 +6661,8 @@ def command_dwarfstar(
         mode=arguments.mode,
         data_dir=data_dir,
         model=model,
+        support_model=support_model,
+        dspark=arguments.dspark,
         render_nodes=render_nodes,
         profile=profile,
         listen=listen,
@@ -6609,6 +6690,12 @@ def command_dwarfstar(
         )
     )
     print("{} {}".format(style("Model:", "label"), model))
+    if support_model is not None:
+        print(
+            "{} {}".format(
+                style("DSpark support:", "label"), support_model
+            )
+        )
     if arguments.dry_run:
         print(
             "{}\n  {}".format(

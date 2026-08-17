@@ -218,8 +218,17 @@ enough GPU-mapped memory:
 ./rocmplete run dwarfstar server
 ```
 
+The separate 5.58 GiB DSpark support GGUF is an opt-in speculative-decoding
+path; it does not replace the default model or improve its quality:
+
+```bash
+./rocmplete content install dwarfstar flash-0731-q2-imatrix-dspark
+./rocmplete run dwarfstar server --dspark
+```
+
 The [DwarfStar guide](guide/applications.md#dwarfstar) covers its 128K managed
-context, memory setup, API, agent-client providers, and bounded acceptance run.
+context, memory setup, optional DSpark path, API, agent-client providers, and
+bounded acceptance run.
 
 ## Everyday use
 

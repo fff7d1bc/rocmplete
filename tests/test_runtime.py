@@ -1287,6 +1287,8 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn("ROCMLETE_HOST_LISTEN=127.0.0.1", command)
         self.assertIn("ROCMLETE_DWARFSTAR_CONTEXT=131072", command)
         self.assertIn("ROCMLETE_DWARFSTAR_OUTPUT_TOKENS=16000", command)
+        self.assertIn("ROCMLETE_DWARFSTAR_DSPARK=0", command)
+        self.assertNotIn("ROCMLETE_DWARFSTAR_DSPARK_MODEL", command)
         self.assertIn(
             "io.github.fff7d1bc.rocmplete.application=dwarfstar", command
         )
@@ -1312,6 +1314,46 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn("ROCMLETE_DWARFSTAR_NO_THINKING=1", command)
         self.assertEqual(command[-1], "localhost/dwarfstar")
 
+    def test_dwarfstar_dspark_mounts_one_managed_directory(self):
+        command = dwarfstar_command(
+            DwarfStarOptions(
+                image="localhost/dwarfstar",
+                mode="cli",
+                data_dir=Path("/data/rocmplete"),
+                model=Path("/models/deepseek/target.gguf"),
+                support_model=Path("/models/deepseek/support.gguf"),
+                dspark=True,
+                render_nodes=("/dev/dri/renderD128",),
+                prompt="reply once",
+            ),
+            ":rw,Z",
+        )
+        self.assertEqual(
+            command.count(
+                "/models/deepseek:/content/models:ro,z"
+            ),
+            1,
+        )
+        self.assertIn("ROCMLETE_DWARFSTAR_DSPARK=1", command)
+        self.assertIn(
+            "ROCMLETE_DWARFSTAR_DSPARK_MODEL=/content/models/support.gguf",
+            command,
+        )
+
+    def test_dwarfstar_dspark_rejects_split_model_directories(self):
+        with self.assertRaisesRegex(LauncherError, "must share one directory"):
+            dwarfstar_command(
+                DwarfStarOptions(
+                    image="localhost/dwarfstar",
+                    mode="server",
+                    data_dir=Path("/data/rocmplete"),
+                    model=Path("/models/target.gguf"),
+                    support_model=Path("/support/support.gguf"),
+                    dspark=True,
+                ),
+                ":rw",
+            )
+
     def test_dwarfstar_entrypoint_maps_every_supported_architecture(self):
         root = Path(__file__).resolve().parents[1]
         entrypoint = (
@@ -1322,8 +1364,9 @@ class RuntimeCommandTests(unittest.TestCase):
         self.assertIn("gfx1150) detected_profile=strix-point", entrypoint)
         self.assertIn("does not match detected architecture", entrypoint)
         self.assertIn("(container namespace)", entrypoint)
-        self.assertNotIn("dspark", entrypoint.lower())
-        self.assertNotIn("--mtp", entrypoint)
+        self.assertIn('common+=(--mtp "$dspark_model" --dspark)', entrypoint)
+        self.assertIn('cli_sampling=(--temp 0)', entrypoint)
+        self.assertIn('dspark="${ROCMLETE_DWARFSTAR_DSPARK:-0}"', entrypoint)
 
 
 if __name__ == "__main__":

@@ -399,6 +399,7 @@ DWARFSTAR_COMMIT
 ROCM_VERSION
 APPLICATIONS["dwarfstar"].image
 dwarfstar-deepseek-v4-flash-0731-q2-imatrix
+dwarfstar-deepseek-v4-flash-0731-q2-imatrix-dspark
 applications/dwarfstar/entrypoint.sh
 ```
 
@@ -447,13 +448,15 @@ The 2026-08-17 source update from `d250a7c` to `84cc882` reviewed the complete
 112-commit range. It retained ROCmplete's three-binary surface and existing
 multi-architecture WMMA fallback while incorporating upstream parser and
 server hardening, Flash 0731 fixture/version handling, DeepSeek ROCm attention
-and indexer work, and the final ROCm DSpark implementation. DSpark stays
-disabled in the source-only image until its separate support GGUF, exact
-runtime contract, and target-hardware acceptance are integrated.
+and indexer work, and the final ROCm DSpark implementation. The follow-up
+integration pins the separate 0731 support GGUF and exposes only the exact
+managed target/support pair through `--dspark`. Revalidate temperature-zero
+sampling, target/support compatibility, output quality, throughput, memory,
+and kernel logs whenever the source or either artifact changes.
 
-MTP, multi-GPU, distributed execution, SSD streaming, evaluation, and the
-upstream native agent remain outside this procedure until ROCmplete
-deliberately adopts one of those surfaces.
+Arbitrary MTP support, multi-GPU, distributed execution, SSD streaming,
+evaluation, and the upstream native agent remain outside this procedure until
+ROCmplete deliberately adopts one of those surfaces.
 
 ## Upgrade ComfyUI
 

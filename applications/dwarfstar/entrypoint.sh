@@ -16,6 +16,8 @@ context="${ROCMLETE_DWARFSTAR_CONTEXT:-131072}"
 output_tokens="${ROCMLETE_DWARFSTAR_OUTPUT_TOKENS:-16000}"
 prompt="${ROCMLETE_DWARFSTAR_PROMPT:-}"
 no_thinking="${ROCMLETE_DWARFSTAR_NO_THINKING:-0}"
+dspark="${ROCMLETE_DWARFSTAR_DSPARK:-0}"
+dspark_model="${ROCMLETE_DWARFSTAR_DSPARK_MODEL:-}"
 
 case "$profile" in
     auto|rdna4|strix-halo|strix-point) ;;
@@ -29,6 +31,10 @@ case "$no_thinking" in
     0|1) ;;
     *) die "invalid DwarfStar thinking setting '$no_thinking'" ;;
 esac
+case "$dspark" in
+    0|1) ;;
+    *) die "invalid DwarfStar DSpark setting '$dspark'" ;;
+esac
 [[ "$port" =~ ^[0-9]+$ ]] && ((port >= 1 && port <= 65535)) ||
     die "invalid DwarfStar port '$port'"
 [[ "$context" =~ ^[0-9]+$ ]] && ((context >= 4096 && context <= 1048576)) ||
@@ -39,6 +45,12 @@ esac
 [[ -n "$model" ]] || die "no DwarfStar GGUF model was selected"
 [[ -f "$model" && -r "$model" ]] ||
     die "DwarfStar GGUF model is not a readable regular file: $model"
+if [[ "$dspark" == 1 ]]; then
+    [[ -n "$dspark_model" ]] ||
+        die "no DwarfStar DSpark support GGUF was selected"
+    [[ -f "$dspark_model" && -r "$dspark_model" ]] ||
+        die "DwarfStar DSpark support GGUF is not a readable regular file: ${dspark_model}"
+fi
 
 mapfile -t architectures < <(
     rocminfo 2>/dev/null |
@@ -67,6 +79,11 @@ printf '  architecture:   %s\n' "$architecture"
 printf '  model:          %s\n' "$model"
 printf '  context:        %s tokens\n' "$context"
 printf '  output limit:   %s tokens\n' "$output_tokens"
+if [[ "$dspark" == 1 ]]; then
+    printf '  DSpark:         enabled (%s)\n' "$dspark_model"
+else
+    printf '  DSpark:         disabled\n'
+fi
 if [[ "$mode" == server ]]; then
     printf '  container bind: %s:%s (container namespace)\n' "$listen" "$port"
     printf '  host publish:   %s:%s\n' "$host_listen" "$port"
@@ -79,6 +96,9 @@ common=(
     --ctx "$context"
     --tokens "$output_tokens"
 )
+if [[ "$dspark" == 1 ]]; then
+    common+=(--mtp "$dspark_model" --dspark)
+fi
 
 if [[ "$mode" == server ]]; then
     exec ds4-server \
@@ -91,7 +111,15 @@ thinking=(--think)
 if [[ "$no_thinking" == 1 ]]; then
     thinking=(--nothink)
 fi
-if [[ -n "$prompt" ]]; then
-    exec ds4 "${common[@]}" "${thinking[@]}" --prompt "$prompt"
+cli_sampling=()
+if [[ "$dspark" == 1 ]]; then
+    cli_sampling=(--temp 0)
 fi
-exec ds4 "${common[@]}" "${thinking[@]}"
+if [[ -n "$prompt" ]]; then
+    exec ds4 \
+        "${common[@]}" \
+        "${cli_sampling[@]}" \
+        "${thinking[@]}" \
+        --prompt "$prompt"
+fi
+exec ds4 "${common[@]}" "${cli_sampling[@]}" "${thinking[@]}"

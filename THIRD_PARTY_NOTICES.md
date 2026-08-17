@@ -29,7 +29,7 @@ revisions recorded in `catalog/catalog.json`.
   `/opt/rocmplete/custom_nodes/rgthree-comfy`, with its license copied to
   `/usr/share/licenses/rocmplete/rgthree-comfy`.
 - llama.cpp is built from the MIT-licensed `ggml-org/llama.cpp` repository at
-  commit `4c1a0af40d88c7fbb3b15c85bf2e8016d1d5b64c`. The license is installed
+  commit `3cb7ffb1a1f612d5e4a46244ae5a3c77ad934a70`. The license is installed
   at `/usr/local/share/licenses/rocmplete/llama-cpp/LICENSE`. ROCmplete builds
   the server, CLI, and benchmark binaries locally with RPC and remote UI
   assets disabled. It applies the narrowly scoped host-buffer correction from
@@ -38,12 +38,15 @@ revisions recorded in `catalog/catalog.json`.
   `ROCm_Host` computation on integrated HIP devices while preserving pinned
   host allocation.
 - DwarfStar is built locally from the MIT-licensed `antirez/ds4` repository at
-  commit `d250a7c07c6beb753e9b0a33951d8c00d6ef30ee`. The final image keeps only
+  commit `84cc882352757baf628a1776badf7cc54d584e28`. The final image keeps only
   its CLI, HTTP server, benchmark binary, and license. The managed DeepSeek V4
   Flash 0731 IQ2XXS GGUF is downloaded separately from
   `antirez/deepseek-v4-gguf` revision
   `1cd7b564460821938add0475a60b942c409295e0`, which declares MIT. ROCmplete
-  records its exact size and SHA-256 and does not redistribute it.
+  records its exact size and SHA-256 and does not redistribute it. The
+  optional DSpark support GGUF comes from the same MIT-licensed repository at
+  revision `86bb38ce2ba7a98ab0e550359fec5f48859dc723` and is independently pinned
+  by exact size and SHA-256.
 - PyTorch is BSD-3-Clause. ROCm components have component-specific licenses
   supplied with AMD's packages. Python packages retain the license metadata
   installed with their distributions.
