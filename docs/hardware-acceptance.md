@@ -26,6 +26,40 @@ this document.
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
+### Fedora 44 Strix Halo Qwen3.6 35B-A3B restoration (2026-08-17)
+
+ROCmplete commit `f6d4c43` restored the pinned non-MTP and MTP Qwen3.6
+35B-A3B catalog paths without changing the managed-client default. The MTP
+path was exercised on the Fedora 44 Strix Halo host with kernel
+`7.1.7-200.fc44.x86_64`, profile `strix-halo`, ROCm 7.14, and
+`/dev/dri/renderD128`. The existing llama.cpp image was
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-3cb7ffb-r25` (image ID
+`55b2ed6796687891d18e77b86bf8d1ded883ce3a03c5e97769da92ddb21a803c`).
+Its managed `qwen3.6.jinja` matched SHA-256
+`ea69920311f2efccf6343675490b27bd22d03787ebb8ccaf6e9101bfeba72898`.
+The installer downloaded and verified the 39,099,447,584-byte MTP artifact at
+SHA-256
+`6c6b816537abad90b250a0972b345466028d861ddfe316d5f0de31ca6440f781`.
+
+Direct ROCm startup resolved native 262144 context, MTP draft depth three,
+F16 K/V, and llama.cpp's default Flash Attention policy. Exact template
+rendering retained a later developer message and omitted old reasoning before
+a historical tool call. Live inference returned a parsed
+`record_value("TEMPLATE_35")` call, accepted 21 of 21 draft proposals at 72.62
+generated tokens/s, and completed the tool-result continuation with exact
+content `FINAL_TEMPLATE_35`. Separate thinking-off and thinking-on requests
+reached the model; the latter returned distinct reasoning content.
+
+Router mode advertised the restored MTP preset unloaded, generated the same
+template, context, and speculative policy, loaded it on demand, and returned
+exact content `ROUTER_QWEN36_35_OK` while accepting 9 of 9 draft proposals at
+69.19 generated tokens/s. These short exact-output timings accept wiring and
+GPU inference, not comparative performance. Both containers stopped cleanly,
+and the kernel journal for the test window contained no matching AMDGPU page
+fault, SVM mapping failure, GPU reset, timeout, or device-loss event. The
+non-MTP artifact remained an exact optional bundle and was not downloaded for
+this restoration check.
+
 ### Fedora 44 Strix Halo DwarfStar DSpark observation (2026-08-17)
 
 ROCmplete commit `363fedf` was exercised on the Fedora 44 Strix Halo host with
