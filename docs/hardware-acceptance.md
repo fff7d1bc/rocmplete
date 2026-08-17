@@ -22,7 +22,7 @@ this document.
 | Host | Architecture | Observed workload scope |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets; DwarfStar generation was about 3.9 tokens/s |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context, including the exact DSpark pair; Qwen3.6 MTP tool protocol, OMP probe, and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer agent probes; Laguna XS and Ling feasibility controls |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context, including the exact DSpark pair; Qwen3.6 MTP tool protocol, OMP probe, and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer runtime probes; Laguna XS and Ling feasibility controls |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
@@ -210,11 +210,9 @@ Observed results:
   Unsloth Q8, and an Unsloth BF16 GGUF. Fixed pp512/tg128 results were
   341.17/10.32, 376.80/7.35, and 483.19/4.11 tokens/s respectively. Fresh
   128K DFlash servers used about 30.64 GB for K-quant and 66.77 GB for BF16.
-  Maki completed broad, structured repository tasks with official K-quant at
-  128K, Q8 at 128K and forced 256K, and BF16 at 128K. No run produced a GPU
-  reset, OOM, or device loss. This selected K-quant for the catalog but did
-  not mark the formal Muse matrix row `PASS`; immutable inputs, tool counts,
-  fixture failures, and caveats are recorded in
+  No run produced a GPU reset, OOM, or device loss. This selected K-quant for
+  the catalog but did not mark the formal Muse matrix row `PASS`; immutable
+  inputs and runtime caveats are recorded in
   [the feasibility snapshot](muse-glimmer-llama-cpp-agent-feasibility.md).
 - The candidate integration image
   `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r16` (image ID
@@ -231,26 +229,19 @@ Observed results:
   `98369219e680a5e44517ba1955a4fb3ce18fbcbf80cc3d89961e76648ddcb193`).
   Direct and routed 128K DFlash servers both received the pinned managed
   template and completed required structured tool calls; the direct path also
-  completed a tool-result continuation. Pi 0.84.1 then solved the version 5
-  `re-align` task in 597.8 seconds and 36 tool calls. Ordinary and hidden
-  tests, the build, and dependency and artifact checks passed. The result is
-  retained as
-  `apps/agent-evaluation/results/20260812T152234Z-muse-glimmer-30b-kquant-dynamic-dflash.json`.
-  This is a template-regression field observation, not a new comparative
-  quality ranking or a formal matrix `PASS`.
+  completed a tool-result continuation. This is a template-regression field
+  observation rather than a formal matrix `PASS`.
 - A 2026-08-13 follow-up on the same Fedora Strix Halo system and llama.cpp
   revision compared the official dynamic target with Meta's current 17 GB
   Q4_K_M target, and compared DFlash depths on both backends. Controlled 128K
   workloads selected depth 15 for ROCm and depth 4 for Vulkan. At a 64347-token
   prompt, the 17 GB target reached 27.35 generated tokens/s on ROCm and 27.23
-  on Vulkan, versus 22.08 and 20.68 for the dynamic target. The 17 GB Pi probe
-  solved `re-align` in 800.1 seconds and 65 tool calls with the same patch hash
-  as dynamic; all ordinary and hidden tests, build, dependency, artifact, and
-  network checks passed. Managed direct Vulkan and routed Vulkan startup both
-  resolved depth 4 and returned exact bounded content, while the Pi path
-  independently exercised ROCm depth 15. Containers stopped cleanly and the
-  kernel journal showed no matching GPU fault. Exact inputs, the AMD reference
-  caveats, complete matrix, and cleanup warning are in the
+  on Vulkan, versus 22.08 and 20.68 for the dynamic target. Managed direct
+  Vulkan and routed Vulkan startup both resolved depth 4 and returned exact
+  bounded content, while a ROCm control exercised depth 15. Containers
+  stopped cleanly and the kernel journal showed no matching GPU fault. Exact
+  inputs, the AMD reference caveats, complete matrix, and cleanup warning are
+  in the
   [Muse feasibility record](muse-glimmer-llama-cpp-agent-feasibility.md).
 - The 2026-08-13 two-variant Muse follow-up temporarily promoted both
   separately pinned target/draft pairs into the guided family while retaining
@@ -281,24 +272,8 @@ Observed results:
   same image's Qwen3 0.6B override rendered array-form text content and
   returned exact bounded content `TEMPLATE_OK`.
 
-  An exploratory KAT `re-align` comparison separated the embedded template,
-  updated template, and updated template with reasoning preservation. All
-  three attempts produced the same patch SHA-256
-  `cea8b4bc7fc8ba2cfd5c7952bf22b2a15fa1fafe37c186eabda7bca0fed1e215`
-  and passed ordinary tests, hidden tests, build, dependency, artifact, and
-  network checks. Their wall times and generated-token counts were 684.8
-  seconds/23,221, 458.5/15,493, and 349.0/10,224 respectively. The companion
-  `fz-eintr` attempts took 193.0 seconds with the embedded template, 110.5
-  with the updated template, and 194.6 with the updated template plus
-  preservation. Only the embedded-template attempt remained valid; both
-  updated-template attempts ran `go build ./...` and left a forbidden `fzr`
-  executable even though all code tests passed. Since KAT sampling remained
-  stochastic and the upstream diff affects only non-leading system messages,
-  the timing spread is not attributed to the template. The compatibility fix
-  is retained, but reasoning preservation is not enabled and no quality or
-  speed promotion is claimed. Raw results are retained as
-  `apps/agent-evaluation/results/kat-template-ab-*.json` and
-  `apps/agent-evaluation/results/kat-template-fz-*.json`.
+  The compatibility fix is retained, but reasoning preservation is not
+  enabled and no quality or speed promotion is claimed.
 - A 2026-08-14 Qwen3.6 template audit on the same Fedora Strix Halo class
   compared the common template embedded in all four managed GGUFs, a narrow
   compatibility correction, and a neutralized Froggeric v22 control. Exact
@@ -310,15 +285,6 @@ Observed results:
   305 to 416 prompt tokens. In a deterministic two-turn probe that raised the
   second prompt from 128 to 645 tokens; cache reuse rose from 101 to 616, but
   wall time rose from 6.16 to 6.75 seconds.
-
-  Pi 0.84.1 then ran the frozen `review-fzr-concurrency` task at 131072
-  context and high thinking with Qwen3.6 27B MTP. Baseline, narrow, and
-  v22-neutral completed in 414.2, 385.5, and 399.7 seconds with 3,774, 3,424,
-  and 3,642 generated tokens. All produced valid review artifacts. Manual
-  source comparison favored the narrow answer at the deliberately stale scan
-  boundary; this one stochastic repetition is not treated as a speed claim.
-  The raw results are retained as
-  `apps/agent-evaluation/results/qwen-template-*-review-fzr-20260814.json`.
 
   Final image
   `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r20` (image ID
@@ -367,15 +333,9 @@ Observed results:
   MTP depth three, Flash Attention on, and symmetric Q8_0 target K/V while
   leaving the draft cache F16. Exact bounded requests passed through both
   paths. A 131072-context Vulkan control also returned exact content and
-  accepted 114 of 117 MTP proposals. Pi 0.84.1 then solved version 5
-  `re-align` with high thinking in 451.4 seconds. Pi, ordinary tests, hidden
-  tests, and the build exited zero; only `probe.go` and `reencode_test.go`
-  changed, with no dependency, generated artifact, or network violation. The
-  server processed 21,125 prompt tokens at 187.13 tokens/s and generated 7,169
-  tokens at 19.16 tokens/s. The retained result is
-  `apps/agent-evaluation/results/qwen27-mtp3-q8-kv-re-align.json`. Containers
-  stopped cleanly and the kernel recorded no GPU fault. Qwen35-A3B and other
-  hardware profiles remain unchanged. Full controls and caveats are in the
+  accepted 114 of 117 MTP proposals. Containers stopped cleanly and the
+  kernel recorded no GPU fault. Qwen35-A3B and other hardware profiles remain
+  unchanged. Full controls and caveats are in the
   [Qwen tuning snapshot](qwen3.6-strix-halo-llama-cpp-tuning-feasibility.md).
 - A 2026-08-14 llama.cpp source update used ROCmplete commit `cad4588`,
   upstream release `b10430` at commit
@@ -456,74 +416,6 @@ Observed results:
   generated at 7.19, 7.20, and 7.20 tokens/s. MTP therefore improved this
   narrow decode workload by 2.66x and accepted 187 of 201 proposals in every
   repetition. This is a runtime-policy result, not a model-quality benchmark.
-
-  Pi 0.84.1 then solved the frozen version 5 `re-align` task at 131072 context
-  with high thinking. Pi exited zero, and ordinary tests, hidden tests, and
-  the build passed without a dependency change, generated artifact, or audited
-  network attempt. The run took 1,514.0 seconds and 26 tool calls, processed
-  19,101 prompt tokens at 175.31 tokens/s, and generated 21,924 tokens at
-  14.49 tokens/s. Its retained result is
-  `apps/agent-evaluation/results/20260814T162403Z-qwen3.8-27b-mtp-ud-q8-k-xl.json`.
-  The later native-control audit established that the embedded Unsloth
-  template silently aliases Pi's generic `high` selector to Qwen3.8 `xhigh`.
-  Treat this as an xhigh Qwen3.8 result, not as a reasoning-matched comparison
-  with Qwen3.6 high/on or Muse high.
-  This accepts the quantized model and Pi tool contract on `gfx1151`, but the
-  much longer trajectory than the earlier Qwen3.6 27B solve did not at that
-  point justify replacing ROCmplete's then-current Muse agent default. The
-  optional vision projector and `gfx1150`, `gfx1200`, and `gfx1201` remain
-  deferred. All containers were removed, and the kernel reported no matching
-  GPU reset, page fault, ring timeout, device loss, or OOM event.
-
-#### Reasoning-default calibration (2026-08-14)
-
-After the native reasoning-control audit, the current three-model comparison
-used source commit `b1eece5073e1e80e5d571a5e576c81bf68b8157e`, frozen suite
-`rocmplete-coding-v5` with fingerprint
-`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`,
-Pi 0.84.1, ROCm, the Fedora 44 Strix Halo host, `/dev/dri/renderD128`,
-262144 context, one fresh `re-align` fixture, and one repetition. The runtime
-was `localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-4c1a0af-r23`, image ID
-`2fcacfed0112877f537e7244ef80aeba79d4a634538170e45f4708ffe2569ac9`;
-the image built on the target host and passed `pip check`.
-
-The selectors were the explicit operational defaults: Qwen3.6 `high` mapped
-to native thinking on, Qwen3.8 used native medium effort, and Muse used native
-high strength. Each preset retained its reviewed sampling and speculative
-policy. These are controlled runtime conditions, not equivalent quantities of
-reasoning.
-
-| Managed preset | Native reasoning | Outcome | Wall time | Tool calls | Input | Cache read | Output | Prompt tok/s | Generate tok/s |
-| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `qwen3.8-27b-mtp-ud-q8-k-xl` | medium | solved | 609.8 s | 16 | 22,073 | 310,031 | 7,789 | 188.02 | 14.26 |
-| `qwen3.6-27b-mtp-q8-0` | on (Pi `high`) | solved | 636.5 s | 21 | 38,466 | 712,520 | 8,554 | 32.62 | 18.02 |
-| `muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k` | high | solved | 768.0 s | 49 | 21,377 | 1,150,747 | 13,559 | 74.51 | 23.51 |
-
-All three exited normally and passed ordinary tests, hidden tests, the build,
-dependency, generated-artifact, and network-isolation grading. Qwen3.8 was the
-fastest and most token-efficient attempt despite the lowest aggregate decode
-rate. It also expressed the requested shared policy as one named width-10
-constant. Qwen3.6 and Muse produced the same correct minimal width-10 literal
-patch, with patch SHA-256
-`cea8b4bc7fc8ba2cfd5c7952bf22b2a15fa1fafe37c186eabda7bca0fed1e215`;
-Qwen3.8's distinct patch SHA-256 was
-`d18c26589f7dc581a95a3e875fbeda75da9e82aeaed04341f54a2496a69c75ca`.
-
-The retained results below `apps/agent-evaluation/results/` are
-`20260814T200429Z-qwen3.6-27b-mtp-q8-0.json`,
-`20260814T201546Z-qwen3.8-27b-mtp-ud-q8-k-xl.json`, and
-`20260814T202625Z-muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k.json`.
-All containers were removed after the runs. One easy repetition accepts the
-three operational paths but does not establish a general quality ranking.
-Run Qwen3.8 low versus medium and Muse medium versus high as separate native
-within-family sweeps before revising their defaults. Qwen3.6 has only the
-off/on control, so its off run is a behavior ablation rather than an
-equivalent-effort point.
-
-The official managed Qwen3.8 template completed this baseline without a tool
-protocol, role, or continuation failure. The pinned Froggeric template remains
-a separate diagnostic candidate; this result alone does not justify an A/B or
-replacing the official-template adaptation.
 
 #### Qwen3.8 speculative runtime tuning (2026-08-15 to 2026-08-16)
 
@@ -628,359 +520,18 @@ reviewed Qwen3.8 template, preserved reasoning, and 64K context. A required
 function call emitted the exact nested semantic argument `outer.value = 7`;
 its tool-result continuation returned exact `TOOL_OK_42`.
 
-Pi 0.84.2 then ran the frozen version 5 `re-align` task at medium effort,
-Vulkan, and 64K. Dynamic Q4_K_XL solved every public, hidden, build,
-dependency, generated-artifact, and offline-network grade in 551.771 seconds,
-with 11,568 prompt, 270,439 cache-read, and 10,833 output tokens at 98.55
-prompt and 22.39 generated tokens/s. A same-version Q4_K_M control also solved
-in 258.640 seconds with 9,167 prompt, 128,734 cache-read, and 5,150 output
-tokens at 145.50 prompt and 24.78 generated tokens/s. The two correct but
-different patches demonstrate substantial stochastic agent-economy variance;
-one easy task does not rank quantization quality. The retained candidate result
-is
-`apps/agent-evaluation/results/qwen38-q4xl-vulkan-medium-re-align-20260816-retry.json`
-under the isolated `rocmplete-q4xl-eval` data root.
-
 All transient containers were removed. The kernel journal for the complete
-download, ROCm/Vulkan benchmark, router, and agent-evaluation interval had no
+download, ROCm/Vulkan benchmark, router, and test interval had no
 matching GPU reset, page fault, ring timeout, device loss, SVM mapping failure,
 general-protection fault, or OOM event.
 
-#### Coding-agent comparison (2026-08-11)
+#### Retired coding-agent comparisons (2026-08-17)
 
-The [model quality baseline](coding-agent-model-quality.md) groups these
-results by demonstrated coding quality. This section retains the exact
-measurement and artifact record.
-
-This comparison used source commit
-`ad5a2ce730a63f4a145c23a7af44f55a9971fc92`, frozen suite
-`rocmplete-coding-v4` with fingerprint
-`8825f9235c854fdf693c4881faa035c5efe99a545f4111372ca95e6f2def1160`,
-Pi 0.84.1, ROCm, high thinking, 131072 context, and one fresh fixture and
-session per task. The runtime was
-`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r16` (image ID
-`15aa29c45b41f011f5edacd9f5fb761db26eae488d447453414e2d1b2a9e07a3`)
-on the Fedora 44 Strix Halo host described above. Each preset retained its
-reviewed model-specific sampling policy. This tests the practical managed
-configuration, not identical sampling across unrelated models.
-
-The first gate used the same easy implementation task, `re-align`. `Solved`
-means Pi exited normally, ordinary and hidden tests passed, the project built,
-and the attempt had no dependency change, retained build artifact, or network
-attempt. Tool calls are counted from Pi's structured transcript. Prompt and
-generation rates are aggregate server metrics for the complete attempt.
-
-| Managed preset | Outcome | Wall time | Tool calls | Input | Cache read | Output | Prompt tok/s | Generate tok/s |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `qwen3.6-35b-a3b-mtp-ud-q8-k-xl` | solved | 229.9 s | 23 | 17,752 | 394,740 | 12,596 | 111.30 | 70.03 |
-| `kat-coder-v2.5-dev-q8-0` | solved | 319.3 s | 25 | 18,020 | 199,431 | 12,321 | 493.52 | 41.42 |
-| `ornith-1.0-35b-q8-0` | solved | 484.2 s | 18 | 52,055 | 603,758 | 15,049 | 358.97 | 37.34 |
-| `muse-glimmer-30b-kquant-dynamic-dflash` | solved | 670.2 s | 40 | 18,566 | 958,355 | 14,080 | 161.33 | 18.69 |
-| `qwen3.6-27b-mtp-q8-0` | solved | 766.7 s | 22 | 42,722 | 814,547 | 8,699 | 48.43 | 15.57 |
-| `gemma4-31b-it-q8-0-mtp` | solved | 902.5 s | 17 | 55,580 | 595,333 | 6,389 | 70.87 | 11.38 |
-
-The exact managed artifacts and retained result records were:
-
-- Qwen3.6 35B-A3B MTP, 39,099,447,584 bytes, SHA-256
-  `6c6b816537abad90b250a0972b345466028d861ddfe316d5f0de31ca6440f781`;
-  result `apps/agent-evaluation/results/20260811T154638Z-qwen3.6-35b-a3b-mtp-ud-q8-k-xl.json`.
-- KAT Coder 2.5 Dev Q8_0, 36,914,690,464 bytes, SHA-256
-  `5fa510f44779b0e3d38a6678985f417a1c65e3000405ca5d6dcf7fd065e47a15`;
-  result `apps/agent-evaluation/results/20260811T175021Z-kat-coder-v2.5-dev-q8-0.json`.
-- Ornith 1.0 35B Q8_0, 36,903,138,880 bytes, SHA-256
-  `cbc992bca07901c1a51f33e65e6fc5d687de179c852a772dfd15e4c3261dbf5c`;
-  result `apps/agent-evaluation/results/20260811T164947Z-ornith-1.0-35b-q8-0.json`.
-- Muse Glimmer official dynamic K-quant, 19,653,957,984 bytes, SHA-256
-  `513109c8319115f69eb09fb7b118c97c8167d15bc014fd7670d2e30489bf106c`,
-  with its 1,631,205,312-byte DFlash draft, SHA-256
-  `27d9a805fa29b943cfb6ad4843367cd4eaaaf06bd452d8cc3e00a2cd18a677bc`;
-  result `apps/agent-evaluation/results/20260811T175621Z-muse-glimmer-30b-kquant-dynamic-dflash.json`.
-- Qwen3.6 27B MTP Q8_0, 29,047,084,160 bytes, SHA-256
-  `9408dcb356cc061a05c139e5647cbde0698ff980c6a69f7fc214e9989f86cfa8`;
-  result `apps/agent-evaluation/results/20260811T173701Z-qwen3.6-27b-mtp-q8-0.json`.
-- Gemma 4 31B Q8_0, 32,635,676,896 bytes, SHA-256
-  `fcd52cebacb165a98df5abe6fb70dbf076835f4a06e064ffb33dd739b8835c9c`,
-  with its 514,687,104-byte MTP draft, SHA-256
-  `6b52ab20af503aee320dc09e93f886133b18d89ffc9075c7d9dcaf681e20b375`;
-  result `apps/agent-evaluation/results/20260811T165827Z-gemma4-31b-it-q8-0-mtp.json`.
-
-All six completed the easy task correctly, so this screen rejects obvious
-agent-loop failures but does not establish broad correctness. Qwen3.6 35B-A3B
-MTP was fastest end to end. KAT Coder was the closest alternate at 1.39 times
-the wall time. Ornith was correct and used fewer tool calls, but read much
-more context and took 2.11 times as long. Muse's DFlash decode did not offset
-40 tool calls and repeated spacing probes. Qwen3.6 27B MTP and Gemma 4 were
-correct but took 3.34 and 3.93 times the reference wall time. These are
-single-repetition observations, not estimates of variance.
-
-Laguna XS 2.1 used its exact 20,274,300,032-byte Q4_K_M artifact, SHA-256
-`1ac7079101fca5a6df8c5a7523a3c30ea7d1c0e4b1258090e7d6d4039287f6cb`,
-under the same version 4 conditions. It identified the relevant formatter but
-made no edit in more than 21 minutes, repeatedly recalculated the same width
-boundary, and fell to about 5 generated tokens/s after reading roughly 20K
-context. The run was interrupted and cleaned up. Its checkpoint is
-`apps/agent-evaluation/results/20260811T171415Z-laguna-xs-2.1-q4-k-m.json`.
-Older version 2 screens are not part of the table: Laguna S 2.1 was
-interrupted after about 27 minutes without an edit, and DwarfStar DeepSeek V4
-Flash derived the likely fix but entered a repetitive loop before applying
-it. Their exact checkpoints are
-`20260811T135443Z-laguna-s-2.1-q4-k-m.json` and
-`20260811T142629Z-deepseek-v4-flash.json` in the same result directory.
-Those runs showed working runtime and Pi tool protocols, but not useful coding
-completion.
-
-A 2026-08-12 Laguna S control used source commit
-`74477f25cca6b3491e74e33dec72a06bef0309d5`, frozen suite fingerprint
-`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`, Pi
-0.84.1, ROCm, high thinking, 131072 context, and the current 45-minute
-per-attempt ceiling. The preset did not preserve interleaved reasoning and
-advertised no reasoning-effort support, so Pi's requested level was ignored.
-The server warned about the missing preservation setting. Result:
-`apps/agent-evaluation/results/v5-45m-laguna-s-re-align.json`. Retain this as a
-misconfigured control rather than a final model-quality result.
-
-Commit `a2256eb948c3bf74bd83cfd17156a47e991603ff` enabled reasoning
-preservation and the project's 1024, 4096, and 8192-token effort mapping for
-Laguna S. Two corrected trials used the same suite, Pi version, backend,
-context, image, and model bytes. The 68,248,760,064-byte Q4_K_M artifact had
-SHA-256
-`a34c74e46688122bef83122f4133031bababbefcf57436dde97048c91e2cc6ff`.
-The runtime was image
-`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r16`, image ID
-`15aa29c45b41f011f5edacd9f5fb761db26eae488d447453414e2d1b2a9e07a3`.
-
-The first corrected trial was manually interrupted at about 40 minutes while
-Laguna was beginning an edit tool call after deriving the correct width-10
-change. Its checkpoint is
-`apps/agent-evaluation/results/v5-45m-laguna-s-preserved-re-align.json`; do not
-score it as a pass or failure. The fresh trial received the complete 45-minute
-ceiling. It made 11 completed read or shell calls, correctly identified width
-10, and reproducibly stopped a high-effort reasoning turn at 8,329 decoded
-tokens, but never edited. Retained history reached about 29K tokens, and
-generation declined from 16.53 tokens per second initially to 5.65 on the
-bounded turn and 3.93 near timeout. The final 3,906-token reasoning turn was
-unfinished when the timeout checkpointed the attempt and removed the
-container. Result:
-`apps/agent-evaluation/results/v5-45m-laguna-s-preserved-re-align-r2.json`.
-The hard gate was not run.
-
-This accepts the corrected runtime and client wiring, not Laguna S as an
-autonomous coding choice on the tested host. Faster decoding could let the
-near-edit trajectory finish, but does not address the excessive reasoning
-token count. The experiment does not isolate Q4 quantization, and the official
-Q8_0 artifact cannot fit this 128 GiB host together with runtime state.
-
-Only Qwen3.6 35B-A3B MTP completed all six implementation and two review
-tasks under the final version 4 rules. The run took 2,046.8 seconds and used
-319,303 input, 7,627,558 cached, and 76,966 output tokens. Its strict
-implementation solve rate was 3/6:
-
-| Task | Result | Durable finding |
-| --- | --- | --- |
-| `re-align` | solved | correct shared-width change |
-| `fz-eintr` | solved | correct exact EINTR retry behavior |
-| `fz-symlink` | solved | correct symlink identity and lazy metadata behavior |
-| `re-cancel` | unsolved | all tests and build passed, but a generated `reencode` executable invalidated the attempt |
-| `fz-sort-cancel` | unsolved | hidden behavior failed because cancellation was checked only before and after the blocking stable sort |
-| `re-source-race` | unsolved | hidden behavior failed because output publication preceded source quarantine and quarantine did not reverify source identity |
-| `review-reencode-lifecycle` | review pending | useful review, but it overstated cancellation safety after validation |
-| `review-fzr-concurrency` | review pending | contained a material version-order error and missed that Enter can select from an older accepted snapshot before refresh |
-
-The version 4 conclusion was therefore narrower than "Qwen is trustworthy."
-Qwen3.6 35B-A3B MTP is the best-supported and fastest managed coding choice
-on this host. The reference still failed both hard safety implementations and
-made a material factual error in one review. The version 5 follow-up below
-supersedes the earlier recommendation to promote KAT and Ornith directly to a
-full-suite run.
-
-#### Version 5 coding follow-up (2026-08-12)
-
-The follow-up used source commit
-`d62ef8cae0a49bed6cab1b2ee85ecd3b720c4d08`, frozen suite
-`rocmplete-coding-v5` with fingerprint
-`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`,
-and the same host, image ID, Pi 0.84.1, ROCm backend, high thinking, 131072
-context, and reviewed per-model sampling policies as version 4.
-
-Qwen3.6 35B-A3B MTP completed all eleven tasks in 52 minutes 28 seconds
-elapsed. The agent attempts accounted for 3,105.2 seconds, 286 tool calls,
-513,182 input tokens, 11,205,961 cached tokens, and 114,087 output tokens. Its
-implementation solve rate remained **3/9**: `re-align`, `fz-eintr`, and
-`fz-symlink` passed. The retained result is
-`apps/agent-evaluation/results/v5-qwen35-full.json`.
-
-The six implementation failures were bounded completions, not loops:
-
-- `re-cancel` passed ordinary and hidden tests but retained a generated
-  executable.
-- `fz-sort-cancel` passed ordinary tests, but its changed sorting helper was
-  incompatible with the withheld cancellation contract.
-- `re-source-race` passed ordinary tests, but its snapshot and quarantine
-  design was incompatible with the withheld replacement-race contract.
-- `proxy-late-probe` failed to close a successful connection that returned
-  after timeout.
-- `rc-selinux-verify` invoked recursive host relabeling at the wrong boundary,
-  broke 14 ordinary tests, and missed the required per-file no-dereference
-  command.
-- `nonet-lifecycle` passed ordinary tests, but its changed wait-helper contract
-  was incompatible with the withheld lifecycle test.
-
-Human review also rejected both read-only answers as fully trustworthy. The
-reencode answer mislocated core lifecycle functions and overstated
-cancellation safety after validation. The fzr answer incorrectly said an
-older entry snapshot is discarded; the picker accepts it and schedules a
-follow-up, which also made the answer's Enter-selection explanation
-inconsistent.
-
-The five other easy-screen winners then received only `re-source-race`, with
-a 20-minute practical ceiling. A remote SIGINT produced a durable interrupted
-checkpoint and clean container removal on timeout.
-
-```bash
-timeout --foreground --signal=INT --kill-after=90s 20m \
-  ./rocmplete benchmark agent --preset PRESET --task re-source-race
-```
-
-- Gemma4 31B MTP completed in 1,000.2 seconds and 27 tool calls. Ordinary tests
-  and the build passed, no generated artifact remained, and the hidden
-  contract failed. Result: `v5-gemma4-mtp-source-race.json`.
-- Ornith 1.0 35B completed in 1,000.6 seconds and 54 tool calls. Ordinary tests
-  passed, the hidden contract failed, and a generated executable remained.
-  Result: `v5-ornith-source-race.json`.
-- KAT-Coder v2.5 Dev completed in 1,139.7 seconds and 90 tool calls. Ordinary
-  tests passed, the hidden contract failed, and a generated executable
-  remained. Result: `v5-kat-source-race.json`.
-- Muse Glimmer 30B DFlash reached ordinary tests but had not exited after 20
-  minutes and 67 tool calls. Result: `v5-muse-dflash-source-race.json`.
-- Qwen3.6 27B MTP had a substantial patch but had not reached tests after 20
-  minutes and 31 tool calls. Result: `v5-qwen27-mtp-source-race.json`.
-
-An extended capability probe then isolated those two interrupted models on
-the same task. It used source commit
-`75cd17ce43b8ded05d2e6ec096b452f927ae724a`, the unchanged suite fingerprint,
-Pi 0.84.1, ROCm backend, high thinking, 131072 context, and the same model
-presets and grading contract. The only policy change was a 60-minute outer
-ceiling:
-
-```bash
-timeout --foreground --signal=INT --kill-after=90s 60m \
-  ./rocmplete benchmark agent --preset PRESET --task re-source-race
-```
-
-- Qwen3.6 27B MTP exited normally after 1,674.5 seconds and 49 tool calls.
-  Ordinary tests and the build passed, while the hidden suite failed to
-  compile because `snapshotSource` was absent and the verification and
-  quarantine contracts were incompatible. Live context peaked at 98,943
-  tokens without compaction. Result:
-  `v5-capability-qwen27-mtp-source-race.json`.
-- Muse Glimmer 30B DFlash exited normally after 1,929.2 seconds and 82 tool
-  calls. Ordinary tests and the build passed, while the hidden suite failed to
-  compile because `snapshotSource` was absent and `quarantineSource` had an
-  incompatible signature. Live context peaked at 80,558 tokens without
-  compaction. Result: `v5-capability-muse-dflash-source-race.json`.
-
-The longer runs show that both models can eventually produce a coherent,
-ordinary-test-passing candidate. Neither solved the withheld source-safety
-contract, neither approached the context limit, and neither qualifies for a
-full-suite promotion. The 20-minute records remain the practical-runtime
-comparison; these 60-minute records answer only the narrower capability
-question.
-
-This calibration sets the operator ceiling for future coding-model evaluation
-at 45 minutes per attempt. It is not an aggregate suite timeout and does not
-change the historical policies recorded above. A clearly repetitive loop may
-still be interrupted earlier. A progressing timeout blocks promotion on the
-tested host but remains inconclusive about model capability; retain its
-checkpoint and revisit it when hardware or runtime throughput changes
-materially.
-
-#### Historical Muse M, Muse XL, and Qwen 27B focus (2026-08-13)
-
-A focused comparison used source commit
-`5d170046250616cc88f67fce09177fe39c2a3afb`, the unchanged version 5 suite
-fingerprint, Pi 0.84.1, ROCm, high thinking, 131072 context, and image
-`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-62bf73d-r19`, image ID
-`d4b7065b465a85efbfc5ff0aa10895283bdc5e79b2aae5b528f9f1b6e9647147`.
-It compared `muse-glimmer-30b-kquant-17gb-q4-k-m-dflash`,
-`muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash`, and
-`qwen3.6-27b-mtp-q8-0`. The Muse presets used the accepted ROCm DFlash depth
-15; Qwen used its managed three-token MTP policy.
-
-On `review-fzr-concurrency`, M, XL, and Qwen completed in 428.4, 369.9, and
-391.6 seconds with 13, 9, and 7 tool calls. Manual review found Qwen strongest
-on entry-version ordering, but it still missed immediate Enter selection from
-the older visible snapshot. M contradicted its otherwise correct description,
-and XL incorrectly said an older result is discarded. Retained results are
-`muse-m-review-fzr-20260813.json`, `muse-xl-review-fzr-20260813.json`, and
-`qwen27-review-fzr-20260813.json`.
-
-On medium `re-cancel`, M solved in 890.2 seconds and 75 tool calls, and XL
-solved in 1,014.4 seconds and 67 calls. Qwen's patch passed ordinary and hidden
-tests and built successfully in 1,028.1 seconds and 38 calls, but its own build
-left a forbidden `reencode` executable, so the strict outcome is unsolved.
-Peak live context was 57,702, 66,026, and 89,659 tokens respectively. Results
-are `muse-m-re-cancel-20260813.json`, `muse-xl-re-cancel-20260813.json`, and
-`qwen27-re-cancel-20260813.json`.
-
-All three completed hard `re-source-race` within the 45-minute policy and all
-three failed its hidden contract. M took 1,429.3 seconds and 91 tool calls, XL
-1,463.2 seconds and 71 calls, and Qwen 1,527.6 seconds and 37 calls. Ordinary
-tests and builds passed without generated artifacts. Each hidden suite failed
-to compile against incompatible snapshot or quarantine helpers. Manual patch
-inspection found M's per-input snapshot and deferred-restore design safer than
-XL's global mutable snapshot map and replacement-deleting restore. Qwen traced
-the failure paths carefully but still selected incompatible APIs. Peak live
-context was 69,686 for M, 66,640 for XL, and 97,818 for Qwen. Results are
-`muse-m-re-source-race-20260813.json`,
-`muse-xl-re-source-race-20260813.json`, and
-`qwen27-re-source-race-20260813.json`.
-
-These are single attempts and do not replace the complete-suite Qwen 35B
-baseline. They establish narrower operational roles: XL is the preferred Muse
-target for human-guided code archaeology, M has the strongest autonomous-
-implementation evidence among these three, and Qwen 27B remains a useful
-control-flow reviewer and second opinion. None demonstrated safe unattended
-destructive work. The qualitative reasoning and recommendation are retained
-in [Coding-agent model quality](coding-agent-model-quality.md#focused-muse-m-muse-xl-and-qwen-27b-comparison).
-
-All result paths are below `apps/agent-evaluation/results/`. No challenger
-passed the hard gate, so none consumed a full-suite run. Laguna and DwarfStar
-were not repeated because their unchanged earlier runs had already established
-non-convergence. The installed non-MTP Qwen variants were also not repeated:
-the version 4 comparison had selected the MTP variants as its practical
-configurations, and the older non-MTP Qwen 27B easy run was slower than its
-MTP counterpart. This follow-up filled missing suite coverage rather than
-reopening the MTP-versus-non-MTP comparison.
-
-For a newly integrated model, preserve the suite and host inputs and use the
-same promotion sequence:
-
-```bash
-./rocmplete benchmark agent --preset NEW_PRESET --task re-align
-./rocmplete benchmark agent --preset NEW_PRESET --task re-source-race
-./rocmplete benchmark agent --preset NEW_PRESET
-```
-
-The first command permits a direct comparison with the version 4 table and
-the version 5 Qwen baseline. The safety screen prevents an easy formatting
-fix from qualifying a model by itself.
-Run the complete suite only after both bounded tasks converge, then repeat a
-finalist three times before changing the recommended default. Compare results
-only when suite fingerprint, host, image, backend, context, harness, thinking,
-and repetition count agree. A changed llama.cpp image or model-specific
-sampling policy remains useful practical evidence, but must be called out as
-a changed runtime rather than folded silently into this baseline.
-
-Two host-specific failures were also useful. The first shared SELinux mount of
-the newly installed DwarfStar file normalized its label after verification,
-changing ctime and making the durable receipt stale. Commit `a333de2` now
-applies the complete shared container label before hashing; a subsequent mount
-left the receipt current. Also, a detached rootless container launched from an
-SSH-only session received SIGINT and exited with status 130 when that host's
-last login-scoped user manager stopped. Keeping the session active through the
-explicit stop passed; a persistent remote service needs the host's user-manager
-lingering policy handled separately. Neither failure was a GPU reset or model
-inference crash.
+The previous cross-model quality tables and retained result references were
+removed after model-native sampling, chat templates, harness versions, and
+managed defaults changed materially. They are not a current baseline. New
+comparisons must be generated from the frozen runner under newly declared
+conditions; no model-quality conclusion is carried forward.
 
 ## Automated bounded smoke
 
@@ -1057,9 +608,8 @@ local source image.
 | llama.cpp offload smoke | `llama-qwen3-0.6b-q8-0` | pending | pending | pending | pending |
 | llama.cpp Qwen3.6 tool protocol | `qwen3.6-27b-mtp-q8-0`, complete nested tool round trip at 256K with thinking on (Pi `high`) and off | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
 | llama.cpp Qwen3.8 tool protocol | `qwen3.8-27b-mtp-ud-q8-k-xl`, complete nested tool round trip at 256K with off, low, medium, and xhigh | N/P unless model and context fit the card | N/P unless host memory is deliberately used | pending | pending |
-| llama.cpp Qwen3.8 Q4 optional path | `qwen3.8-27b-mtp-ud-q4-k-xl`, 64K medium-effort tool round trip and one frozen Pi task; compare ROCm and Vulkan | pending | pending | accepted 2026-08-16 on Vulkan | pending |
+| llama.cpp Qwen3.8 Q4 optional path | `qwen3.8-27b-mtp-ud-q4-k-xl`, 64K medium-effort tool round trip; compare ROCm and Vulkan | pending | pending | accepted 2026-08-16 on Vulkan | pending |
 | llama.cpp Muse DFlash | `muse-glimmer-30b-kquant-dynamic-q4-k-xl-dflash-256k`, ROCm depth 12 or Vulkan depth 4, high strength | N/P unless model and context fit the card | N/P unless host memory is deliberately used for offload | accepted 2026-08-14 on ROCm | pending |
-| llama.cpp agent default comparison | Qwen3.6 MTP on, Qwen3.8 MTP medium, and Muse 256K high through Pi with the same tasks and runtime conditions | N/P unless every model and context fits the card | N/P unless host memory is deliberately used | accepted 2026-08-14 on `re-align` | pending |
 | DwarfStar direct-answer smoke | DeepSeek V4 Flash 0731 Q2 imatrix (routed IQ2_XXS/Q2_K, Q8 attention/shared/output), 4K context, 64-token ceiling | N/P unless host memory offload is deliberately provisioned | pending | pending | pending |
 
 DwarfStar remains experimental after the bounded smoke. Before promoting it,
@@ -1086,15 +636,13 @@ non-MTP preset to separate template handling from speculative decoding.
 Only after the raw API exchange passes should OpenCode, Pi, OMP, and Maki tasks be
 used as the final integration checks.
 
-For the agent default-comparison row, use explicit selectors: Qwen3.6
-`--thinking high` means native on, Qwen3.8 uses `--thinking medium`, and Muse
-uses `--thinking high`. These are operational defaults, not equivalent amounts
-of reasoning. Run all three through Pi with the same tasks and repetition
-count and unchanged hardware/runtime inputs. Keep edit and shell approvals
-equivalent across runs. Compare the structured results only after all three
-complete; record quality, protocol, state-corruption, or truncation failures
-instead of treating wall time as the sole rank. Run per-model native-level
-sweeps as a separate experiment.
+For a future agent comparison, declare explicit model-native selectors rather
+than treating one label as equivalent across families. Run every candidate
+through the same harness, tasks, repetition count, and hardware/runtime inputs.
+Keep edit and shell approvals equivalent across runs. Compare structured
+results only after all candidates complete; record quality, protocol,
+state-corruption, or truncation failures instead of treating wall time as the
+sole rank. Run per-model native-level sweeps as a separate experiment.
 
 Keep the first Qwen3.8 pass on ROCmplete's pinned official-template adaptation.
 Do not replace it mid-comparison in response to anecdotal release reports. The
@@ -1111,11 +659,10 @@ non-speculative controls when behavior or output is suspect. Exercise prompts
 extending beyond 128K and inspect retrieval quality, tool selection, draft
 acceptance, latency, and memory rather than treating successful startup as
 acceptance.
-Maki has completed substantial live repository tasks and is the strongest
-validated scaffold for the official target. OpenCode, Pi, and OMP remain exposed
-through the same reviewed function-tool contract, but depth is sensitive to
-their scaffold and prompt. Complete the intended live task in each client
-before allowing unattended writes. Confirm `reasoning-preserve = true` in
+OpenCode, Pi, OMP, and Maki remain exposed through the same reviewed
+function-tool contract, but protocol compatibility does not establish
+comparative quality. Complete the intended live task in each client before
+allowing unattended writes. Confirm `reasoning-preserve = true` in
 router mode or `--reasoning-preserve` in direct-server startup; do not confuse
 that history policy with Muse's client-selectable reasoning strength.
 

@@ -10,6 +10,12 @@ Always inspect `Containerfile`, `catalog/catalog.json`, source, and tests for
 the current pins and behavior before using it. Hostnames, usernames, private
 paths, and other machine-specific identifiers are intentionally omitted.
 
+The agent-quality results and comparative judgments originally recorded here
+were retired on 2026-08-17 after model templates, sampling ownership,
+reasoning defaults, and harness integrations changed. Native throughput,
+memory, protocol, and startup observations remain as historical tuning
+evidence. A future Muse pass must produce a fresh quality baseline.
+
 ## Question and decision
 
 An initial OpenCode session with the Unsloth Dynamic Q8 target returned a very
@@ -27,14 +33,8 @@ managed target with Meta's official dynamic K-quant GGUF**:
 
 - the official target is substantially smaller than the Q8 and BF16
   alternatives and had the best measured decode throughput;
-- it completed a broad, tool-using repository task through Maki at 128K with
-  DFlash;
-- separate Q8 runs at both 128K and forced 256K also completed substantial
-  tool-using tasks, so neither DFlash nor the extended preset explained the
-  original shallow response;
-- the exact BF16 task also completed correctly, but its much larger resident
-  memory, slower decode, and similar final utility did not justify a second
-  catalog choice; and
+- the exact BF16 runtime had much larger resident memory and slower decode,
+  which did not justify a second catalog choice; and
 - llama.cpp's `--reasoning-preserve` policy was applied to all three
   then-managed dynamic-target Muse presets, while Muse remained distinct from
   models that support a client-selectable reasoning-effort budget.
@@ -148,45 +148,9 @@ and reasoning preservation.
 | Official dynamic K-quant | 13.997 s | 30.64 GB |
 | BF16 | 37.494 s | 66.77 GB |
 
-After the long BF16 agent task, container memory was 73.83 GB. These are
+After the long BF16 request, container memory was 73.83 GB. These are
 observations from the container accounting on one integrated-memory host,
 not exact model-allocation or peak-memory guarantees.
-
-## Agent-harness results
-
-The repeated task prompt was `Can you review the code in this project for
-me?`. The checkout was read-only to the model and was checked for mutations
-after each run.
-
-| Target and policy | Client | Observed behavior |
-| --- | --- | --- |
-| Official K-quant, DFlash, 128K | Maki | Completed a broad repository review in about 7.5 minutes, used roughly 40.7K context, and returned about 1.3K final tokens |
-| Unsloth Q8, DFlash, 128K | Maki | Completed a substantive review in about 8.5 minutes, used roughly 53.8K context and about 30 turns, and returned about 1.5K final tokens |
-| Unsloth Q8, DFlash, forced 256K | Maki | Completed a substantive review in about 5 minutes, used roughly 33.8K context, and returned about 1.4K final tokens |
-| Unsloth BF16, DFlash, 128K | Maki | Completed in 453.363 seconds with 28 turns, 31 tool calls, 33,278 final-slot tokens, and 1,734 final tokens |
-
-The exact BF16 tool-call breakdown was 11 shell calls, two glob calls, two
-grep calls, five index calls, seven reads, and four todo updates. It ran the
-project compile and unit-test checks and returned a coherent architecture and
-maintenance review. It did not produce a uniquely valuable coding finding
-that justified the additional memory or lower decode rate. The final BF16
-DFlash turn accepted 1,115 of 9,270 proposals, or 12.03%; earlier tool turns
-were commonly in the 20% to 49% range.
-
-The earlier short OpenCode response did not correspond to a server crash.
-OpenCode had completed the turn normally after reading only the root README.
-Its built-in short-answer bias and the prompt/scaffold used for that session
-allowed a minimal answer. A stronger investigation prompt can drive much more
-hidden reasoning, while Maki's default project-task scaffold naturally drove
-breadth. This is a harness and prompting difference, not proof that one GGUF
-is categorically more diligent.
-
-The test evidence therefore supports all three managed agent catalogs. Maki
-has the strongest live Muse evidence. OpenCode and Pi remain protocol-
-compatible and useful, but task depth is scaffold-sensitive and should be
-judged on the actual requested workflow. `reasoning_preserve` keeps parsed
-reasoning available to the server's multi-turn history; it does not force a
-client to explore more files or expose a Qwen-style effort selector.
 
 ## Failures and misleading signals
 
@@ -306,19 +270,6 @@ tool call and a tool-result continuation. The router loaded the same 128K DFlash
 preset on demand, passed the managed template path to its child, and returned
 a required structured tool call. Both paths stopped cleanly without a matching
 kernel fault.
-
-A separate Pi 0.84.1 evaluation then ran the frozen version 5 `re-align` task
-with the 128K DFlash preset, high thinking, and ROCm. It solved the task in
-597.8 seconds with 36 tool calls. All ordinary and hidden tests, the build, and
-the dependency and artifact checks passed. The attempt generated 12,749 tokens
-at 23.89 tokens/s and processed prompts at 74.92 tokens/s. Its retained result
-is
-`apps/agent-evaluation/results/20260812T152234Z-muse-glimmer-30b-kquant-dynamic-dflash.json`.
-The patch used matching width-10 literals in the header and row rather than a
-named shared constant, so this remains an easy-task compatibility result, not
-evidence of stronger design judgment. The previous comparable run took 670.2
-seconds and 40 tool calls, but two single repetitions cannot attribute the
-difference to the template.
 
 This correction removes contradictory prompt formatting but does not change
 the model weights, DFlash decoder, tool protocol, sampler policy, or harness
@@ -460,29 +411,6 @@ and Windows driver prevent an attribution. Normal coding-agent turns can show
 much higher instantaneous rates when their accepted draft sequence is easier,
 which is also not comparable to either fixed workload.
 
-A maintained Pi implementation probe at 128K, high reasoning, ROCm, and depth
-15 was then used as the quality and tool-protocol screen. It solved the frozen
-version 5 `re-align` task in 800.1 seconds and 65 tool calls. Ordinary and
-hidden tests, the build, dependency checks, artifact checks, and network
-isolation all passed. The patch changed the same two files with the same
-SHA-256, `cea8b4bc7fc8ba2cfd5c7952bf22b2a15fa1fafe37c186eabda7bca0fed1e215`,
-as the accepted dynamic-target run. It generated 17259 tokens at 20.39
-tokens/s and processed prompts at 73.71 tokens/s.
-
-The comparable dynamic-target run took 597.8 seconds, 36 tool calls, and 12749
-generated tokens at 23.89 tokens/s. The 17 GB attempt spent substantial extra
-time calculating and independently checking the boundary cases before making
-the same change. This is not a correctness or tool-protocol failure, but it
-does show that fixed decode benchmarks do not predict agent efficiency. One
-stochastic attempt also cannot attribute the extra deliberation to the
-quantization. These results do not support replacing the guided dynamic
-default: Meta's
-[current model card](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF/blob/43c7eadd41352a299ea8e0a36b3157978dd63596/README.md)
-reports a larger average benchmark loss for the 17 GB quantization than for
-dynamic K-quant, and this single solved probe cannot close that general
-quality risk. The retained result is
-`apps/agent-evaluation/results/muse-17gb-re-align-20260813.json`.
-
 Operationally, the transient evaluation service required both an explicit
 checkout working directory and the Homebrew binary path. Two setup attempts
 exited with status 127 before model inference and are excluded. An early deep
@@ -497,18 +425,18 @@ reasoning without content; the same probe with the managed low-reasoning
 directive and 256-token budget stopped normally with exact content
 `VULKAN_OK`. Router rendering put `spec-draft-n-max = 4` in the 17 GB section,
 loaded that section on demand, and returned exact content `ROUTER_OK`. The ROCm
-Pi evaluation independently logged depth 15 and completed its structured
-65-tool loop. All containers stopped and were removed, with no matching GPU
+server independently exercised depth 15. All containers stopped and were
+removed, with no matching GPU
 reset, page fault, or ring timeout in the kernel journal. llama.cpp did emit a
 ROCm host-buffer size-mismatch warning while destroying the evaluation
-context; it followed the successful result write and exit status 0, so it is
+context; it followed successful inference and exit status 0, so it is
 retained as a cleanup warning rather than classified as an inference failure.
 
 ### Two-variant family and forced-256K acceptance
 
 The 17 GB pair was subsequently promoted from an exact advanced choice into
 the existing `muse-glimmer` recipe to make direct A/B selection practical.
-This did not change the quality judgment or create another family: the recipe
+This did not create another family or change the guided default: the recipe
 still launches the dynamic 128K DFlash preset by default. A guided install now
 selects both official target/draft pairs, 39,673,055,328 bytes or about 36.95
 GiB. Each pair retains its own immutable upstream DFlash artifact rather than
@@ -546,48 +474,6 @@ and the matching kernel-journal window contained no GPU reset, page fault,
 ring timeout, or device-loss report. The forced policy remains experimental
 because startup and shallow generation do not establish useful retrieval or
 quality beyond 128K.
-
-### M and XL agent-behavior comparison
-
-A same-runtime follow-up compared the two 128K ROCm DFlash presets with
-Qwen3.6 27B MTP under Pi 0.84.1, high thinking, and the frozen version 5
-grading contract. These are single attempts, not a claim that quantization
-alone caused every behavioral difference.
-
-The 17 GB Q4_K_M target had the stronger controlled implementation record. It
-solved medium `re-cancel` in 890.2 seconds; the dynamic Q4_K_XL target solved
-the same fixture in 1,014.4 seconds. Both passed ordinary and hidden tests,
-the build, artifact checks, and network isolation. Qwen's functionally correct
-attempt was disqualified by its retained build executable. On hard
-`re-source-race`, M and XL both passed ordinary tests and the build but failed
-the hidden helper contract. M produced the safer candidate, with per-input
-snapshots and deferred restoration. XL used global mutable snapshot state and
-could delete a replacement before restoring the quarantined source. M is
-therefore the provisional first choice of these Muse variants for a long
-autonomous implementation attempt, despite the model card's larger aggregate
-benchmark loss and the earlier easy task's extra deliberation.
-
-Human-guided code reading favored XL. On a naturalistic archaeology prompt
-against an older private checkout, XL gave the best-balanced accurate answer
-in ten tool calls. M's answer was equally grounded and more exhaustive, but
-less economical. On the frozen fzr concurrency review, however, XL made a
-material version-order error; M partly understood the behavior but contradicted
-itself. Qwen was strongest on that subtle mechanism, although it also missed
-one immediate-selection edge case. XL is consequently the preferred Muse
-target for interactive unfamiliar-code interrogation, not a source of facts
-that should go unverified.
-
-The fixed throughput result and agent result answer different questions. M's
-smaller allocation and stronger deep-prompt decode did not make every agent
-run shorter or every explanation better. Conversely, XL's cleaner archaeology
-answer did not make its safety patch better. Keep both targets first-class and
-retain dynamic XL as the guided family default. Choose M deliberately for
-longer implementation trials and XL for conversational repository study, then
-verify either model's boundary, concurrency, and destructive-operation claims.
-Exact measurements and retained result names are in the
-[same-host hardware record](hardware-acceptance.md#historical-muse-m-muse-xl-and-qwen-27b-focus-2026-08-13),
-with the quality judgment in
-[Coding-agent model quality](coding-agent-model-quality.md#focused-muse-m-muse-xl-and-qwen-27b-comparison).
 
 ## 2026-08-14 forced-256K XL depth tuning
 

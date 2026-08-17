@@ -70,25 +70,10 @@ context and returned exact content while accepting 125 of 132 proposals. A
 content, accepting 114 of 117 proposals. All containers stopped cleanly, and
 the kernel recorded no GPU fault, reset, or device loss.
 
-Pi 0.84.1 then ran the version 5 `re-align` coding task through the managed
-ROCm server at 131072 context and high thinking. The frozen
-`rocmplete-coding-v5` suite fingerprint was
-`9da456c1820080d032896fe0e69fafbf3722addc39008068ba62daff84b5aad7`.
-The model changed only `probe.go` and `reencode_test.go`; Pi, ordinary tests,
-hidden tests, and the build all exited zero. No dependency change, generated
-artifact, or network attempt was recorded. The resulting patch SHA-256 was
-`cea8b4bc7fc8ba2cfd5c7952bf22b2a15fa1fafe37c186eabda7bca0fed1e215`.
-The run completed in 451.4 seconds, processed 21,125 prompt tokens at 187.13
-tokens/s, and generated 7,169 tokens at 19.16 tokens/s. Its retained result is
-`apps/agent-evaluation/results/qwen27-mtp3-q8-kv-re-align.json` below the
-managed data directory.
-
-For context, the earlier version 4 Qwen27 result solved the same task with the
-same patch hash in 766.7 seconds and generated at 15.57 tokens/s. The accepted
-run was 41.1% shorter and its reported generation rate was 23.1% higher. This
-is useful end-to-end confirmation, not a controlled variance estimate: the
-suite revision, image, and stochastic agent path differed. The direct
-same-image measurements above remain the attributable performance evidence.
+The agent-quality run that accompanied this acceptance was retired on
+2026-08-17 after the managed template, sampling ownership, and harness policy
+changed. The direct same-image measurements above remain the attributable
+performance evidence.
 
 ## Snapshot under test
 
@@ -109,16 +94,18 @@ memory policy, and `--load-mode none` policy remained active. The test left no
 managed container running.
 
 Unless a case says otherwise, the server used its normal 2048 logical batch,
-512 physical batch, F16 K/V cache, automatic Flash Attention, and the managed
-Qwen sampling policy:
+512 physical batch, F16 K/V cache, automatic Flash Attention, and this fixed
+historical sampler:
 
 ```text
 temperature=0.6 top_p=0.95 top_k=20 min_p=0
 presence_penalty=0 repeat_penalty=1
 ```
 
-This sampling already matches the model author's precise-coding guidance. It
-was held fixed rather than treated as another performance variable.
+This sampling matched the model author's precise-coding guidance and was held
+fixed rather than treated as another performance variable. It is not the
+current managed default: current Qwen3.6 presets select mode-aware dense or
+sparse sampling in the server.
 Q8 cases changed the target cache with `--cache-type-k q8_0`,
 `--cache-type-v q8_0`, and `--flash-attn on`; the separate MTP draft cache
 types remained at their F16 defaults.
@@ -321,19 +308,9 @@ the other candidates, and its MTP-accepted decode rate fell from roughly 23.35
 to 20.81 tokens/s on that changed context. Preserving more cached tokens did
 not make the total request cheaper.
 
-Pi 0.84.1 finally ran one repetition of the frozen
-`review-fzr-concurrency` task for each template with the same Qwen3.6 27B MTP
-weights, ROCm backend, 131072 context, high thinking, sampling, and Strix Halo
-policy. Baseline took 414.2 seconds and generated 3,774 tokens, the narrow
-candidate took 385.5 seconds and 3,424 tokens, and v22-neutral took 399.7
-seconds and 3,642 tokens. All produced valid review artifacts and cited the
-four relevant source files. This single stochastic repetition is not evidence
-of a template speedup. Manual source comparison favored the narrow answer: it
-correctly allowed Enter to select an older still-valid ranking when scanning
-advanced during an active job. The v22-neutral answer incorrectly implied
-that this boundary always waits for the newest snapshot. Raw results remain
-below the managed data directory as
-`apps/agent-evaluation/results/qwen-template-*-review-fzr-20260814.json`.
+The stochastic agent-review comparison that accompanied this template audit
+was retired on 2026-08-17 and is not part of the selection evidence retained
+here.
 
 The selected managed template is the narrow behavioral correction without the
 unused raw-string fallback. llama.cpp normalized both tested OpenAI argument
