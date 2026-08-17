@@ -56,6 +56,40 @@ failure, device loss, or OOM event. This accepts server-side mode resolution,
 client override precedence, and GPU inference wiring; it is not a quality or
 performance comparison.
 
+### Fedora 44 Strix Halo Qwen3.6 mode-aware sampling (2026-08-17)
+
+ROCmplete implementation commit `abec977`, from checkout `53b0032`, was built
+and exercised on the Fedora 44 Strix Halo host with kernel
+`7.1.7-200.fc44.x86_64`, profile `strix-halo`, ROCm 7.14, and
+`/dev/dri/renderD128`. The resulting image was
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-3cb7ffb-r27` (image ID
+`30e73b218a52de1891be90c787317deeddd991370442f28a34db3dea233bb775`).
+The downstream patch applied to the pinned llama.cpp source and compiled for
+all four managed GPU targets. The image passed `pip check`, retained only the
+three intended llama.cpp executables, and had no unresolved dynamic-library
+dependency.
+
+Router rendering assigned `qwen3.6-27b` to both dense presets,
+`qwen3.6-35b-a3b` to the installed sparse MTP preset, and `qwen3.8-27b` to the
+Qwen3.8 presets. Live `/slots` state after bounded ROCm requests confirmed the
+effective values. Dense Qwen3.6 thinking on used temperature 1.0, top-p 0.95,
+top-k 20, min-p 0, presence penalty 0, and repeat penalty 1. Sparse 35B-A3B
+thinking on used the same tuple with presence penalty 1.5. Thinking off for
+both used temperature 0.7, top-p 0.8, top-k 20, min-p 0, presence penalty 1.5,
+and repeat penalty 1. The generation prompt was open for thinking and
+preclosed for off.
+
+Maki's zero-token thinking budget selected the off tuple. A partial caller
+override changed temperature to 0.25 while an explicit null top-p selected the
+off-mode default; the other fields retained their server defaults. Direct
+dense-preset startup independently reproduced both the on and off tuples, and
+a Qwen3.8 medium router request retained its existing thinking tuple. Exact
+off-mode replies completed through dense router, sparse router, and direct
+startup. All containers stopped cleanly. The kernel journal for the build and
+test window contained no matching AMDGPU fault, reset, timeout, SVM mapping
+failure, device loss, protection fault, or OOM event. This accepts the new
+sampling-policy wiring and inference path, not comparative model quality.
+
 ### Fedora 44 Strix Halo Qwen3.6 35B-A3B restoration (2026-08-17)
 
 ROCmplete commit `f6d4c43` restored the pinned non-MTP and MTP Qwen3.6
