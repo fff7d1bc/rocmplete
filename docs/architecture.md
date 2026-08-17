@@ -226,7 +226,7 @@ does not authenticate the case outcomes and is not a signed attestation.
 `Containerfile` defines a small `content-tools` target containing pinned
 Hugging Face download dependencies and the resumable direct-HTTPS helper.
 Every application build ensures and tags this prerequisite as
-`localhost/rocmplete:content-ubuntu26.04-huggingface1.24-r1`; `content install`
+`localhost/rocmplete:content-ubuntu26.04-huggingface1.27-r1`; `content install`
 uses it without building anything itself. This keeps downloads independent of
 ComfyUI and makes a llama.cpp-only initial setup complete.
 

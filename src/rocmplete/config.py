@@ -40,7 +40,7 @@ ROCM_BASE_IMAGE = (
 )
 ROCM_BASE_BUILD_TARGET = "rocm-base"
 CONTENT_TOOLS_IMAGE = (
-    "localhost/rocmplete:content-ubuntu26.04-huggingface1.24-r1"
+    "localhost/rocmplete:content-ubuntu26.04-huggingface1.27-r1"
 )
 CONTENT_TOOLS_BUILD_TARGET = "content-tools"
 LLAMA_BACKENDS = ("rocm", "vulkan")

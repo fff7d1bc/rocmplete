@@ -78,7 +78,7 @@ Build through one application so the normal prerequisite path is exercised:
 ```bash
 ./rocmplete build comfyui --no-cache
 podman run --rm --entrypoint /opt/venv/bin/python \
-  localhost/rocmplete:content-ubuntu26.04-huggingface1.24-r1 \
+  localhost/rocmplete:content-ubuntu26.04-huggingface1.27-r1 \
   -m pip check
 ```
 
