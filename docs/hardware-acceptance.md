@@ -26,6 +26,36 @@ this document.
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
+### Fedora 44 Strix Halo Qwen3.8 mode-aware sampling (2026-08-17)
+
+ROCmplete commit `fe6d5c3` was built and exercised on the Fedora 44 Strix Halo
+host with kernel `7.1.7-200.fc44.x86_64`, profile `strix-halo`, ROCm 7.14, and
+`/dev/dri/renderD128`. The resulting image was
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-3cb7ffb-r26` (image ID
+`0b1f72908463ed2bf243bb6ac3a412872f520264b257d2c6caa1ed2fec4869dc`).
+The image passed `pip check`, and the pinned llama.cpp source accepted and
+compiled the complete managed patch set.
+
+The installed `qwen3.8-27b-mtp-ud-q8-k-xl` preset was tested through both the
+router and direct-preset ROCm server paths at 262144 context with MTP draft
+depth three. Router discovery showed the private Qwen3.8 sampling-profile
+marker in the child command. Default and Maki medium requests resolved to
+temperature 1.0, top-p 0.95, top-k 20, min-p 0, presence penalty 0, and repeat
+penalty 1, with the thinking prompt open. `reasoning_effort: none`, explicit
+`enable_thinking: false`, and Maki's zero-token thinking budget each resolved
+to temperature 0.7, top-p 0.8, top-k 20, min-p 0, presence penalty 1.5, and
+repeat penalty 1, with the template's preclosed thinking block.
+
+A partial request override changed only temperature to 0.25 while retaining
+the remaining off-mode defaults. A request overriding all six managed fields
+retained every caller value, and an explicit null temperature selected the
+server default. The direct-preset path independently reproduced the medium and
+off tuples. Both managed containers stopped cleanly, and the kernel journal for
+the test window contained no matching AMDGPU fault, reset, timeout, SVM mapping
+failure, device loss, or OOM event. This accepts server-side mode resolution,
+client override precedence, and GPU inference wiring; it is not a quality or
+performance comparison.
+
 ### Fedora 44 Strix Halo Qwen3.6 35B-A3B restoration (2026-08-17)
 
 ROCmplete commit `f6d4c43` restored the pinned non-MTP and MTP Qwen3.6
