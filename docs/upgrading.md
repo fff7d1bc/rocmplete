@@ -427,8 +427,11 @@ For an upstream source update:
 5. Update the short commit and policy revision in the image tag. Update the
    third-party notice and the built-in guide when behavior changes.
 6. Build `dwarfstar --no-layer-cache`. Run `pip check`, help for every retained
-   binary, and `ldd`; verify that the final image has no compiler, Git checkout,
-   development wheel, PyTorch payload, or extra DwarfStar executables.
+   binary, and `ldd`; verify that the final image has no GCC build toolchain,
+   Git checkout, ROCm development wheel, PyTorch payload, or extra DwarfStar
+   executables. The minimal ROCm core wheel itself includes its HIP compiler
+   driver and LLVM runtime, so their presence is not evidence that the
+   development closure leaked into the image.
 7. Re-run
    `content install dwarfstar flash-0731-q2-imatrix --dry-run`. Change the
    model pin only after reviewing the exact replacement model card, license,
@@ -440,8 +443,16 @@ For an upstream source update:
    checks in `hardware-acceptance.md`. A successful multi-architecture build
    is not GPU acceptance.
 
-DSpark, MTP, multi-GPU, distributed execution, SSD streaming, evaluation, and
-the upstream native agent remain outside this procedure until ROCmplete
+The 2026-08-17 source update from `d250a7c` to `84cc882` reviewed the complete
+112-commit range. It retained ROCmplete's three-binary surface and existing
+multi-architecture WMMA fallback while incorporating upstream parser and
+server hardening, Flash 0731 fixture/version handling, DeepSeek ROCm attention
+and indexer work, and the final ROCm DSpark implementation. DSpark stays
+disabled in the source-only image until its separate support GGUF, exact
+runtime contract, and target-hardware acceptance are integrated.
+
+MTP, multi-GPU, distributed execution, SSD streaming, evaluation, and the
+upstream native agent remain outside this procedure until ROCmplete
 deliberately adopts one of those surfaces.
 
 ## Upgrade ComfyUI

@@ -95,7 +95,7 @@ APPLICATIONS = {
         identifier="dwarfstar",
         image=(
             "localhost/rocmplete:"
-            "dwarfstar-ubuntu26.04-rocm7.14-d250a7c-r5"
+            "dwarfstar-ubuntu26.04-rocm7.14-84cc882-r6"
         ),
         container_name="rocmplete-dwarfstar",
         build_target="dwarfstar",

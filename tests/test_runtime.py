@@ -901,7 +901,7 @@ class RuntimeCommandTests(unittest.TestCase):
 
         self.assertIn(
             "ARG DWARFSTAR_COMMIT="
-            "d250a7c07c6beb753e9b0a33951d8c00d6ef30ee",
+            "84cc882352757baf628a1776badf7cc54d584e28",
             containerfile,
         )
         self.assertIn("https://github.com/antirez/ds4.git", builder_stage)

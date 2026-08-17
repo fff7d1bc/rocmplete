@@ -177,11 +177,13 @@ and `gfx1201`. CPU startup is not GPU inference acceptance.
 
 For DwarfStar, run `ds4`, `ds4-server`, and `ds4-bench` help with the
 entrypoint overridden, inspect all three with `ldd`, and confirm that the
-final image has no `ds4-agent`, `ds4-eval`, compiler, Git checkout, development
-wheel, or PyTorch package. Confirm the image label and HIP code cover the
-canonical four architectures. Then run `acceptance --application dwarfstar`
-on each memory-capable hardware class. Starting a source-built binary on the
-build host is not inference acceptance.
+final image has no `ds4-agent`, `ds4-eval`, GCC build toolchain, Git checkout,
+ROCm development wheel, or PyTorch package. The minimal ROCm core wheel owns
+the HIP compiler driver and LLVM runtime needed by the packaged runtime.
+Confirm the image label and HIP code cover the canonical four architectures.
+Then run `acceptance --application dwarfstar` on each memory-capable hardware
+class. Starting a source-built binary on the build host is not inference
+acceptance.
 
 Inspect image metadata and history when pins or licenses changed:
 
