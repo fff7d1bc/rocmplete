@@ -64,6 +64,8 @@ finished. The public contribution path and baseline checks are summarized in
      snapshot](ling-3.0-flash-llama-cpp-feasibility.md)
    - [Qwen3.6 llama.cpp Strix Halo tuning feasibility
      snapshot](qwen3.6-strix-halo-llama-cpp-tuning-feasibility.md)
+   - [Qwen3.8 Strix Halo platform power-policy feasibility
+     snapshot](qwen3.8-strix-halo-platform-power-policy-feasibility.md)
 
 ## Sources of truth
 
