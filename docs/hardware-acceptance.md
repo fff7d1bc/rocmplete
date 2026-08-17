@@ -22,9 +22,47 @@ this document.
 | Host | Architecture | Observed workload scope |
 | --- | --- | --- |
 | Fedora Kinoite 44, Ryzen AI 9 HX 370, 128 GB DDR5-5600 SODIMM | Strix Point, `gfx1150` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets; DwarfStar generation was about 3.9 tokens/s |
-| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context; Qwen3.6 MTP tool protocol, OMP probe, and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer agent probes; Laguna XS and Ling feasibility controls |
+| Fedora Linux 44 (non-OSTree), Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash at 4K and 128K context, including the exact DSpark pair; Qwen3.6 MTP tool protocol, OMP probe, and fixed ROCm/Vulkan llama.cpp benchmarks; Muse Glimmer agent probes; Laguna XS and Ling feasibility controls |
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
+
+### Fedora 44 Strix Halo DwarfStar DSpark observation (2026-08-17)
+
+ROCmplete commit `363fedf` was exercised on the Fedora 44 Strix Halo host with
+kernel `7.1.7-200.fc44.x86_64`, profile `strix-halo`, ROCm 7.14, and
+`/dev/dri/renderD128`. The DwarfStar image was
+`localhost/rocmplete:dwarfstar-ubuntu26.04-rocm7.14-84cc882-r7` (image ID
+`246657a79924b937e6cf641852b8ae01066d2e19980f58851f453b073f077570`).
+The installed pair combined the verified 80.76 GiB target with the independently
+verified 5.58 GiB support GGUF from revision
+`86bb38ce2ba7a98ab0e550359fec5f48859dc723`.
+
+The host retained the general 112 GiB TTM/GTT configuration and did not use
+`amd_iommu=off`. The final image passed `pip check`, all three retained binaries
+had complete dynamic-library resolution, and the image contained no
+`ds4-agent`, `ds4-eval`, GCC toolchain, source checkout, ROCm development wheel,
+or PyTorch payload.
+
+Observed results:
+
+- Two 4K servers received the same direct-answer request at temperature zero
+  three times, with a 64-token ceiling. Target-only decode was 16.25 tokens/s
+  in all three runs. DSpark decode was 13.27, 13.49, and 13.49 tokens/s: a
+  13.49 tokens/s median and a 17.0% regression from the target-only median.
+  All six responses contained the same 64 output tokens. This accepts the
+  wiring and output check, not a performance win.
+- DSpark recognized all 81 support tensors with zero missing, invalid, or
+  metadata-error entries. Target startup preparation took 17.407 seconds and
+  the separate 5.58 GiB support mapping took 1.226 seconds in the 4K run.
+- The managed 131072-context DSpark server planned 83.80 GiB for the target,
+  KV cache, and buffers, with the 5.58 GiB support mapping loaded separately.
+  A greedy direct-answer request returned exactly `DSPARK_128K_OK`.
+- All three server instances stopped cleanly. The kernel journal from the test
+  contained no matching AMDGPU mapping/page fault, GPU reset, ring timeout,
+  process protection fault, or OOM event.
+
+DSpark therefore remains a separately installed, explicitly selected path.
+These results provide no reason to make it the DwarfStar default on Strix Halo.
 
 ### Fedora 44 Strix Halo observation (2026-08-09)
 
@@ -971,8 +1009,9 @@ GiB TTM/GTT starting point or DwarfStar's roughly 124 GiB upstream
 recommendation, and whether `amd_iommu=off` was enabled. The initial 112 GiB
 manual 128K run used
 it, so memory-capacity acceptance and IOMMU performance remain separate
-questions. DSpark, MTP, multi-GPU, distributed
-execution, and SSD streaming are not part of the current application contract.
+questions. The exact DSpark pair is an experimental opt-in contract; arbitrary
+MTP files, multi-GPU, distributed execution, and SSD streaming are not part of
+the current application contract.
 
 For the Qwen tool-protocol row, start the managed router and inspect `/props`
 for the expected template capabilities and context. Send a developer message

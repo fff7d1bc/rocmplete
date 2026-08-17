@@ -1151,6 +1151,11 @@ DSpark contract. The support model increases installed content to about
 as hardware- and workload-specific, and check output quality rather than
 assuming speculative decoding is always faster.
 
+The first fixed Strix Halo screen confirmed correct output and 128K operation,
+but its short 64-token decode was about 17% slower with DSpark enabled. That is
+why this path remains opt-in rather than the default. Longer or different
+workloads may behave differently and require their own controlled comparison.
+
 A different DwarfStar-compatible local GGUF can be selected explicitly; its
 containing directory is mounted read-only:
 
