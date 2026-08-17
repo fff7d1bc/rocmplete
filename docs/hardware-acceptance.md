@@ -26,6 +26,39 @@ this document.
 | Ubuntu 26.04, Ryzen AI Max+ 395, 128 GB LPDDR5X-8000 | Strix Halo, `gfx1151` | DwarfStar DeepSeek V4 Flash and the managed Qwen3.6 llama.cpp presets |
 | SteamOS 3.8, Radeon RX 9070 XT 16 GB | RDNA 4, `gfx1201` | ComfyUI and the Qwen3 0.6B llama.cpp smoke |
 
+### Fedora 44 Strix Halo catalog-driven reasoning sampling (2026-08-17)
+
+ROCmplete commit `b90eded` was built and exercised on the Fedora 44 Strix Halo
+host with kernel `7.1.7-200.fc44.x86_64`, profile `strix-halo`, ROCm 7.14, and
+`/dev/dri/renderD128`. The resulting image was
+`localhost/rocmplete:llama-cpp-ubuntu26.04-rocm7.14-3cb7ffb-r28` (image ID
+`4d432e66ee54226bb8ada1d938fc264832ceabd2be657e12ccde2f7e791f5dba`).
+The complete managed patch set applied to the pinned llama.cpp source and
+compiled its ROCm and Vulkan backends. The image passed `pip check`; its three
+managed llama.cpp executables were present and had no unresolved dynamic
+library dependency.
+
+Router discovery showed the dedicated `--sampling-defaults-by-reasoning`
+JSON generated from the catalog on Qwen3.8, dense Qwen3.6, and sparse Qwen3.6
+child commands. Bounded ROCm requests and live `/slots` state confirmed that
+Qwen3.8 medium and dense Qwen3.6 thinking used temperature 1.0, top-p 0.95,
+top-k 20, min-p 0, presence penalty 0, and repeat penalty 1. Sparse Qwen3.6
+thinking used the same tuple with presence penalty 1.5. Thinking off for all
+three policies used temperature 0.7, top-p 0.8, top-k 20, min-p 0, presence
+penalty 1.5, and repeat penalty 1. Thinking prompts were respectively open or
+preclosed.
+
+Maki's zero-token thinking budget selected the Qwen3.8 non-thinking defaults.
+A request temperature of 0.25 overrode only that field, while an explicit null
+top-p selected the catalog fallback. Direct-preset Qwen3.8 startup
+independently reproduced the medium and off tuples, accepting the same policy
+through its environment-to-entrypoint path. Every request completed, both
+managed containers stopped cleanly, and the kernel journal for the test window
+contained no matching AMDGPU fault, reset, timeout, SVM mapping failure,
+device loss, protection fault, general-protection fault, or OOM event. This
+accepts the generic catalog-to-server transport and fallback semantics; it is
+not a model-quality or performance comparison.
+
 ### Fedora 44 Strix Halo Qwen3.8 mode-aware sampling (2026-08-17)
 
 ROCmplete commit `fe6d5c3` was built and exercised on the Fedora 44 Strix Halo
